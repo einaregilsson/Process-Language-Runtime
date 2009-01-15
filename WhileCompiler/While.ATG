@@ -1,0 +1,194 @@
+COMPILER StmtSeq
+
+IWhileCompiler compiler; 
+
+private void IsBool(bool expectingBool) {
+    System.Console.WriteLine("ERROR");
+}
+
+CHARACTERS
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
+  digit = "0123456789".
+  cr  = '\r'.
+  lf  = '\n'.
+  tab = '\t'.
+
+TOKENS
+  ident  = letter {letter | digit}.
+  number = digit {digit}.
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO lf
+COMMENTS FROM "#" TO lf
+
+IGNORE cr + lf + tab
+
+PRODUCTIONS
+
+
+StmtSeq<> 
+=	
+    Stmt<> 
+    {';' Stmt<>} 
+.
+
+Stmt<>
+=
+	( Assign<>
+	| "skip"                    (. compiler.Skip(); .)
+	| Block<>
+	| If<>
+	| While<>
+	| "read" ident              (. compiler.Read(t.val); .)
+	| "write" AExpr<>           (. compiler.WriteArithmetic(); .)
+	)
+.
+
+VarDec<>
+=
+	"var" ident                 (. compiler.VarDec(t.val); .)
+	';' [VarDec<>]
+.
+
+Block<>
+=
+	"begin"                     (. compiler.BlockBegin(); .)
+	[ VarDec<> ]
+	StmtSeq<>
+	"end"                       (. compiler.BlockEnd(); .)
+.
+
+Assign<>
+=	ident                       (. string variable = t.val; .)
+	":="
+	Expr<>                      (. compiler.Assign(variable); .)
+.
+
+If<>
+=
+	"if"
+	Expr<>
+	"then"
+	StmtSeq<>
+	[
+	    "else"
+	    StmtSeq<>
+	]
+	"fi"
+.
+
+While<>
+=
+	"while"
+	Expr<true>
+	"do"
+	StmtSeq<>
+	"od"
+.
+
+Expr<bool expectBool>
+=	
+    LogicOr<>
+    {
+        "||"                    (. string op = t.val; IsBool(expectBool); .)
+        LogicOr<>               (. compiler.BinaryOp(op); .)
+    }
+.
+
+LogicOr<bool expectBool>
+=	
+    LogicAnd<expectBool>
+    {
+        "&&"                    (. string op = t.val; IsBool(expectBool);.)
+        LogicAnd<expectBool>    (. compiler.BinaryOp(op); .)
+    }
+.
+
+LogicAnd<bool expectBool>
+=	
+    EqualComp<expectBool>
+    [
+        ("=="|"!=")             (. IsBool(expectBool); .)
+        EqualComp<expectBool>
+    ]
+.
+
+EqualComp<bool expectBool>
+=
+    AExpr<false>
+    [
+        ("<"|">"|"<="|">=")              (. string op = t.val; IsBool(expectBool); .)
+        AExpr<expectBool>                (. compiler.BinaryOp(op); .)
+    ]
+.
+
+AExpr<bool expectBool>
+=	
+    BitOr<expectBool>
+    {
+        "|"                     (. string op = t.val; .)
+        BitOr<expectBool>       (. compiler.BinaryOp(op); .)
+    }
+.
+
+BitOr<bool expectBool>
+=	
+    BitXor<expectBool>
+    {
+        "^"                     (. string op = t.val; .)
+        BitXor<expectBool>      (. compiler.BinaryOp(op); .)
+    }
+.
+
+BitXor<bool expectBool>
+=	
+    BitAnd<expectBool>
+    {
+        "&"                     (. string op = t.val; .)
+        BitAnd<expectBool>      (. compiler.BinaryOp(op); .)
+    }
+.
+
+BitAnd<bool expectBool>
+=	
+    BitShift<>
+    {
+        ("<<"|">>")             (. string op = t.val; .)
+        BitShift<>              (. compiler.BinaryOp(op); .)
+    }
+.
+
+BitShift<bool expectBool>
+=
+    PlusMinus<>
+    {
+        ("+"|"-")               (. string op = t.val; .)
+        PlusMinus<>             (. compiler.BinaryOp(op); .)
+    }
+.    
+
+PlusMinus<bool expectBool>
+=
+    MulDivMod<>
+    {
+        ("*"|"/"|"%")           (. string op = t.val; .)
+        MulDivMod<>             (. compiler.BinaryOp(op); .)
+    }
+.    
+
+
+MulDivMod<bool expectBool>
+=                               (. string unary = ""; .)
+	[
+	'-'|'~'                     (. unary = t.val; .)
+	]
+	( ident                     (. compiler.Ident(t.val); .)
+	| number                    (. compiler.Number(int.Parse(t.val)); .)
+	| "true"
+	| "false"
+	| '(' Expr<expectBool> ')'
+	)
+	                            (. if (unary != "") compiler.UnaryOp(unary); .)
+.
+
+END StmtSeq.
