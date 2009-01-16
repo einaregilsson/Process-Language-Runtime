@@ -1,3 +1,7 @@
+using While.AST;
+using While.AST.Statements;
+using While.AST.Expressions;
+using System.Collections.Generic;
 
 using System;
 
@@ -22,7 +26,6 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-IWhileCompiler compiler; 
 
 
 	public Parser(Scanner scanner) {
@@ -82,252 +85,300 @@ IWhileCompiler compiler;
 	}
 
 	
-	void StmtSeq() {
-		Stmt();
-		while (la.kind == 3) {
-			Get();
-			Stmt();
-		}
+	void Program() {
+		StatementSequence statements = null; 
+		StmtSeq(out statements);
 	}
 
-	void Stmt() {
+	void StmtSeq(out StatementSequence statements) {
+		var statementList = new List<Statement>(); Statement stmt = null;
+		Stmt(out stmt);
+		statementList.Add(stmt); 
+		while (la.kind == 3) {
+			Get();
+			Stmt(out stmt);
+			statementList.Add(stmt); 
+		}
+		statements = new StatementSequence(statementList); 
+	}
+
+	void Stmt(out Statement stmt) {
+		Expression exp = null; stmt = null; 
 		switch (la.kind) {
 		case 1: {
-			Assign();
+			Assign(out stmt);
 			break;
 		}
 		case 4: {
 			Get();
-			compiler.Skip(); 
+			stmt = new Skip(); 
 			break;
 		}
 		case 8: {
-			Block();
+			Block(out stmt);
 			break;
 		}
 		case 11: {
-			If();
+			If(out stmt);
 			break;
 		}
 		case 15: {
-			While();
+			While(out stmt);
 			break;
 		}
 		case 5: {
 			Get();
 			Expect(1);
-			compiler.Read(t.val); 
+			stmt = new Read(new Variable(t.val)); 
 			break;
 		}
 		case 6: {
 			Get();
-			AExpr();
-			compiler.WriteArithmetic(); 
+			Expr(out exp);
+			stmt = new Write(exp); 
 			break;
 		}
 		default: SynErr(42); break;
 		}
 	}
 
-	void Assign() {
+	void Assign(out Statement assign) {
+		Expression exp = null; 
 		Expect(1);
-		string variable = t.val; 
+		Variable v = new Variable(t.val); 
 		Expect(10);
-		Expr();
-		compiler.Assign(variable); 
+		Expr(out exp);
+		assign = new Assign(v, exp); 
 	}
 
-	void Block() {
+	void Block(out Statement block) {
+		StatementSequence statements = null; VariableDeclaration[] vars = null; 
 		Expect(8);
-		compiler.BlockBegin(); 
 		if (la.kind == 7) {
-			VarDec();
+			VarDec(out vars);
 		}
-		StmtSeq();
+		StmtSeq(out statements);
+		block = new Block(vars, statements); 
 		Expect(9);
-		compiler.BlockEnd(); 
 	}
 
-	void If() {
+	void If(out Statement ifStmt) {
+		Expression exp = null; StatementSequence ifBranch = null, elseBranch = null; 
 		Expect(11);
-		Expr();
+		Expr(out exp);
 		Expect(12);
-		StmtSeq();
+		StmtSeq(out ifBranch);
 		if (la.kind == 13) {
 			Get();
-			StmtSeq();
+			StmtSeq(out elseBranch);
 		}
 		Expect(14);
+		ifStmt = new If(exp, ifBranch, elseBranch); 
 	}
 
-	void While() {
+	void While(out Statement whileStmt) {
+		Expression exp = null; StatementSequence whileBranch = null; 
 		Expect(15);
-		Expr();
+		Expr(out exp);
 		Expect(16);
-		StmtSeq();
+		StmtSeq(out whileBranch);
 		Expect(17);
+		whileStmt = new While.AST.Statements.While(exp, whileBranch); 
 	}
 
-	void AExpr() {
-		BitOr();
-		while (la.kind == 26) {
-			Get();
-			string op = t.val; 
-			BitOr();
-			compiler.BinaryOp(op); 
-		}
+	void Expr(out Expression exp) {
+		LogicOr(out exp);
 	}
 
-	void VarDec() {
+	void VarDec(out VariableDeclaration[] vars) {
+		var varList = new List<VariableDeclaration>(); 
 		Expect(7);
 		Expect(1);
-		compiler.VarDec(t.val); 
-		Expect(3);
-		if (la.kind == 7) {
-			VarDec();
+		varList.Add(new VariableDeclaration(t.val)); 
+		while (la.kind == 3) {
+			Get();
+			Expect(7);
+			Expect(1);
+			varList.Add(new VariableDeclaration(t.val)); 
 		}
+		Expect(3);
+		vars = varList.ToArray(); 
 	}
 
-	void Expr() {
-		LogicOr();
+	void LogicOr(out Expression exp) {
+		Expression second = null; 
+		LogicAnd(out exp);
 		while (la.kind == 18) {
 			Get();
-			string op = t.val; 
-			LogicOr();
-			compiler.BinaryOp(op); 
+			LogicAnd(out second);
+			exp = new BinaryOp(BinaryOp.LogicOr, exp, second); 
 		}
 	}
 
-	void LogicOr() {
-		LogicAnd();
+	void LogicAnd(out Expression exp) {
+		Expression second = null; 
+		EqualComp(out exp);
 		while (la.kind == 19) {
 			Get();
-			string op = t.val; 
-			LogicAnd();
-			compiler.BinaryOp(op); 
+			EqualComp(out second);
+			exp = new BinaryOp(BinaryOp.LogicAnd, exp, second); 
 		}
 	}
 
-	void LogicAnd() {
-		EqualComp();
+	void EqualComp(out Expression exp) {
+		Expression second = null; string op;
+		GreatOrEqual(out exp);
 		if (la.kind == 20 || la.kind == 21) {
 			if (la.kind == 20) {
 				Get();
+				op = BinaryOp.Equal; 
 			} else {
 				Get();
+				op = BinaryOp.NotEquals; 
 			}
-			EqualComp();
+			GreatOrEqual(out second);
+			exp = new BinaryOp(op, exp, second); 
 		}
 	}
 
-	void EqualComp() {
-		AExpr();
+	void GreatOrEqual(out Expression exp) {
+		Expression second = null; string op; 
+		BitOr(out exp);
 		if (StartOf(1)) {
 			if (la.kind == 22) {
 				Get();
+				op = BinaryOp.LessThan; 
 			} else if (la.kind == 23) {
 				Get();
+				op = BinaryOp.GreaterThan; 
 			} else if (la.kind == 24) {
 				Get();
+				op = BinaryOp.LessThanOrEqual; 
 			} else {
 				Get();
+				op = BinaryOp.GreaterThanOrEqual; 
 			}
-			string op = t.val; 
-			AExpr();
-			compiler.BinaryOp(op); 
+			BitOr(out second);
+			exp = new BinaryOp(op, exp, second); 
 		}
 	}
 
-	void BitOr() {
-		BitXor();
+	void BitOr(out Expression exp) {
+		Expression second = null; 
+		BitXor(out exp);
+		while (la.kind == 26) {
+			Get();
+			BitXor(out second);
+			exp = new BinaryOp(BinaryOp.BitOr, exp, second); 
+		}
+	}
+
+	void BitXor(out Expression exp) {
+		Expression second = null; 
+		BitAnd(out exp);
 		while (la.kind == 27) {
 			Get();
-			string op = t.val; 
-			BitXor();
-			compiler.BinaryOp(op); 
+			BitAnd(out second);
+			exp = new BinaryOp(BinaryOp.BitXor, exp, second); 
 		}
 	}
 
-	void BitXor() {
-		BitAnd();
+	void BitAnd(out Expression exp) {
+		Expression second = null; 
+		BitShift(out exp);
 		while (la.kind == 28) {
 			Get();
-			string op = t.val; 
-			BitAnd();
-			compiler.BinaryOp(op); 
+			BitShift(out exp);
+			exp = new BinaryOp(BinaryOp.BitAnd, exp, second); 
 		}
 	}
 
-	void BitAnd() {
-		BitShift();
+	void BitShift(out Expression exp) {
+		Expression second = null; string op; 
+		PlusMinus(out exp);
 		while (la.kind == 29 || la.kind == 30) {
 			if (la.kind == 29) {
 				Get();
+				op = BinaryOp.BitShiftLeft; 
 			} else {
 				Get();
+				op = BinaryOp.BitShiftRight; 
 			}
-			string op = t.val; 
-			BitShift();
-			compiler.BinaryOp(op); 
+			PlusMinus(out second);
+			exp = new BinaryOp(op, exp, second); 
 		}
 	}
 
-	void BitShift() {
-		PlusMinus();
+	void PlusMinus(out Expression exp) {
+		Expression second = null; string op; 
+		MulDivMod(out exp);
 		while (la.kind == 31 || la.kind == 32) {
 			if (la.kind == 31) {
 				Get();
+				op = BinaryOp.Plus; 
 			} else {
 				Get();
+				op = BinaryOp.Minus; 
 			}
-			string op = t.val; 
-			PlusMinus();
-			compiler.BinaryOp(op); 
+			MulDivMod(out second);
+			exp = new BinaryOp(op, exp, second); 
 		}
 	}
 
-	void PlusMinus() {
-		MulDivMod();
+	void MulDivMod(out Expression exp) {
+		Expression second = null; string op; 
+		UnaryOperator(out exp);
 		while (la.kind == 33 || la.kind == 34 || la.kind == 35) {
 			if (la.kind == 33) {
 				Get();
+				op = BinaryOp.Multiplication; 
 			} else if (la.kind == 34) {
 				Get();
+				op = BinaryOp.Division; 
 			} else {
 				Get();
+				op = BinaryOp.Modulo; 
 			}
-			string op = t.val; 
-			MulDivMod();
-			compiler.BinaryOp(op); 
+			UnaryOperator(out second);
+			exp = new BinaryOp(op, exp, second); 
 		}
 	}
 
-	void MulDivMod() {
-		string unary = ""; 
+	void UnaryOperator(out Expression exp) {
+		string op = null; bool isUnary = false; 
 		if (la.kind == 32 || la.kind == 36) {
 			if (la.kind == 32) {
+				isUnary = true; 
 				Get();
+				op = UnaryOp.Minus; 
 			} else {
 				Get();
-				unary = t.val; 
+				op = UnaryOp.BitNegate; 
 			}
 		}
+		Terminal(out exp);
+		if (isUnary) exp = new UnaryOp(op, exp); 
+	}
+
+	void Terminal(out Expression exp) {
+		exp = null; 
 		if (la.kind == 1) {
 			Get();
-			compiler.Ident(t.val); 
+			exp = new Variable(t.val); 
 		} else if (la.kind == 2) {
 			Get();
-			compiler.Number(int.Parse(t.val)); 
+			exp = new Number(int.Parse(t.val)); 
 		} else if (la.kind == 37) {
 			Get();
+			exp = new Bool(true); 
 		} else if (la.kind == 38) {
 			Get();
+			exp = new Bool(false); 
 		} else if (la.kind == 39) {
 			Get();
-			Expr();
+			Expr(out exp);
 			Expect(40);
 		} else SynErr(43);
-		if (unary != "") compiler.UnaryOp(unary); 
 	}
 
 
@@ -336,7 +387,7 @@ IWhileCompiler compiler;
 		la = new Token();
 		la.val = "";		
 		Get();
-		StmtSeq();
+		Program();
 
     Expect(0);
 	}
@@ -400,7 +451,7 @@ public class Errors {
 			case 40: s = "\")\" expected"; break;
 			case 41: s = "??? expected"; break;
 			case 42: s = "invalid Stmt"; break;
-			case 43: s = "invalid MulDivMod"; break;
+			case 43: s = "invalid Terminal"; break;
 
 			default: s = "error " + n; break;
 		}
