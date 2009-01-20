@@ -1,0 +1,236 @@
+COMPILER Program
+
+
+CHARACTERS
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
+  digit = "0123456789".
+  cr  = '\r'.
+  lf  = '\n'.
+  tab = '\t'.
+
+TOKENS
+  ident  = letter {letter | digit}.
+  number = digit {digit}.
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO lf
+COMMENTS FROM "#" TO lf
+
+IGNORE cr + lf + tab
+
+PRODUCTIONS
+
+Program<>
+=                                          			(.	statements as StatementSequence.)
+    StmtSeq<statements>
+.
+
+StmtSeq<ref statements as StatementSequence>  
+=													(.	stmt as Statement.)
+    Stmt<stmt>                         
+    {
+        ';' Stmt<stmt>                 
+    }                                      
+.
+
+Stmt<ref stmt as Statement>                   
+=													(. exp as Expression .)
+	( Assign<stmt>
+	| "skip"                               
+	| Block<stmt>                       
+	| If<stmt>
+	| While<stmt>
+	| "read" ident                         
+	| "write" Expr<exp>                
+	)
+.
+
+VarDec<ref vars as (VariableDeclaration)>
+=
+	"var" ident                            
+	{
+	    ';' "var" ident                    
+	}
+	';'                                    
+.
+
+Block<ref block as Statement>                 
+=
+	"begin"                                 (. vars as (VariableDeclaration).)
+	[ VarDec<vars> ]						(. statements as StatementSequence .)
+	StmtSeq<statements>                
+	"end"                       
+.
+
+Assign<ref assign as Statement>               
+=	ident                                  
+	":="
+	Expr<exp>                          
+.
+
+If<ref ifStmt as Statement>                   
+=
+	"if"
+	Expr<exp>
+	"then"
+	StmtSeq<ifBranch>
+	[
+	    "else"
+	    StmtSeq<elseBranch>
+	]
+	"fi"                                   
+.
+
+While<ref whileStmt as Statement>             
+=
+	"while"
+	Expr<exp>
+	"do"
+	StmtSeq<whileBranch>
+	"od"                                   
+.
+
+Expr<ref exp as Expression>
+=	
+    LogicOr<exp>                      
+.
+
+
+LogicOr<ref exp as Expression>                
+=	
+    LogicAnd<exp>                      
+    {
+        "||"          
+        LogicAnd<second>                
+    }                                       
+.
+
+LogicAnd<ref exp as Expression>                
+=	
+    EqualComp<exp>
+    {                            
+        "&&"                    
+        EqualComp<second>               
+    }
+.
+
+EqualComp<ref exp as Expression>               
+=	
+    GreatOrEqual<exp>
+    [
+        (
+        "=="                               
+        |
+        "!="                               
+        )                         
+        GreatOrEqual<second>           
+    ]
+.
+
+GreatOrEqual<ref exp as Expression>           
+=
+    BitOr<exp>
+    [
+        (
+        "<"                                
+        |
+        ">"                                
+        |
+        "<="                               
+        |
+        ">="                               
+        )
+        BitOr<second>                  
+    ]
+.
+
+BitOr<ref exp as Expression>                  
+=	
+    BitXor<exp>
+    {
+        "|"       
+        BitXor<second>                 
+    }
+.
+
+BitXor<ref exp as Expression>                 
+=	
+    BitAnd<exp>
+    {
+        "^"     
+        BitAnd<second>                 
+    }
+.
+
+BitAnd<ref exp as Expression>                 
+=	
+    BitShift<exp>
+    {
+        "&"                             
+        BitShift<exp>                  
+    }
+.
+
+BitShift<ref exp as Expression>               
+=	
+    PlusMinus<exp>
+    {
+        (
+        "<<"                               
+        |
+        ">>"                               
+        )             
+        PlusMinus<second>              
+    }
+.
+
+PlusMinus<ref exp as Expression>              
+=	
+    MulDivMod<exp>
+    {
+        (
+        "+"                                
+        |
+        "-"                                
+        )             
+        MulDivMod<second>              
+    }
+.
+
+MulDivMod<ref exp as Expression>              
+=	
+    UnaryOperator<exp>
+    {
+        (
+        "*"                                
+        |
+        "/"                                
+        |
+        "%"                                
+        )             
+        UnaryOperator<second>          
+    }
+.
+
+
+UnaryOperator<ref exp as Expression>          
+=                               
+	[                                      
+	'-'                                    
+	|
+	'~'                                    
+	]
+	Terminal<exp>                      
+.
+
+Terminal<ref exp as Expression>               
+=
+	( ident                                
+	| number                               
+	| "true"                               
+	| "false"                              
+	| '(' Expr<exp> ')'
+	)
+.
+
+END Program.

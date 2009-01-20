@@ -174,7 +174,7 @@ public class ParserGen {
 				}
 				case Node.t: {
 					Indent(indent);
-					if (isChecked[p.sym.n]) gen.WriteLine("Get();");
+					if (isChecked[p.sym.n]) gen.WriteLine("Get()");
 					else gen.WriteLine("Expect({0})", p.sym.n);
 					break;
 				}
@@ -201,7 +201,7 @@ public class ParserGen {
 					GenErrorMsg(syncErr, curSy, false);
 					s1 = (BitArray)p.set.Clone();
 					gen.Write("while not("); GenCond(s1, p); gen.Write("):");
-					gen.Write("SynErr({0}); Get();", errorNr); //Einar gen.WriteLine("}");
+					gen.Write("SynErr({0}); Get()", errorNr); //Einar gen.WriteLine("}");
 					break;
 				}
 				case Node.alt: {
@@ -223,10 +223,11 @@ public class ParserGen {
 						GenCode(p2.sub, indent + 1, s1);
 						p2 = p2.down;
 					}
-					Indent(indent);
+					Indent(indent-3);
 					if (equal) {
 						//Einar gen.WriteLine("}");
 					} else {
+						Indent(2);
 						GenErrorMsg(altErr, curSy, false);
 						//Einar gen.Write("} "); 
 						gen.WriteLine("else: SynErr({0})", errorNr);
@@ -249,7 +250,7 @@ public class ParserGen {
 					}
 					gen.WriteLine(":");
 					GenCode(p2, indent + 1, s1);
-					Indent(indent); //Einar gen.WriteLine("}");
+					Indent(indent-2); //Einar gen.WriteLine("}");
 					break;
 				}
 				case Node.opt:
@@ -257,7 +258,8 @@ public class ParserGen {
 					Indent(indent);
 					gen.Write("if "); GenCond(s1, p.sub); gen.WriteLine(":");
 					GenCode(p.sub, indent + 1, s1);
-					//Einar Indent(indent); gen.WriteLine("}");
+					//Indent(indent);
+					//Einar  gen.WriteLine("}");
 					break;
 			}
 			if (p.typ != Node.eps && p.typ != Node.sem && p.typ != Node.sync) 
@@ -270,13 +272,13 @@ public class ParserGen {
 	void GenTokens() {
 		foreach (Symbol sym in tab.terminals) {
 			if (Char.IsLetter(sym.name[0]))
-				gen.WriteLine("\tpublic static final int _{0} = {1};", sym.name, sym.n);
+				gen.WriteLine("\tpublic static final _{0} as int = {1}", sym.name, sym.n);
 		}
 	}
 	
 	void GenPragmas() {
 		foreach (Symbol sym in tab.pragmas) {
-			gen.WriteLine("\tpublic static final _{0} = {1};", sym.name, sym.n);
+			gen.WriteLine("\tpublic static final _{0} = {1}", sym.name, sym.n);
 		}
 	}
 
@@ -303,14 +305,14 @@ public class ParserGen {
 	void InitSets() {
 		for (int i = 0; i < symSet.Count; i++) {
 			BitArray s = (BitArray)symSet[i];
-			gen.Write("\t\t{");
+			gen.Write("\t\t(");
 			int j = 0;
 			foreach (Symbol sym in tab.terminals) {
 				if (s[sym.n]) gen.Write("T,"); else gen.Write("x,");
 				++j;
 				if (j%4 == 0) gen.Write(" ");
 			}
-			if (i == symSet.Count-1) gen.WriteLine("x}"); else gen.WriteLine("x},");
+			if (i == symSet.Count-1) gen.WriteLine("x)"); else gen.WriteLine("x),");
 		}
 	}
 	
@@ -358,12 +360,12 @@ public class ParserGen {
 		}
 		CopyFramePart("-->constants");
 		GenTokens(); /* ML 2002/09/07 write the token kinds */
-		gen.WriteLine("\tpublic const int maxT = {0};", tab.terminals.Count-1);
+		gen.WriteLine("\tpublic static final maxT as int= {0}", tab.terminals.Count-1);
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
 		CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 0);
 		CopyFramePart("-->pragmas"); GenCodePragmas();
 		CopyFramePart("-->productions"); GenProductions();
-		CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}();", tab.gramSy.name);
+		CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}()", tab.gramSy.name);
 		CopyFramePart("-->initialization"); InitSets();
 		CopyFramePart("-->errors"); gen.Write(err.ToString());
 		CopyFramePart("$$$");
