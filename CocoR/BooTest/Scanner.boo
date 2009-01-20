@@ -386,11 +386,11 @@ public class Scanner:
 		line0 as int = line
 		col0 as int = col
 		NextCh()
-			while true:
-				if ch == 10:
-					level--;
-					if level == 0: oldEols = line - line0; NextCh(); return true; 
-					NextCh();
+		while true:
+			if ch == 10:
+				level--;
+				if level == 0: oldEols = line - line0; NextCh(); return true; 
+				NextCh();
 				elif ch == Buffer.EOF: return false;
 				else: NextCh()
 
@@ -402,11 +402,11 @@ public class Scanner:
 		NextCh()
 		if ch == '/' :
 			NextCh()
-			while true:
-				if ch == 10:
-					level--;
-					if level == 0: oldEols = line - line0; NextCh(); return true; 
-					NextCh();
+		while true:
+			if ch == 10:
+				level--;
+				if level == 0: oldEols = line - line0; NextCh(); return true; 
+				NextCh();
 				elif ch == Buffer.EOF: return false;
 				else: NextCh()
 		else:
@@ -424,16 +424,16 @@ public class Scanner:
 		NextCh()
 		if ch == '*' :
 			NextCh()
-			while true:
-				if ch == '*':
-					NextCh();
-					if ch == '/' 
-						level--;
-						if level == 0:
-							oldEols = line - line0
-							NextCh()
-							return true
+		while true:
+			if ch == '*':
+				NextCh();
+				if ch == '/' 
+					level--;
+					if level == 0:
+						oldEols = line - line0
 						NextCh()
+						return true
+					NextCh()
 				} elif ch == '/':
 					NextCh();
 					if ch == '*' :
@@ -590,3 +590,4 @@ t.val = String(tval, 0, tlen); CheckLiteral(); return t
 		return pt
 
 	
+	// make sure that 

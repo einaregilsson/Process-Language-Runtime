@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-# SharpDevelop 2.2.1.2648
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coco", "Coco.csproj", "{06B1DD1A-7828-440D-8268-8C6152195E53}"
+# SharpDevelop 3.0.0.3683
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coco", "CocoR\Coco.csproj", "{06B1DD1A-7828-440D-8268-8C6152195E53}"
 EndProject
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "BooTest", "BooTest\BooTest.booproj", "{2D25ABD3-64E3-4DC8-9F18-10482C780494}"
 EndProject

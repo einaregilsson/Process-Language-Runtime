@@ -731,21 +731,21 @@ public class DFA {
 //------------------------ scanner generation ----------------------
 
 	void GenComBody(Comment com) {
-		gen.WriteLine(  "\t\t\twhile true:");
-		gen.Write    (  "\t\t\t\tif {0}", ChCond(com.stop[0])); gen.WriteLine(":");
+		gen.WriteLine(  "\t\twhile true:");
+		gen.Write    (  "\t\t\tif {0}", ChCond(com.stop[0])); gen.WriteLine(":");
 		if (com.stop.Length == 1) {
-			gen.WriteLine("\t\t\t\t\tlevel--;");
-			gen.WriteLine("\t\t\t\t\tif level == 0: oldEols = line - line0; NextCh(); return true; ");
-			gen.WriteLine("\t\t\t\t\tNextCh();");
+			gen.WriteLine("\t\t\t\tlevel--;");
+			gen.WriteLine("\t\t\t\tif level == 0: oldEols = line - line0; NextCh(); return true; ");
+			gen.WriteLine("\t\t\t\tNextCh();");
 		} else {
-			gen.WriteLine("\t\t\t\t\tNextCh();");
-			gen.WriteLine("\t\t\t\t\tif {0} ", ChCond(com.stop[1]));
-			gen.WriteLine("\t\t\t\t\t\tlevel--;");
-			gen.WriteLine("\t\t\t\t\t\tif level == 0:");
-			gen.WriteLine("\t\t\t\t\t\t\toldEols = line - line0");
-			gen.WriteLine("\t\t\t\t\t\t\tNextCh()");
-			gen.WriteLine("\t\t\t\t\t\t\treturn true");
+			gen.WriteLine("\t\t\t\tNextCh();");
+			gen.WriteLine("\t\t\t\tif {0} ", ChCond(com.stop[1]));
+			gen.WriteLine("\t\t\t\t\tlevel--;");
+			gen.WriteLine("\t\t\t\t\tif level == 0:");
+			gen.WriteLine("\t\t\t\t\t\toldEols = line - line0");
 			gen.WriteLine("\t\t\t\t\t\tNextCh()");
+			gen.WriteLine("\t\t\t\t\t\treturn true");
+			gen.WriteLine("\t\t\t\t\tNextCh()");
 		}
 		if (com.nested) {
 			gen.Write    ("\t\t\t\t}"); gen.Write(" elif {0}", ChCond(com.start[0])); gen.WriteLine(":");

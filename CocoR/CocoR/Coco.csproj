@@ -7,6 +7,7 @@
     <RootNamespace>Coco</RootNamespace>
     <AssemblyName>Coco</AssemblyName>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <SourceAnalysisOverrideSettingsFile>C:\Users\einar\AppData\Roaming\ICSharpCode/SharpDevelop3.0\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -30,10 +31,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="build.bat" />
+    <None Include="coc.bat" />
     <None Include="Coco.atg" />
     <None Include="Coco.csproj" />
-    <None Include="Coco.exe" />
-    <None Include="Coco.sln" />
     <None Include="Parser.frame" />
     <None Include="Scanner.frame" />
     <Compile Include="Coco.cs" />
@@ -44,6 +45,6 @@
     <Compile Include="Tab.cs" />
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>Coco.exe -frames ..\..\BooTest -o ..\..\BooTest ..\..\BooTest\While.ATG</PostBuildEvent>
+    <PostBuildEvent>Coco.exe -frames ..\..\..\BooTest -o ..\..\..\BooTest ..\..\..\BooTest\While.ATG</PostBuildEvent>
   </PropertyGroup>
 </Project>
