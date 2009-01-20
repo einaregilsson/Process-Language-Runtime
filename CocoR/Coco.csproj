@@ -1,0 +1,49 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{06B1DD1A-7828-440D-8268-8C6152195E53}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Coco</RootNamespace>
+    <AssemblyName>Coco</AssemblyName>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Coco.atg" />
+    <None Include="Coco.csproj" />
+    <None Include="Coco.exe" />
+    <None Include="Coco.sln" />
+    <None Include="Parser.frame" />
+    <None Include="Scanner.frame" />
+    <Compile Include="Coco.cs" />
+    <Compile Include="DFA.cs" />
+    <Compile Include="Parser.cs" />
+    <Compile Include="ParserGen.cs" />
+    <Compile Include="Scanner.cs" />
+    <Compile Include="Tab.cs" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>Coco.exe -frames ..\..\BooTest -o ..\..\BooTest ..\..\BooTest\While.ATG</PostBuildEvent>
+  </PropertyGroup>
+</Project>

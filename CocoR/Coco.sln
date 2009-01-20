@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+# SharpDevelop 2.2.1.2648
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coco", "Coco.csproj", "{06B1DD1A-7828-440D-8268-8C6152195E53}"
+EndProject
+Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "BooTest", "BooTest\BooTest.booproj", "{2D25ABD3-64E3-4DC8-9F18-10482C780494}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06B1DD1A-7828-440D-8268-8C6152195E53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06B1DD1A-7828-440D-8268-8C6152195E53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06B1DD1A-7828-440D-8268-8C6152195E53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06B1DD1A-7828-440D-8268-8C6152195E53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D25ABD3-64E3-4DC8-9F18-10482C780494}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D25ABD3-64E3-4DC8-9F18-10482C780494}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D25ABD3-64E3-4DC8-9F18-10482C780494}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D25ABD3-64E3-4DC8-9F18-10482C780494}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+EndGlobal
