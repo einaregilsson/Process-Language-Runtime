@@ -93,7 +93,7 @@ public class Parser:
 
 	
 	private def StartOf(s as int) as bool:
-		return set[s, la.kind]
+		return bitset[s, la.kind]
 
 	
 	private def ExpectWeak(n as int, follow as int):
@@ -115,7 +115,7 @@ public class Parser:
 			return false
 		else:
 			SynErr(n)
-			while not ((set[syFol, kind] or set[repFol, kind]) or set[0, kind]):
+			while not ((bitset[syFol, kind] or bitset[repFol, kind]) or bitset[0, kind]):
 				Get()
 				kind = la.kind
 			return StartOf(syFol)
@@ -132,9 +132,9 @@ public class Parser:
 		Expect(0)
 
 	
-	private set as (bool, 2) = (,)
+	private bitset as (bool, 2) = (
 -->initialization
-
+	)
 // end Parser
 
 public class Errors:
@@ -175,7 +175,7 @@ public class Errors:
 
 // Errors
 
-public class FatalError(Exception):
+public class FatalError(System.Exception):
 
 	public def constructor(m as string):
 		super(m)

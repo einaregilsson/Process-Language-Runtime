@@ -1,5 +1,11 @@
-namespace While
+﻿namespace WhileCompiler
 
 import System
+import System.Collections
 
-print 'Hello'
+print "Hello, World!"
+
+// TODO: Implement Functionality Here
+
+print "Press any key to continue . . . "
+Console.ReadKey(true)
