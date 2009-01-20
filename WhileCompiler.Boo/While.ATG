@@ -1,0 +1,241 @@
+using While.AST;
+using While.AST.Statements;
+using While.AST.Expressions;
+using System.Collections.Generic;
+
+COMPILER Program
+
+
+CHARACTERS
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
+  digit = "0123456789".
+  cr  = '\r'.
+  lf  = '\n'.
+  tab = '\t'.
+
+TOKENS
+  ident  = letter {letter | digit}.
+  number = digit {digit}.
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO lf
+COMMENTS FROM "#" TO lf
+
+IGNORE cr + lf + tab
+
+PRODUCTIONS
+
+Program<>
+=                                           (. StatementSequence statements = null; .)
+    StmtSeq<out statements>
+.
+
+StmtSeq<out StatementSequence statements>   (. var statementList = new List<Statement>(); Statement stmt = null;.) 
+=	
+    Stmt<out stmt>                          (. statementList.Add(stmt); .)
+    {
+        ';' Stmt<out stmt>                  (. statementList.Add(stmt); .)
+    }                                       (. statements = new StatementSequence(statementList); .)
+.
+
+Stmt<out Statement stmt>                    (. Expression exp = null; stmt = null; .)
+=
+	( Assign<out stmt>
+	| "skip"                                (. stmt = new Skip(); .)
+	| Block<out stmt>                       
+	| If<out stmt>
+	| While<out stmt>
+	| "read" ident                          (. stmt = new Read(new Variable(t.val)); .)
+	| "write" Expr<out exp>                 (. stmt = new Write(exp); .)       
+	)
+.
+
+VarDec<out VariableDeclaration[] vars>      (. var varList = new List<VariableDeclaration>(); .)
+=
+	"var" ident                             (. varList.Add(new VariableDeclaration(t.val)); .)
+	{
+	    ';' "var" ident                     (. varList.Add(new VariableDeclaration(t.val)); .)
+	}
+	';'                                     (. vars = varList.ToArray(); .)
+.
+
+Block<out Statement block>                  (. StatementSequence statements = null; VariableDeclaration[] vars = null; .)
+=
+	"begin"                                 
+	[ VarDec<out vars> ]
+	StmtSeq<out statements>                 (. block = new Block(vars, statements); .)
+	"end"                       
+.
+
+Assign<out Statement assign>                (. Expression exp = null; .)             
+=	ident                                   (. Variable v = new Variable(t.val); .)
+	":="
+	Expr<out exp>                           (. assign = new Assign(v, exp); .)
+.
+
+If<out Statement ifStmt>                    (. Expression exp = null; StatementSequence ifBranch = null, elseBranch = null; .)
+=
+	"if"
+	Expr<out exp>
+	"then"
+	StmtSeq<out ifBranch>
+	[
+	    "else"
+	    StmtSeq<out elseBranch>
+	]
+	"fi"                                    (. ifStmt = new If(exp, ifBranch, elseBranch); .)
+.
+
+While<out Statement whileStmt>              (. Expression exp = null; StatementSequence whileBranch = null; .)
+=
+	"while"
+	Expr<out exp>
+	"do"
+	StmtSeq<out whileBranch>
+	"od"                                    (. whileStmt = new While.AST.Statements.While(exp, whileBranch); .)
+.
+
+Expr<out Expression exp>
+=	
+    LogicOr<out exp>                      
+.
+
+
+LogicOr<out Expression exp>                 (. Expression second = null; .)
+=	
+    LogicAnd<out exp>                      
+    {
+        "||"          
+        LogicAnd<out second>                 (. exp = new BinaryOp(BinaryOp.LogicOr, exp, second); .)     
+    }                                       
+.
+
+LogicAnd<out Expression exp>                 (. Expression second = null; .)
+=	
+    EqualComp<out exp>
+    {                            
+        "&&"                    
+        EqualComp<out second>                (. exp = new BinaryOp(BinaryOp.LogicAnd, exp, second); .)     
+    }
+.
+
+EqualComp<out Expression exp>                (. Expression second = null; string op;.)
+=	
+    GreatOrEqual<out exp>
+    [
+        (
+        "=="                                (. op = BinaryOp.Equal; .)
+        |
+        "!="                                (. op = BinaryOp.NotEquals; .)
+        )                         
+        GreatOrEqual<out second>            (. exp = new BinaryOp(op, exp, second); .)
+    ]
+.
+
+GreatOrEqual<out Expression exp>            (. Expression second = null; string op; .)
+=
+    BitOr<out exp>
+    [
+        (
+        "<"                                 (. op = BinaryOp.LessThan; .)
+        |
+        ">"                                 (. op = BinaryOp.GreaterThan; .)
+        |
+        "<="                                (. op = BinaryOp.LessThanOrEqual; .)
+        |
+        ">="                                (. op = BinaryOp.GreaterThanOrEqual; .)
+        )
+        BitOr<out second>                   (. exp = new BinaryOp(op, exp, second); .)
+    ]
+.
+
+BitOr<out Expression exp>                   (. Expression second = null; .)
+=	
+    BitXor<out exp>
+    {
+        "|"       
+        BitXor<out second>                  (. exp = new BinaryOp(BinaryOp.BitOr, exp, second); .)
+    }
+.
+
+BitXor<out Expression exp>                  (. Expression second = null; .)
+=	
+    BitAnd<out exp>
+    {
+        "^"     
+        BitAnd<out second>                  (. exp = new BinaryOp(BinaryOp.BitXor, exp, second); .)
+    }
+.
+
+BitAnd<out Expression exp>                  (. Expression second = null; .)
+=	
+    BitShift<out exp>
+    {
+        "&"                             
+        BitShift<out exp>                   (. exp = new BinaryOp(BinaryOp.BitAnd, exp, second); .)
+    }
+.
+
+BitShift<out Expression exp>                (. Expression second = null; string op; .)
+=	
+    PlusMinus<out exp>
+    {
+        (
+        "<<"                                (. op = BinaryOp.BitShiftLeft; .)
+        |
+        ">>"                                (. op = BinaryOp.BitShiftRight; .)
+        )             
+        PlusMinus<out second>               (. exp = new BinaryOp(op, exp, second); .)
+    }
+.
+
+PlusMinus<out Expression exp>               (. Expression second = null; string op; .)
+=	
+    MulDivMod<out exp>
+    {
+        (
+        "+"                                 (. op = BinaryOp.Plus; .)
+        |
+        "-"                                 (. op = BinaryOp.Minus; .)
+        )             
+        MulDivMod<out second>               (. exp = new BinaryOp(op, exp, second); .)
+    }
+.
+
+MulDivMod<out Expression exp>               (. Expression second = null; string op; .)
+=	
+    UnaryOperator<out exp>
+    {
+        (
+        "*"                                 (. op = BinaryOp.Multiplication; .)
+        |
+        "/"                                 (. op = BinaryOp.Division; .)
+        |
+        "%"                                 (. op = BinaryOp.Modulo; .)
+        )             
+        UnaryOperator<out second>           (. exp = new BinaryOp(op, exp, second); .)
+    }
+.
+
+
+UnaryOperator<out Expression exp>           (. string op = null; bool isUnary = false; .)
+=                               
+	[                                       (. isUnary = true; .)
+	'-'                                     (. op = UnaryOp.Minus; .)
+	|
+	'~'                                     (. op = UnaryOp.BitNegate; .)
+	]
+	Terminal<out exp>                       (. if (isUnary) exp = new UnaryOp(op, exp); .)
+.
+
+Terminal<out Expression exp>                (. exp = null; .)
+=
+	( ident                                 (. exp = new Variable(t.val); .)  
+	| number                                (. exp = new Number(int.Parse(t.val)); .)
+	| "true"                                (. exp = new Bool(true); .)
+	| "false"                               (. exp = new Bool(false); .)
+	| '(' Expr<out exp> ')'
+	)
+.
+
+END Program.
