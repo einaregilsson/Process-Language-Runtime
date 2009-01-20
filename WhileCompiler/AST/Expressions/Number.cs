@@ -5,6 +5,9 @@ using System.Text;
 
 namespace While.AST.Expressions {
     public class Number : Expression{
-        public Number(int nr) { }
+        private int nr;
+        public Number(int nr) {
+            this.nr = nr;
+        }
     }
 }

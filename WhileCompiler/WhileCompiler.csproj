@@ -46,8 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AST\Expressions\BinaryOp.cs" />
+    <Compile Include="AST\Expressions\ArithmeticBinaryOp.cs" />
+    <Compile Include="AST\Expressions\ArithmeticExpression.cs" />
+    <Compile Include="AST\Expressions\BooleanBinaryOp.cs" />
     <Compile Include="AST\Expressions\Bool.cs" />
+    <Compile Include="AST\Expressions\BooleanExpression.cs" />
     <Compile Include="AST\Expressions\Expression.cs" />
     <Compile Include="AST\Expressions\Number.cs" />
     <Compile Include="AST\Expressions\UnaryOp.cs" />
@@ -68,6 +71,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scanner.cs" />
+    <Compile Include="WhileException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Parser.frame" />
