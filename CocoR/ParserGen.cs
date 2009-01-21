@@ -228,7 +228,6 @@ public class ParserGen {
 					if (!equal) {
 						Indent(2);
 						GenErrorMsg(altErr, curSy, false);
-						//Einar gen.Write("} "); 
 						gen.WriteLine("else: SynErr({0})", errorNr);
 					}
 					break;
