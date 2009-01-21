@@ -1,7 +1,3 @@
-import System
-import System.IO
-import System.Collections.Generic
-
 /*----------------------------------------------------------------------
 Compiler Generator Coco/R,
 Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
@@ -30,6 +26,9 @@ Coco/R itself) does not fall under the GNU General Public License.
 -----------------------------------------------------------------------*/
 
 -->begin
+import System
+import System.IO
+import System.Collections.Generic
 
 -->namespace
 
@@ -65,7 +64,7 @@ public class Buffer:
 	//    b) part of stream in buffer
 	// 2) non seekable stream (network, console)
 	
-	public static final EOF as int = (char.MaxValue + 1)
+	public static final EOF as int = (cast(int, char.MaxValue) + 1)
 
 	private static final MIN_BUFFER_LENGTH = 1024
 
@@ -325,7 +324,7 @@ public class Scanner:
 			stream as Stream = FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read)
 			buffer = Buffer(stream, false)
 			Init()
-		except converterGeneratedName1 as IOException:
+		except ex as IOException:
 			raise FatalError(('Cannot open file ' + fileName))
 
 	
@@ -352,14 +351,14 @@ public class Scanner:
 			col = 0
 			NextCh()
 		start = Dictionary[of int, int](128)
-		//-->initialization
+-->initialization
 		pt = (tokens = Token())
 		// first token is a dummy
 
 	
 	private def NextCh():
 		if oldEols > 0:
-			ch = EOL
+			ch = cast(int,EOL)
 			oldEols -= 1
 		else:
 			pos = buffer.Pos
@@ -368,8 +367,8 @@ public class Scanner:
 			// replace isolated '\r' by '\n' in order to make
 			// eol handling uniform across Windows, Unix and Mac
 			if (ch == char('\r')) and (buffer.Peek() != char('\n')):
-				ch = EOL
-			if ch == EOL:
+				ch = cast(int,EOL)
+			if ch == cast(int,EOL):
 				line += 1
 				col = 0
 -->casing1
@@ -380,7 +379,7 @@ public class Scanner:
 			newBuf as (char) = array(char, (2 * tval.Length))
 			Array.Copy(tval, 0, newBuf, 0, tval.Length)
 			tval = newBuf
-		//-->casing2
+-->casing2
 		NextCh()
 
 	
@@ -388,15 +387,13 @@ public class Scanner:
 -->comments
 	
 	private def CheckLiteral():
-		pass
-		//-->literals
+-->literals
 
 	
 	private def NextToken() as Token:
-		while ch == char(' ') ||
-			//-->scan1
+		while ch == char(' ') or -->scan1
 			NextCh()
-		//-->scan2
+-->scan2
 		t = Token()
 		t.pos = pos
 		t.col = col
@@ -404,22 +401,21 @@ public class Scanner:
 		state as int
 		try:
 			state = start[ch]
-		except converterGeneratedName2 as KeyNotFoundException:
+		except ex as KeyNotFoundException:
 			state = 0
 		tlen = 0
 		AddCh()
-		converterGeneratedName3 = state
 		
-		if converterGeneratedName3 == (-1):
-			t.kind = eofSym
-			goto converterGeneratedName3_end
-		elif converterGeneratedName3 == 0:
-		// NextCh already done
-			t.kind = noSym
-			goto converterGeneratedName3_end
-		:converterGeneratedName3_end
-		// NextCh already done
-		//-->scan3
+		while true:
+			if state == (-1):
+				t.kind = eofSym
+			elif state == 0:
+			// NextCh already done
+				t.kind = noSym
+			// NextCh already done
+-->scan3
+			break unless false
+			
 		t.val = String(tval, 0, tlen)
 		return t
 
@@ -453,3 +449,5 @@ public class Scanner:
 	
 
 // end Scanner
+
+$$$

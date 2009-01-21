@@ -6,6 +6,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>While</RootNamespace>
     <AssemblyName>While</AssemblyName>
+    <SourceAnalysisOverrideSettingsFile>C:\Users\einar\AppData\Roaming\ICSharpCode/SharpDevelop3.0\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -44,4 +46,7 @@
     <Folder Include="AST" />
   </ItemGroup>
   <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>..\..\coco -frames ..\.. -o ..\.. ..\..\while.atg</PreBuildEvent>
+  </PropertyGroup>
 </Project>
