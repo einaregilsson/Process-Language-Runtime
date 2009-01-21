@@ -381,40 +381,44 @@ public class Scanner:
 	
 
 	def Comment0() as bool:
-		level as int= 1
+		level as int = 1
 		pos0 as int = pos
 		line0 as int = line
 		col0 as int = col
 		NextCh()
 		while true:
 			if ch == 10:
-				level--;
+				level--
 				if level == 0:
 					oldEols = line - line0
 					NextCh()
-					return true; 
-				NextCh();
-			elif ch == Buffer.EOF: return false;
-			else: NextCh()
+					return true
+				NextCh()
+			elif ch == Buffer.EOF:
+				return false
+			else:
+				NextCh()
 
 	def Comment1() as bool:
-		level as int= 1
+		level as int = 1
 		pos0 as int = pos
 		line0 as int = line
 		col0 as int = col
 		NextCh()
-		if ch == '/' :
+		if ch == '/':
 			NextCh()
 			while true:
 				if ch == 10:
-					level--;
+					level--
 					if level == 0:
 						oldEols = line - line0
 						NextCh()
-						return true; 
-					NextCh();
-				elif ch == Buffer.EOF: return false;
-				else: NextCh()
+						return true
+					NextCh()
+				elif ch == Buffer.EOF:
+					return false
+				else:
+					NextCh()
 		else:
 			buffer.Pos = pos0
 			NextCh()
@@ -423,30 +427,32 @@ public class Scanner:
 		return false
 
 	def Comment2() as bool:
-		level as int= 1
+		level as int = 1
 		pos0 as int = pos
 		line0 as int = line
 		col0 as int = col
 		NextCh()
-		if ch == '*' :
+		if ch == '*':
 			NextCh()
 			while true:
 				if ch == '*':
-					NextCh();
-					if ch == '/': 
-						level--;
+					NextCh()
+					if ch == '/':
+						level--
 						if level == 0:
 							oldEols = line - line0
 							NextCh()
 							return true
 						NextCh()
-					elif ch == '/':
-						NextCh();
-						if ch == '*' :
-							level++
-							NextCh()
-				elif ch == Buffer.EOF: return false;
-				else: NextCh()
+				elif ch == '/':
+					NextCh()
+					if ch == '*':
+						level++
+						NextCh()
+				elif ch == Buffer.EOF:
+					return false
+				else:
+					NextCh()
 		else:
 			buffer.Pos = pos0
 			NextCh()
@@ -457,7 +463,7 @@ public class Scanner:
 	
 	private def CheckLiteral():
 		tokString as string =  t.val
-		elif tokString == "skip": t.kind = 4
+		if tokString == "skip": t.kind = 4
 		elif tokString == "read": t.kind = 5
 		elif tokString == "write": t.kind = 6
 		elif tokString == "var": t.kind = 7
@@ -592,5 +598,4 @@ t.val = String(tval, 0, tlen); CheckLiteral(); return t
 			// skip pragmas
 			while true:
 				pt = pt.next
-				break  unless (pt.kind > maxT)
-		return pt
+				bre
