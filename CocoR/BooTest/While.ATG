@@ -217,7 +217,8 @@ MulDivMod<ref exp as Expression>                (. second as Expression .)
 
 UnaryOperator<ref exp as Expression>          
 =                               
-	[                                      
+	[                                      	(. 	if true:
+													print "hello" .)
 	'-'                                    
 	|
 	'~'                                    

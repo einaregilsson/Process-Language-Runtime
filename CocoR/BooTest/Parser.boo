@@ -273,6 +273,8 @@ public class Parser:
 	def UnaryOperator(ref exp as Expression):
 		if la.kind == 32 or la.kind == 36:
 			if la.kind == 32:
+				if true:
+				print "hello" 
 				Get()
 			else:
 				Get()

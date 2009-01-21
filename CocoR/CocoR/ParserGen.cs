@@ -94,16 +94,17 @@ public class ParserGen {
 
 	void CopySourcePart (Position pos, int indent) {
 		// Copy text described by pos from atg to gen
-		int ch, nChars, i;
+		int ch,  nChars, i;
 		if (pos != null) {
 			buffer.Pos = pos.beg; ch = buffer.Read(); nChars = pos.len - 1;
 			Indent(indent);
+			
 			while (nChars >= 0) {
 				while (ch == CR || ch == LF) {  // eol is either CR or CRLF or LF
 					gen.WriteLine(); Indent(indent);
 					if (ch == CR) { ch = buffer.Read(); nChars--; }  // skip CR
 					if (ch == LF) { ch = buffer.Read(); nChars--; }  // skip LF
-					for (i = 1; i <= pos.col && (ch == ' ' || ch == '\t'); i++) { 
+					for (i = 1; i <= pos.col && (ch == ' ' || ch == '\t'); i++) {
 						// skip blanks at beginning of line
 						ch = buffer.Read(); nChars--;
 					}
