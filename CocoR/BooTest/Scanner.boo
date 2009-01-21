@@ -389,10 +389,13 @@ public class Scanner:
 		while true:
 			if ch == 10:
 				level--;
-				if level == 0: oldEols = line - line0; NextCh(); return true; 
+				if level == 0:
+					oldEols = line - line0
+					NextCh()
+					return true; 
 				NextCh();
-				elif ch == Buffer.EOF: return false;
-				else: NextCh()
+			elif ch == Buffer.EOF: return false;
+			else: NextCh()
 
 	def Comment1() as bool:
 		level as int= 1
@@ -402,11 +405,14 @@ public class Scanner:
 		NextCh()
 		if ch == '/' :
 			NextCh()
-		while true:
-			if ch == 10:
-				level--;
-				if level == 0: oldEols = line - line0; NextCh(); return true; 
-				NextCh();
+			while true:
+				if ch == 10:
+					level--;
+					if level == 0:
+						oldEols = line - line0
+						NextCh()
+						return true; 
+					NextCh();
 				elif ch == Buffer.EOF: return false;
 				else: NextCh()
 		else:
@@ -424,21 +430,21 @@ public class Scanner:
 		NextCh()
 		if ch == '*' :
 			NextCh()
-		while true:
-			if ch == '*':
-				NextCh();
-				if ch == '/' 
-					level--;
-					if level == 0:
-						oldEols = line - line0
-						NextCh()
-						return true
-					NextCh()
-				} elif ch == '/':
+			while true:
+				if ch == '*':
 					NextCh();
-					if ch == '*' :
-						level++
+					if ch == '/': 
+						level--;
+						if level == 0:
+							oldEols = line - line0
+							NextCh()
+							return true
 						NextCh()
+					elif ch == '/':
+						NextCh();
+						if ch == '*' :
+							level++
+							NextCh()
 				elif ch == Buffer.EOF: return false;
 				else: NextCh()
 		else:
@@ -588,6 +594,3 @@ t.val = String(tval, 0, tlen); CheckLiteral(); return t
 				pt = pt.next
 				break  unless (pt.kind > maxT)
 		return pt
-
-	
-	// make sure that 

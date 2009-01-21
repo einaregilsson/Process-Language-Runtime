@@ -735,7 +735,10 @@ public class DFA {
 		gen.Write    (  "\t\t\tif {0}", ChCond(com.stop[0])); gen.WriteLine(":");
 		if (com.stop.Length == 1) {
 			gen.WriteLine("\t\t\t\tlevel--;");
-			gen.WriteLine("\t\t\t\tif level == 0: oldEols = line - line0; NextCh(); return true; ");
+			gen.WriteLine("\t\t\t\tif level == 0:");
+			gen.WriteLine("\t\t\t\t\toldEols = line - line0");
+			gen.WriteLine("\t\t\t\t\tNextCh()");
+			gen.WriteLine("\t\t\t\t\treturn true; ");
 			gen.WriteLine("\t\t\t\tNextCh();");
 		} else {
 			gen.WriteLine("\t\t\t\tNextCh();");
@@ -758,8 +761,8 @@ public class DFA {
 				gen.WriteLine("\t\t\t\t\t\tNextCh()");;
 			}
 		}
-		gen.WriteLine(    "\t\t\t\telif ch == Buffer.EOF: return false;");
-		gen.WriteLine(    "\t\t\t\telse: NextCh()");
+		gen.WriteLine(    "\t\t\telif ch == Buffer.EOF: return false;");
+		gen.WriteLine(    "\t\t\telse: NextCh()");
 	}
 	
 	void GenComment(Comment com, int i) {
