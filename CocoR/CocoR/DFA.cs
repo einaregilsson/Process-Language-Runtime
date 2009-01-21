@@ -839,8 +839,6 @@ public class DFA {
 				first = false;
 			}
 		}
-		gen.WriteLine("\t\telse: break");
-		gen.Write("\t");
 	}
 	
 	void WriteState(State state) {

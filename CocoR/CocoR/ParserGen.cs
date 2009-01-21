@@ -201,7 +201,7 @@ public class ParserGen {
 					GenErrorMsg(syncErr, curSy, false);
 					s1 = (BitArray)p.set.Clone();
 					gen.Write("while not("); GenCond(s1, p); gen.Write("):");
-					gen.Write("SynErr({0}); Get()", errorNr); //Einar gen.WriteLine("}");
+					gen.Write("SynErr({0}); Get()", errorNr);
 					break;
 				}
 				case Node.alt: {
@@ -224,9 +224,7 @@ public class ParserGen {
 						p2 = p2.down;
 					}
 					Indent(indent-3);
-					if (equal) {
-						//Einar gen.WriteLine("}");
-					} else {
+					if (!equal) {
 						Indent(2);
 						GenErrorMsg(altErr, curSy, false);
 						//Einar gen.Write("} "); 
@@ -250,7 +248,7 @@ public class ParserGen {
 					}
 					gen.WriteLine(":");
 					GenCode(p2, indent + 1, s1);
-					Indent(indent-2); //Einar gen.WriteLine("}");
+					Indent(indent-2); 
 					break;
 				}
 				case Node.opt:
@@ -258,8 +256,6 @@ public class ParserGen {
 					Indent(indent);
 					gen.Write("if "); GenCond(s1, p.sub); gen.WriteLine(":");
 					GenCode(p.sub, indent + 1, s1);
-					//Indent(indent);
-					//Einar  gen.WriteLine("}");
 					break;
 			}
 			if (p.typ != Node.eps && p.typ != Node.sem && p.typ != Node.sync) 
@@ -284,9 +280,8 @@ public class ParserGen {
 
 	void GenCodePragmas() {
 		foreach (Symbol sym in tab.pragmas) {
-			gen.WriteLine("\t\t\t\tif (la.kind == {0}) {{", sym.n);
+			gen.WriteLine("\t\t\t\tif (la.kind == 0}:", sym.n);
 			CopySourcePart(sym.semPos, 4);
-			gen.WriteLine("\t\t\t\t}");
 		}
 	}
 
@@ -305,14 +300,14 @@ public class ParserGen {
 	void InitSets() {
 		for (int i = 0; i < symSet.Count; i++) {
 			BitArray s = (BitArray)symSet[i];
-			gen.Write("\t\t(");
+			gen.Write("\t\tbitset.Add((");
 			int j = 0;
 			foreach (Symbol sym in tab.terminals) {
-				if (s[sym.n]) gen.Write("T,"); else gen.Write("x,");
+				if (s[sym.n]) gen.Write("true ,"); else gen.Write("false,");
 				++j;
 				if (j%4 == 0) gen.Write(" ");
 			}
-			if (i == symSet.Count-1) gen.WriteLine("x)"); else gen.WriteLine("x),");
+			gen.WriteLine("false))");
 		}
 	}
 	

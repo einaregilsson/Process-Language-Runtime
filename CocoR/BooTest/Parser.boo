@@ -1,4 +1,6 @@
 
+import System
+import System.Collections.Generic
 
 
 
@@ -35,6 +37,7 @@ public class Parser:
 	public def constructor(scanner as Scanner):
 		self.scanner = scanner
 		errors = Errors()
+		self.InitBitset()
 
 	
 	private def SynErr(n as int):
@@ -68,7 +71,7 @@ public class Parser:
 
 	
 	private def StartOf(s as int) as bool:
-		return bitset[s, la.kind]
+		return bitset[s][la.kind]
 
 	
 	private def ExpectWeak(n as int, follow as int):
@@ -90,7 +93,7 @@ public class Parser:
 			return false
 		else:
 			SynErr(n)
-			while not ((bitset[syFol, kind] or bitset[repFol, kind]) or bitset[0, kind]):
+			while not ((bitset[syFol][kind] or bitset[repFol][kind]) or bitset[0][kind]):
 				Get()
 				kind = la.kind
 			return StartOf(syFol)
@@ -144,7 +147,9 @@ public class Parser:
 		Expect(9)
 
 	def If(ref ifStmt as Statement):
-		ifBranch as StatementSequence; elseBranch as StatementSequence 
+		ifBranch as StatementSequence; elseBranch as StatementSequence
+		exp as Expression 
+		foo as int
 		Expect(11)
 		Expr(exp)
 		Expect(12)
@@ -155,6 +160,7 @@ public class Parser:
 		Expect(14)
 
 	def While(ref whileStmt as Statement):
+		exp as Expression; whileBranch as StatementSequence 
 		Expect(15)
 		Expr(exp)
 		Expect(16)
@@ -174,18 +180,21 @@ public class Parser:
 		Expect(3)
 
 	def LogicOr(ref exp as Expression):
+		second as Expression 
 		LogicAnd(exp)
 		while la.kind == 18:
 			Get()
 			LogicAnd(second)
 
 	def LogicAnd(ref exp as Expression):
+		second as Expression 
 		EqualComp(exp)
 		while la.kind == 19:
 			Get()
 			EqualComp(second)
 
 	def EqualComp(ref exp as Expression):
+		second as Expression 
 		GreatOrEqual(exp)
 		if la.kind == 20 or la.kind == 21:
 			if la.kind == 20:
@@ -195,6 +204,7 @@ public class Parser:
 			GreatOrEqual(second)
 
 	def GreatOrEqual(ref exp as Expression):
+		second as Expression 
 		BitOr(exp)
 		if StartOf(1):
 			if la.kind == 22:
@@ -208,24 +218,28 @@ public class Parser:
 			BitOr(second)
 
 	def BitOr(ref exp as Expression):
+		second as Expression 
 		BitXor(exp)
 		while la.kind == 26:
 			Get()
 			BitXor(second)
 
 	def BitXor(ref exp as Expression):
+		second as Expression 
 		BitAnd(exp)
 		while la.kind == 27:
 			Get()
 			BitAnd(second)
 
 	def BitAnd(ref exp as Expression):
+		second as Expression 
 		BitShift(exp)
 		while la.kind == 28:
 			Get()
 			BitShift(exp)
 
 	def BitShift(ref exp as Expression):
+		second as Expression 
 		PlusMinus(exp)
 		while la.kind == 29 or la.kind == 30:
 			if la.kind == 29:
@@ -235,6 +249,7 @@ public class Parser:
 			PlusMinus(second)
 
 	def PlusMinus(ref exp as Expression):
+		second as Expression 
 		MulDivMod(exp)
 		while la.kind == 31 or la.kind == 32:
 			if la.kind == 31:
@@ -244,6 +259,7 @@ public class Parser:
 			MulDivMod(second)
 
 	def MulDivMod(ref exp as Expression):
+		second as Expression 
 		UnaryOperator(exp)
 		while la.kind == 33 or la.kind == 34 or la.kind == 35:
 			if la.kind == 33:
@@ -288,11 +304,13 @@ public class Parser:
 		Expect(0)
 
 	
-	private bitset as (bool, 2) = (
-		(T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x),
-		(x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x)
+	private bitset as List[of (bool)]
 
-	)
+	private def InitBitset():
+		bitset.Add((true ,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
+		bitset.Add((false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,true ,true , true ,true ,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
+
+
 // end Parser
 
 public class Errors:

@@ -68,7 +68,9 @@ Assign<ref assign as Statement>             (. exp as Expression .)
 	Expr<exp>                          
 .
 
-If<ref ifStmt as Statement>               	(. ifBranch as StatementSequence; elseBranch as StatementSequence .)
+If<ref ifStmt as Statement>               	(. 	ifBranch as StatementSequence; elseBranch as StatementSequence
+														exp as Expression 
+													foo as int.)
 =
 	"if"
 	Expr<exp>
@@ -81,7 +83,7 @@ If<ref ifStmt as Statement>               	(. ifBranch as StatementSequence; els
 	"fi"                                   
 .
 
-While<ref whileStmt as Statement>             
+While<ref whileStmt as Statement>             	(.			exp as Expression; whileBranch as StatementSequence .)
 =
 	"while"
 	Expr<exp>
@@ -96,7 +98,7 @@ Expr<ref exp as Expression>
 .
 
 
-LogicOr<ref exp as Expression>                
+LogicOr<ref exp as Expression>                (. second as Expression .)
 =	
     LogicAnd<exp>                      
     {
@@ -105,7 +107,7 @@ LogicOr<ref exp as Expression>
     }                                       
 .
 
-LogicAnd<ref exp as Expression>                
+LogicAnd<ref exp as Expression>                (. second as Expression .)                
 =	
     EqualComp<exp>
     {                            
@@ -114,7 +116,7 @@ LogicAnd<ref exp as Expression>
     }
 .
 
-EqualComp<ref exp as Expression>               
+EqualComp<ref exp as Expression>                (. second as Expression .)               
 =	
     GreatOrEqual<exp>
     [
@@ -127,7 +129,7 @@ EqualComp<ref exp as Expression>
     ]
 .
 
-GreatOrEqual<ref exp as Expression>           
+GreatOrEqual<ref exp as Expression>                (. second as Expression .)           
 =
     BitOr<exp>
     [
@@ -144,7 +146,7 @@ GreatOrEqual<ref exp as Expression>
     ]
 .
 
-BitOr<ref exp as Expression>                  
+BitOr<ref exp as Expression>                (. second as Expression .)                  
 =	
     BitXor<exp>
     {
@@ -153,7 +155,7 @@ BitOr<ref exp as Expression>
     }
 .
 
-BitXor<ref exp as Expression>                 
+BitXor<ref exp as Expression>                (. second as Expression .)                 
 =	
     BitAnd<exp>
     {
@@ -162,7 +164,7 @@ BitXor<ref exp as Expression>
     }
 .
 
-BitAnd<ref exp as Expression>                 
+BitAnd<ref exp as Expression>                (. second as Expression .)                 
 =	
     BitShift<exp>
     {
@@ -171,7 +173,7 @@ BitAnd<ref exp as Expression>
     }
 .
 
-BitShift<ref exp as Expression>               
+BitShift<ref exp as Expression>                (. second as Expression .)               
 =	
     PlusMinus<exp>
     {
@@ -184,7 +186,7 @@ BitShift<ref exp as Expression>
     }
 .
 
-PlusMinus<ref exp as Expression>              
+PlusMinus<ref exp as Expression>                (. second as Expression .)              
 =	
     MulDivMod<exp>
     {
@@ -197,7 +199,7 @@ PlusMinus<ref exp as Expression>
     }
 .
 
-MulDivMod<ref exp as Expression>              
+MulDivMod<ref exp as Expression>                (. second as Expression .)              
 =	
     UnaryOperator<exp>
     {

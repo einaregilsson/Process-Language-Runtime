@@ -1,5 +1,3 @@
-import System
-
 /*----------------------------------------------------------------------
 Compiler Generator Coco/R,
 Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
@@ -28,6 +26,8 @@ Coco/R itself) does not fall under the GNU General Public License.
 ----------------------------------------------------------------------*/
 
 -->begin
+import System
+import System.Collections.Generic
 
 -->namespace
 
@@ -60,6 +60,7 @@ public class Parser:
 	public def constructor(scanner as Scanner):
 		self.scanner = scanner
 		errors = Errors()
+		self.InitBitset()
 
 	
 	private def SynErr(n as int):
@@ -93,7 +94,7 @@ public class Parser:
 
 	
 	private def StartOf(s as int) as bool:
-		return bitset[s, la.kind]
+		return bitset[s][la.kind]
 
 	
 	private def ExpectWeak(n as int, follow as int):
@@ -115,7 +116,7 @@ public class Parser:
 			return false
 		else:
 			SynErr(n)
-			while not ((bitset[syFol, kind] or bitset[repFol, kind]) or bitset[0, kind]):
+			while not ((bitset[syFol][kind] or bitset[repFol][kind]) or bitset[0][kind]):
 				Get()
 				kind = la.kind
 			return StartOf(syFol)
@@ -132,9 +133,11 @@ public class Parser:
 		Expect(0)
 
 	
-	private bitset as (bool, 2) = (
+	private bitset as List[of (bool)]
+
+	private def InitBitset():
 -->initialization
-	)
+
 // end Parser
 
 public class Errors:

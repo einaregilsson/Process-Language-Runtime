@@ -37,7 +37,7 @@ public class Buffer:
 	//    b) part of stream in buffer
 	// 2) non seekable stream (network, console)
 	
-	public static final EOF as int = (char.MaxValue + 1)
+	public static final EOF as int = (cast(int, char.MaxValue) + 1)
 
 	private static final MIN_BUFFER_LENGTH = 1024
 
@@ -355,7 +355,7 @@ public class Scanner:
 	
 	private def NextCh():
 		if oldEols > 0:
-			ch = EOL
+			ch = cast(int,EOL)
 			oldEols -= 1
 		else:
 			pos = buffer.Pos
@@ -364,8 +364,8 @@ public class Scanner:
 			// replace isolated '\r' by '\n' in order to make
 			// eol handling uniform across Windows, Unix and Mac
 			if (ch == char('\r')) and (buffer.Peek() != char('\n')):
-				ch = EOL
-			if ch == EOL:
+				ch = cast(int,EOL)
+			if ch == cast(int,EOL):
 				line += 1
 				col = 0
 
@@ -480,8 +480,7 @@ public class Scanner:
 		elif tokString == "od": t.kind = 17
 		elif tokString == "true": t.kind = 37
 		elif tokString == "false": t.kind = 38
-		else: break
-	
+
 
 	
 	private def NextToken() as Token:
