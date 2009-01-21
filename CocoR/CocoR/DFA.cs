@@ -309,7 +309,7 @@ public class DFA {
 	//---------- Output primitives
 	private string Ch(int ch) {
 		if (ch < ' ' || ch >= 127 || ch == '\'' || ch == '\\') return Convert.ToString(ch);
-		else return String.Format("'{0}'", (char)ch);
+		else return String.Format("char('{0}')", (char)ch);
 	}
 	
 	private string ChCond(char ch) {
@@ -320,8 +320,8 @@ public class DFA {
 		for (CharSet.Range r = s.head; r != null; r = r.next) {
 			if (r.from == r.to) { gen.Write("ch == " + Ch(r.from)); }
 			else if (r.from == 0) { gen.Write("ch <= " + Ch(r.to)); }
-			else { gen.Write("ch >= " + Ch(r.from) + " && ch <= " + Ch(r.to)); }
-			if (r.next != null) gen.Write(" || ");
+			else { gen.Write("ch >= " + Ch(r.from) + " and ch <= " + Ch(r.to)); }
+			if (r.next != null) gen.Write(" or ");
 		}
 	}
 	
@@ -836,8 +836,8 @@ public class DFA {
 				} else {
 					gen.WriteLine("\t\telif tokString == {0}: t.kind = {1}", name, sym.n);
 				}
+				first = false;
 			}
-			first = false;
 		}
 		gen.WriteLine("\t\telse: break");
 		gen.Write("\t");
@@ -845,25 +845,30 @@ public class DFA {
 	
 	void WriteState(State state) {
 		Symbol endOf = state.endOf;
-		gen.WriteLine("\t\telif state == {0}:", state.nr);
+		gen.WriteLine("\t\t\telif state == {0}:", state.nr);
 		bool ctxEnd = state.ctx;
 		for (Action action = state.firstAction; action != null; action = action.next) {
-			if (action == state.firstAction) gen.Write("\t\t\tif ");
+			if (action == state.firstAction) gen.Write("\t\t\t\tif ");
 			else gen.Write("\t\t\t\telif ");
 			if (action.typ == Node.chr) gen.Write(ChCond((char)action.sym));
 			else PutRange(tab.CharClassSet(action.sym));
-			gen.Write(":");
+			gen.WriteLine(":");
+			
 			if (action.tc == Node.contextTrans) {
-				gen.Write("apx++; "); ctxEnd = false;
+				gen.WriteLine("\t\t\t\t\tapx++; "); ctxEnd = false;
 			} else if (state.ctx)
-				gen.Write("apx = 0; ");
-			gen.Write("AddCh(); goto case {0};", action.target.state.nr);
-			gen.WriteLine("}");
+				gen.WriteLine("\t\t\t\t\tapx = 0; ");
+			gen.WriteLine("\t\t\t\t\tAddCh()");
+			gen.WriteLine("\t\t\t\t\tstate = {0}", action.target.state.nr);
+			gen.WriteLine("\t\t\t\t\tcontinue");
 		}
-		if (state.firstAction == null)
-			gen.Write("\t\t\t\t");
-		else
-			gen.Write("\t\t\telse:");
+		string indent = "";
+		if (state.firstAction == null){
+			indent = "\t\t\t\t";
+		} else {
+			gen.WriteLine("\t\t\t\telse:");
+			indent = "\t\t\t\t\t";
+		}
 		if (ctxEnd) { // final context state: cut appendix
 			gen.WriteLine();
 			gen.WriteLine("\t\t\t\t\ttlen -= apx;");
@@ -872,14 +877,15 @@ public class DFA {
 			gen.WriteLine("\t\t\t\t\tline = t.line");
 			gen.WriteLine("\t\t\t\t\tcol = t.col;");
 			gen.WriteLine("\t\t\t\t\tfor i in range(0,tlen): NextCh()");
-			gen.Write(  	"\t\t\t\t");
 		}
 		if (endOf == null) {
-			gen.WriteLine("t.kind = noSym");
+			gen.WriteLine(indent + "t.kind = noSym");
 		} else {
-			gen.WriteLine("t.kind = {0}; ", endOf.n);
+			gen.WriteLine(indent + "t.kind = {0} ", endOf.n);
 			if (endOf.tokenKind == Symbol.classLitToken) {
-				gen.WriteLine("t.val = String(tval, 0, tlen); CheckLiteral(); return t");
+				gen.WriteLine(indent + "t.val = String(tval, 0, tlen)");
+				gen.WriteLine(indent + "CheckLiteral()");
+				gen.WriteLine(indent + "return t");
 			}
 		}
 	}
@@ -957,8 +963,9 @@ public class DFA {
 		}
 		CopyFramePart("-->literals"); GenLiterals();
 		CopyFramePart("-->scan1");
-		gen.Write("\t\t\t");
 		if (tab.ignored.Elements() > 0) { PutRange(tab.ignored); } else { gen.Write("false"); }
+		gen.Write(":");
+		
 		CopyFramePart("-->scan2");
 		if (firstComment != null) {
 			gen.Write("\t\tif ");
@@ -971,7 +978,7 @@ public class DFA {
 			}
 			gen.Write(":\n\t\t\treturn NextToken()");
 		}
-		if (hasCtxMoves) { gen.WriteLine(); gen.Write("\t\tint apx = 0;"); } /* pdt */
+		if (hasCtxMoves) { gen.WriteLine(); gen.Write("\t\tapx as int = 0;"); } /* pdt */
 		CopyFramePart("-->scan3");
 		for (State state = firstState.next; state != null; state = state.next)
 			WriteState(state);

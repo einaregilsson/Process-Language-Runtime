@@ -1,5 +1,7 @@
 
+import System
 import System.IO
+import System.Collections.Generic
 
 
 
@@ -405,7 +407,7 @@ public class Scanner:
 		line0 as int = line
 		col0 as int = col
 		NextCh()
-		if ch == '/':
+		if ch == char('/'):
 			NextCh()
 			while true:
 				if ch == 10:
@@ -432,21 +434,21 @@ public class Scanner:
 		line0 as int = line
 		col0 as int = col
 		NextCh()
-		if ch == '*':
+		if ch == char('*'):
 			NextCh()
 			while true:
-				if ch == '*':
+				if ch == char('*'):
 					NextCh()
-					if ch == '/':
+					if ch == char('/'):
 						level--
 						if level == 0:
 							oldEols = line - line0
 							NextCh()
 							return true
 						NextCh()
-				elif ch == '/':
+				elif ch == char('/'):
 					NextCh()
-					if ch == '*':
+					if ch == char('*'):
 						level++
 						NextCh()
 				elif ch == Buffer.EOF:
@@ -483,10 +485,9 @@ public class Scanner:
 
 	
 	private def NextToken() as Token:
-		while ch == char(' ') ||
-			ch >= 9 && ch <= 10 || ch == 13
+		while ch == char(' ') or ch >= 9 and ch <= 10 or ch == 13:
 			NextCh()
-		if ch == '#' and Comment0() or ch == '/' and Comment1() or ch == '/' and Comment2():
+		if ch == char('#') and Comment0() or ch == char('/') and Comment1() or ch == char('/') and Comment2():
 			return NextToken()
 		t = Token()
 		t.pos = pos
@@ -500,81 +501,128 @@ public class Scanner:
 		tlen = 0
 		AddCh()
 		
-		if state == (-1):
-			t.kind = eofSym
-		elif state == 0:
-		// NextCh already done
-			t.kind = noSym
-		// NextCh already done
-		elif state == 1:
-			if ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z':AddCh(); goto case 1;}
-			else:t.kind = 1; 
-t.val = String(tval, 0, tlen); CheckLiteral(); return t
-		elif state == 2:
-			if ch >= '0' && ch <= '9':AddCh(); goto case 2;}
-			else:t.kind = 2; 
-		elif state == 3:
-				t.kind = 3; 
-		elif state == 4:
-			if ch == '=':AddCh(); goto case 5;}
-			else:t.kind = noSym
-		elif state == 5:
-				t.kind = 10; 
-		elif state == 6:
-				t.kind = 18; 
-		elif state == 7:
-				t.kind = 19; 
-		elif state == 8:
-			if ch == '=':AddCh(); goto case 9;}
-			else:t.kind = noSym
-		elif state == 9:
-				t.kind = 20; 
-		elif state == 10:
-			if ch == '=':AddCh(); goto case 11;}
-			else:t.kind = noSym
-		elif state == 11:
-				t.kind = 21; 
-		elif state == 12:
-				t.kind = 24; 
-		elif state == 13:
-				t.kind = 25; 
-		elif state == 14:
-				t.kind = 27; 
-		elif state == 15:
-				t.kind = 29; 
-		elif state == 16:
-				t.kind = 30; 
-		elif state == 17:
-				t.kind = 31; 
-		elif state == 18:
-				t.kind = 32; 
-		elif state == 19:
-				t.kind = 33; 
-		elif state == 20:
-				t.kind = 34; 
-		elif state == 21:
-				t.kind = 35; 
-		elif state == 22:
-				t.kind = 36; 
-		elif state == 23:
-				t.kind = 39; 
-		elif state == 24:
-				t.kind = 40; 
-		elif state == 25:
-			if ch == '|':AddCh(); goto case 6;}
-			else:t.kind = 26; 
-		elif state == 26:
-			if ch == '&':AddCh(); goto case 7;}
-			else:t.kind = 28; 
-		elif state == 27:
-			if ch == '=':AddCh(); goto case 12;}
-				elif ch == '<':AddCh(); goto case 15;}
-			else:t.kind = 22; 
-		elif state == 28:
-			if ch == '=':AddCh(); goto case 13;}
-				elif ch == '>':AddCh(); goto case 16;}
-			else:t.kind = 23; 
+		while true:
+			if state == (-1):
+				t.kind = eofSym
+			elif state == 0:
+			// NextCh already done
+				t.kind = noSym
+			// NextCh already done
+			elif state == 1:
+				if ch >= char('0') and ch <= char('9') or ch >= char('A') and ch <= char('Z') or ch == char('_') or ch >= char('a') and ch <= char('z'):
+					AddCh()
+					state = 1
+					continue
+				else:
+					t.kind = 1 
+					t.val = String(tval, 0, tlen)
+					CheckLiteral()
+					return t
+			elif state == 2:
+				if ch >= char('0') and ch <= char('9'):
+					AddCh()
+					state = 2
+					continue
+				else:
+					t.kind = 2 
+			elif state == 3:
+				t.kind = 3 
+			elif state == 4:
+				if ch == char('='):
+					AddCh()
+					state = 5
+					continue
+				else:
+					t.kind = noSym
+			elif state == 5:
+				t.kind = 10 
+			elif state == 6:
+				t.kind = 18 
+			elif state == 7:
+				t.kind = 19 
+			elif state == 8:
+				if ch == char('='):
+					AddCh()
+					state = 9
+					continue
+				else:
+					t.kind = noSym
+			elif state == 9:
+				t.kind = 20 
+			elif state == 10:
+				if ch == char('='):
+					AddCh()
+					state = 11
+					continue
+				else:
+					t.kind = noSym
+			elif state == 11:
+				t.kind = 21 
+			elif state == 12:
+				t.kind = 24 
+			elif state == 13:
+				t.kind = 25 
+			elif state == 14:
+				t.kind = 27 
+			elif state == 15:
+				t.kind = 29 
+			elif state == 16:
+				t.kind = 30 
+			elif state == 17:
+				t.kind = 31 
+			elif state == 18:
+				t.kind = 32 
+			elif state == 19:
+				t.kind = 33 
+			elif state == 20:
+				t.kind = 34 
+			elif state == 21:
+				t.kind = 35 
+			elif state == 22:
+				t.kind = 36 
+			elif state == 23:
+				t.kind = 39 
+			elif state == 24:
+				t.kind = 40 
+			elif state == 25:
+				if ch == char('|'):
+					AddCh()
+					state = 6
+					continue
+				else:
+					t.kind = 26 
+			elif state == 26:
+				if ch == char('&'):
+					AddCh()
+					state = 7
+					continue
+				else:
+					t.kind = 28 
+			elif state == 27:
+				if ch == char('='):
+					AddCh()
+					state = 12
+					continue
+				elif ch == char('<'):
+					AddCh()
+					state = 15
+					continue
+				else:
+					t.kind = 22 
+			elif state == 28:
+				if ch == char('='):
+					AddCh()
+					state = 13
+					continue
+				elif ch == char('>'):
+					AddCh()
+					state = 16
+					continue
+				else:
+					t.kind = 23 
 
+			break unless false
+			
 		t.val = String(tval, 0, tlen)
 		return t
 
@@ -598,4 +646,14 @@ t.val = String(tval, 0, tlen); CheckLiteral(); return t
 			// skip pragmas
 			while true:
 				pt = pt.next
-				bre
+				break  unless (pt.kind > maxT)
+		return pt
+
+	
+	// make sure that peeking starts at the current scan position
+	public def ResetPeek():
+		pt = tokens
+	
+
+// end Scanner
+

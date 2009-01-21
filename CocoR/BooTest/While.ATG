@@ -62,13 +62,13 @@ Block<ref block as Statement>
 	"end"                       
 .
 
-Assign<ref assign as Statement>               
+Assign<ref assign as Statement>             (. exp as Expression .)
 =	ident                                  
 	":="
 	Expr<exp>                          
 .
 
-If<ref ifStmt as Statement>                   
+If<ref ifStmt as Statement>               	(. ifBranch as StatementSequence; elseBranch as StatementSequence .)
 =
 	"if"
 	Expr<exp>

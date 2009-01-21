@@ -129,6 +129,7 @@ public class Parser:
 		else: SynErr(42)
 
 	def Assign(ref assign as Statement):
+		exp as Expression 
 		Expect(1)
 		Expect(10)
 		Expr(exp)
@@ -143,6 +144,7 @@ public class Parser:
 		Expect(9)
 
 	def If(ref ifStmt as Statement):
+		ifBranch as StatementSequence; elseBranch as StatementSequence 
 		Expect(11)
 		Expr(exp)
 		Expect(12)

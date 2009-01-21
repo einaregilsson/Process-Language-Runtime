@@ -1,7 +1,3 @@
-import System
-import System.IO
-import System.Collections.Generic
-
 /*----------------------------------------------------------------------
 Compiler Generator Coco/R,
 Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
@@ -30,7 +26,9 @@ Coco/R itself) does not fall under the GNU General Public License.
 -----------------------------------------------------------------------*/
 
 -->begin
+import System
 import System.IO
+import System.Collections.Generic
 
 -->namespace
 
@@ -393,8 +391,7 @@ public class Scanner:
 
 	
 	private def NextToken() as Token:
-		while ch == char(' ') ||
--->scan1
+		while ch == char(' ') or -->scan1
 			NextCh()
 -->scan2
 		t = Token()
@@ -409,13 +406,16 @@ public class Scanner:
 		tlen = 0
 		AddCh()
 		
-		if state == (-1):
-			t.kind = eofSym
-		elif state == 0:
-		// NextCh already done
-			t.kind = noSym
-		// NextCh already done
+		while true:
+			if state == (-1):
+				t.kind = eofSym
+			elif state == 0:
+			// NextCh already done
+				t.kind = noSym
+			// NextCh already done
 -->scan3
+			break unless false
+			
 		t.val = String(tval, 0, tlen)
 		return t
 
@@ -449,3 +449,5 @@ public class Scanner:
 	
 
 // end Scanner
+
+$$$
