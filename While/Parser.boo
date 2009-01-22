@@ -109,7 +109,7 @@ public class Parser:
 		StmtSeq(statements)
 
 	def StmtSeq(ref statements as StatementSequence):
-		stmt as Statement
+		stmt as Statement 
 		Stmt(stmt)
 		while la.kind == 3:
 			Get()

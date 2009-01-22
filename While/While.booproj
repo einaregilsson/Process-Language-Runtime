@@ -3,11 +3,12 @@
     <ProjectGuid>{A4764F3E-B57F-44B8-97AA-1CFDD29C2A74}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>While</RootNamespace>
-    <AssemblyName>While</AssemblyName>
+    <AssemblyName>wc</AssemblyName>
     <SourceAnalysisOverrideSettingsFile>C:\Users\einar\AppData\Roaming\ICSharpCode/SharpDevelop3.0\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>WhileCompiler.ProgramModule</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -47,6 +48,6 @@
   </ItemGroup>
   <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
   <PropertyGroup>
-    <PreBuildEvent>..\..\coco -frames ..\.. -o ..\.. ..\..\while.atg</PreBuildEvent>
+    <PreBuildEvent>..\..\..\CocoR\bin\debug\coco -frames ..\.. -o ..\.. ..\..\while.atg</PreBuildEvent>
   </PropertyGroup>
 </Project>

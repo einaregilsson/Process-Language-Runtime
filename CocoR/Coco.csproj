@@ -44,7 +44,4 @@
     <Compile Include="Scanner.cs" />
     <Compile Include="Tab.cs" />
   </ItemGroup>
-  <PropertyGroup>
-    <PostBuildEvent>Coco.exe -frames ..\..\..\BooTest -o ..\..\..\BooTest ..\..\..\BooTest\While.ATG</PostBuildEvent>
-  </PropertyGroup>
 </Project>
