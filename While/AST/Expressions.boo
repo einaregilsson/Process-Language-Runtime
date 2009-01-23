@@ -31,10 +31,13 @@ class Bool(BoolExpression):
 	
 class Number(IntExpression):
 	[Getter(IntValue)]
-	_intValue as int
+	_nr as int
 
 	def constructor(nr as int):
-		_intValue = nr
+		_nr = nr
+		
+	def ToString():
+		return _nr.ToString()
 
 class Variable(IntExpression):
 	[Getter(Name)]
@@ -46,6 +49,9 @@ class Variable(IntExpression):
 	def constructor(name as string):
 		_name = name
 
+	def ToString():
+		return _name.ToString()
+
 class IntBinaryOp[of ChildType](IntExpression):
 
 	[Getter(Left)]	
@@ -56,9 +62,11 @@ class IntBinaryOp[of ChildType](IntExpression):
 	_op as string
 	
 	def constructor(l as ChildType, r as ChildType, op as string):
-		_left = l
-		_right = r
-		_op = op
+		_left,_right,_op = l,r,op
+		
+	def ToString():
+		return "(${_left} ${_op} ${_right} )"
+		
 	
 class BoolBinaryOp[of ChildType](BoolExpression):
 
@@ -73,6 +81,9 @@ class BoolBinaryOp[of ChildType](BoolExpression):
 		_left = l
 		_right = r
 		_op = op
+
+	def ToString():
+		return "(${_left} ${_op} ${_right} )"
 
 class ArithmeticBinaryOp(IntBinaryOp[of IntExpression]):
 
@@ -193,6 +204,9 @@ class MinusUnaryOp(IntExpression):
 	def constructor(exp as IntExpression):
 		_exp = exp	
 		
+	def ToString():
+		return "-${_exp}"
+		
 class NotUnaryOp(BoolExpression):
 	_exp as BoolExpression
 
@@ -201,3 +215,7 @@ class NotUnaryOp(BoolExpression):
 
 	def constructor(exp as BoolExpression):
 		_exp = exp			
+		
+	def ToString():
+		return "!${_exp}"
+		

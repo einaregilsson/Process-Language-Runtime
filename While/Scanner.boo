@@ -1,9 +1,11 @@
 
+
+namespace While
+
+
 import System
 import System.IO
 import System.Collections.Generic
-
-
 
 public class Token:
 
@@ -326,10 +328,10 @@ public class Scanner:
 			col = 0
 			NextCh()
 		start = Dictionary[of int, int](128)
-		for i in range(65, 901): start[i] = 1
-		for i in range(95, 951): start[i] = 1
-		for i in range(97, 1221): start[i] = 1
-		for i in range(48, 571): start[i] = 2
+		for i in range(65, 91): start[i] = 1
+		for i in range(95, 96): start[i] = 1
+		for i in range(97, 123): start[i] = 1
+		for i in range(48, 58): start[i] = 2
 		start[59] = 3; 
 		start[58] = 4; 
 		start[124] = 25; 
@@ -376,8 +378,10 @@ public class Scanner:
 			newBuf as (char) = array(char, (2 * tval.Length))
 			Array.Copy(tval, 0, newBuf, 0, tval.Length)
 			tval = newBuf
+		if ch != Buffer.EOF:
 			tval[tlen++] = cast(char,ch)
-		NextCh()
+
+			NextCh()
 
 	
 	

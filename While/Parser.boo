@@ -1,12 +1,14 @@
 
+
+namespace While
+
+
+
 import System
 import System.Collections.Generic
 import While.AST
 import While.AST.Statements
 import While.AST.Expressions
-
-
-
 
 public class Parser:
 
@@ -177,11 +179,11 @@ public class Parser:
 	def VarDec(ref vars as (VariableDeclaration)):
 		Expect(7)
 		Expect(1)
-		while la.kind == 3:
-			Get()
-			Expect(7)
-			Expect(1)
 		Expect(3)
+		while la.kind == 7:
+			Get()
+			Expect(1)
+			Expect(3)
 
 	def LogicOr(ref exp as Expression):
 		second as Expression 
@@ -308,7 +310,7 @@ public class Parser:
 		Expect(0)
 
 	
-	private bitset as List[of (bool)]
+	private bitset = List[of (bool)]()
 
 	private def InitBitset():
 		bitset.Add((true ,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
@@ -375,7 +377,7 @@ public class Errors:
 		elif n == 42: s = 'invalid Stmt'
 		elif n == 43: s = 'invalid Terminal'
 
-		s = ('error ' + n)
+		else: s = ('error ' + n)
 		errorStream.WriteLine(errMsgFormat, line, col, s)
 		count += 1
 

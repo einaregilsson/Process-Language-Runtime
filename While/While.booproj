@@ -23,7 +23,11 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Boo.Lang.Useful" />
+    <Reference Include="C:\programs\Boo\bin\Boo.Lang.Useful.dll" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\..\..\..\programs\SharpDevelop\2.2\bin\Tools\NUnit\nunit.framework.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
@@ -38,6 +42,7 @@
     <Compile Include="Parser.boo" />
     <Compile Include="Program.boo" />
     <Compile Include="Scanner.boo" />
+    <Compile Include="Test\ParseTest.boo" />
     <Compile Include="WhileException.boo" />
     <None Include="Parser.frame" />
     <None Include="Scanner.frame" />
@@ -45,9 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AST" />
+    <Folder Include="Test" />
   </ItemGroup>
-  <Import Project="$(BooBinPath)\Boo.Microsoft.Build.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>..\..\..\CocoR\bin\debug\coco -frames ..\.. -o ..\.. ..\..\while.atg</PreBuildEvent>
-  </PropertyGroup>
+  <Import Project="C:\programs\Boo\bin\Boo.Microsoft.Build.targets" />
 </Project>

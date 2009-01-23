@@ -26,14 +26,14 @@ Coco/R itself) does not fall under the GNU General Public License.
 ----------------------------------------------------------------------*/
 
 -->begin
+
+-->namespace
+
 import System
 import System.Collections.Generic
 import While.AST
 import While.AST.Statements
 import While.AST.Expressions
-
-
--->namespace
 
 public class Parser:
 
@@ -137,7 +137,7 @@ public class Parser:
 		Expect(0)
 
 	
-	private bitset as List[of (bool)]
+	private bitset = List[of (bool)]()
 
 	private def InitBitset():
 -->initialization
@@ -158,7 +158,7 @@ public class Errors:
 	public def SynErr(line as int, col as int, n as int):
 		s as string
 -->errors
-		s = ('error ' + n)
+		else: s = ('error ' + n)
 		errorStream.WriteLine(errMsgFormat, line, col, s)
 		count += 1
 

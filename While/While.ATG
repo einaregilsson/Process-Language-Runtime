@@ -25,7 +25,7 @@ Program<>
 .
 
 StmtSeq<ref statements as StatementSequence>  
-=													(. stmt as Statement .)
+=													(. 	stmt as Statement .)
 													
     Stmt<stmt>                         				
     {
@@ -47,11 +47,11 @@ Stmt<ref stmt as Statement>
 
 VarDec<ref vars as (VariableDeclaration)>
 =
-	"var" ident                            
+	"var" ident ';'                            
 	{
-	    ';' "var" ident                    
+	    "var" ident                    
+	    ';'
 	}
-	';'                                    
 .
 
 Block<ref block as Statement>                 

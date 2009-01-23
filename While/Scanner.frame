@@ -26,11 +26,12 @@ Coco/R itself) does not fall under the GNU General Public License.
 -----------------------------------------------------------------------*/
 
 -->begin
+
+-->namespace
+
 import System
 import System.IO
 import System.Collections.Generic
-
--->namespace
 
 public class Token:
 
@@ -380,7 +381,7 @@ public class Scanner:
 			Array.Copy(tval, 0, newBuf, 0, tval.Length)
 			tval = newBuf
 -->casing2
-		NextCh()
+			NextCh()
 
 	
 	

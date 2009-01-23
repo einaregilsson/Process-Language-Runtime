@@ -5,15 +5,26 @@ import While.AST
 import While.AST.Expressions
 
 abstract class Statement(Node):
-	pass
+	
+	protected def Indent(str):
+		return "\t" + str.ToString().Replace("\n", "\t\n")
 
 class StatementSequence(Node):
-	def constructor(statements as IEnumerable[of Statement]):
-		pass
-
+	_statements as Statement*
+	def constructor(statements as Statement*):
+		_statements = statements
+	
+	def ToString():
+		return join(_statements, ";\n")
+	
 class VariableDeclarationSequence(Node):
-	def constructor(vars as IEnumerable[of VariableDeclaration]):
-		pass
+	_vars as VariableDeclaration*
+
+	def constructor(vars as VariableDeclaration*):
+		_vars = vars
+
+	def ToString():
+		return join(_vars, ";\n")
 
 
 class Assign(Statement):
@@ -25,9 +36,13 @@ class Assign(Statement):
 	def constructor(var as Variable, exp as IntExpression):
 		_var = var
 		_exp = exp
+	
+	def ToString():
+		return "${_var} := ${_exp}"
 		
 class Skip(Statement):
-	pass
+	def ToString():
+		return "skip"
 	
 class VariableDeclaration(Statement):
 	[Getter(Variable)]
@@ -35,6 +50,9 @@ class VariableDeclaration(Statement):
 
 	def constructor(var as Variable):
 		_var = var
+
+	def ToString():
+		return "var ${_var}"
 		
 class Write(Statement):
 	[Getter(Expression)]
@@ -42,6 +60,9 @@ class Write(Statement):
 	
 	def constructor(exp):
 		_exp = exp
+
+	def ToString():
+		return "write ${_exp}"
 			
 class Read(Statement):
 	[Getter(Variable)]
@@ -49,6 +70,9 @@ class Read(Statement):
 
 	def constructor(var as Variable):
 		_var = var
+	
+	def ToString():
+		return "read ${_var}"
 
 class Block(Statement):
 
@@ -60,6 +84,9 @@ class Block(Statement):
 	def constructor(vars as VariableDeclarationSequence, stmts as StatementSequence):
 		_vars = vars
 		_stmts = stmts
+	
+	def ToString():
+		return "begin\n${Indent(_vars)}\n${Indent(_stmts)}\nend"
 
 class If(Statement):
 
@@ -74,6 +101,14 @@ class If(Statement):
 		_exp = exp
 		_ifBranch = ifBranch
 		_elseBranch = elseBranch
+		
+	def ToString():
+		if _elseBranch:
+			return "if ${_exp} then\n${Indent(_ifBranch)}\nelse\n${Indent(_elseBranch)}\nfi"
+		else:
+			return "if ${_exp} then\n${Indent(_ifBranch)}\nfi"
+			
+		
 
 class While(Statement):
 
@@ -85,3 +120,7 @@ class While(Statement):
 	def constructor(exp as BoolExpression, statements as StatementSequence):
 		_exp = exp
 		_statements = statements
+
+	def ToString():
+		return "while ${_exp} do\n${Indent(_statements)}\nod"
+		
