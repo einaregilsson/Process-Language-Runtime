@@ -2,6 +2,7 @@
 
 import While.AST
 import While.AST.Expressions
+import System.Reflection.Emit
 
 abstract class Statement(Node):
 	
@@ -24,6 +25,10 @@ class StatementSequence(Node):
 		for s in _statements:
 			s.Execute()
 	
+	def Compile(il as ILGenerator):
+		for s in _statements:
+			s.Compile(il)
+
 class VariableDeclarationSequence(Node):
 	_vars as VariableDeclaration*
 
@@ -37,6 +42,10 @@ class VariableDeclarationSequence(Node):
 		for vd in _vars:
 			vd.Execute()
 
+	def Compile(il as ILGenerator):
+		for v in _vars:
+			v.Compile(il)
+		
 class Assign(Statement):
 	[Getter(Variable)]
 	_var as Variable
@@ -52,12 +61,19 @@ class Assign(Statement):
 	
 	def Execute():
 		VariableStack.AssignValue(_var.Name, _exp.IntValue)
+
+	def Compile(il as ILGenerator):
+		_exp.Compile(il)
+		il.Emit(OpCodes.Stloc, 0)
 		
 class Skip(Statement):
 	def ToString():
 		return "skip"
 
 	def Execute():
+		pass
+
+	def Compile(il as ILGenerator):
 		pass
 		
 class VariableDeclaration(Statement):
@@ -72,6 +88,9 @@ class VariableDeclaration(Statement):
 
 	def Execute():
 		VariableStack.DefineVariable(_var.Name)
+
+	def Compile(il as ILGenerator):
+		pass
 		
 class Write(Statement):
 	[Getter(Expression)]
@@ -88,6 +107,9 @@ class Write(Statement):
 
 	def Execute():
 		_writer.WriteLine(_exp.Value)
+
+	def Compile(il as ILGenerator):
+		pass
 			
 class Read(Statement):
 	[Getter(Variable)]
@@ -102,6 +124,9 @@ class Read(Statement):
 	def Execute():
 		System.Console.Write(_var.Name + ": ")
 		VariableStack.AssignValue(_var.Name, int.Parse(System.Console.ReadLine()))
+
+	def Compile(il as ILGenerator):
+		pass
 
 class Block(Statement):
 
@@ -122,6 +147,12 @@ class Block(Statement):
 		_vars.Execute()
 		_stmts.Execute()
 		VariableStack.PopScope()
+
+	def Compile(il as ILGenerator):
+		il.BeginScope()
+		_vars.Compile(il)
+		_stmts.Compile(il)
+		il.EndScope()
 
 class If(Statement):
 
@@ -149,6 +180,9 @@ class If(Statement):
 		elif _elseBranch:
 			_elseBranch.Execute()
 
+	def Compile(il as ILGenerator):
+		pass
+
 class While(Statement):
 
 	[Getter(Expression)]
@@ -166,3 +200,6 @@ class While(Statement):
 	def Execute():
 		while _exp.BoolValue:
 			_statements.Execute()
+
+	def Compile(il as ILGenerator):
+		pass

@@ -4,6 +4,8 @@ import System
 import While
 import While.AST
 
+import System.Reflection.Emit
+
 abstract class Expression(Node):
 	abstract Value as object:
 		get: pass
@@ -32,6 +34,12 @@ class Bool(BoolExpression):
 	def ToString():
 		return _boolValue.ToString().ToLower()
 	
+	def Compile(il as ILGenerator):
+		if _boolValue:
+			il.Emit(OpCodes.Ldc_I4_1)
+		else:
+			il.Emit(OpCodes.Ldc_I4_0)
+	
 class Number(IntExpression):
 	[Getter(IntValue)]
 	_nr as int
@@ -41,6 +49,9 @@ class Number(IntExpression):
 		
 	def ToString():
 		return _nr.ToString()
+
+	def Compile(il as ILGenerator):
+		il.Emit(OpCodes.Ldc_I4, _nr)
 
 class Variable(IntExpression):
 	[Getter(Name)]
@@ -55,8 +66,12 @@ class Variable(IntExpression):
 
 	def ToString():
 		return _name.ToString()
+		
+	def Compile(il as ILGenerator):
+		il.Emit(OpCodes.Ldloc, 0)
+		
 
-class IntBinaryOp[of ChildType](IntExpression):
+abstract class IntBinaryOp[of ChildType](IntExpression):
 
 	[Getter(Left)]	
 	_left as ChildType
@@ -70,9 +85,8 @@ class IntBinaryOp[of ChildType](IntExpression):
 		
 	def ToString():
 		return "(${_left} ${_op} ${_right})"
-		
-	
-class BoolBinaryOp[of ChildType](BoolExpression):
+
+abstract class BoolBinaryOp[of ChildType](BoolExpression):
 
 	[Getter(Left)]	
 	_left as ChildType
@@ -103,17 +117,22 @@ class ArithmeticBinaryOp(IntBinaryOp[of IntExpression]):
 	IntValue:
 		get:
 			l,r = Left.IntValue, Right.IntValue
-			if _op == Plus:
-				return l + r
-			elif _op == Minus:
-				return l - r
-			elif _op == Multiplication:
-				return l * r
-			elif _op == Division:
-				return l / r
-			elif _op == Modulo:
-				return l % r
+			if _op == Plus: return l + r
+			elif _op == Minus: return l - r
+			elif _op == Multiplication: return l * r
+			elif _op == Division: return l / r
+			elif _op == Modulo: return l % r
 			raise WhileException("Unknown operator '${Op}'")
+
+	def Compile(il as ILGenerator):
+		_left.Compile(il)
+		_right.Compile(il)
+		if _op == Plus: il.Emit(OpCodes.Add_Ovf)
+		elif _op == Minus: il.Emit(OpCodes.Sub_Ovf)
+		elif _op == Multiplication: il.Emit(OpCodes.Mul_Ovf)
+		elif _op == Division: il.Emit(OpCodes.Div)
+		elif _op == Modulo: il.Emit(OpCodes.Rem)
+		
 
 class ComparisonBinaryOp(BoolBinaryOp[of IntExpression]):
 	public static final GreaterThan = '>'
@@ -136,6 +155,20 @@ class ComparisonBinaryOp(BoolBinaryOp[of IntExpression]):
 			elif _op == LessThanOrEqual:
 				return l <= r
 			raise WhileException("Unknown operator '${Op}'")
+
+	def Compile(il as ILGenerator):
+		_left.Compile(il)
+		_right.Compile(il)
+		if Op == GreaterThan: il.Emit(OpCodes.Cgt)
+		elif Op == LessThan: il.Emit(OpCodes.Clt)
+		elif Op == GreaterThanOrEqual:
+			il.Emit(OpCodes.Clt)
+			il.Emit(OpCodes.Ldc_I4_0)
+			il.Emit(OpCodes.Ceq)
+		elif Op == LessThanOrEqual:
+			il.Emit(OpCodes.Cgt)
+			il.Emit(OpCodes.Ldc_I4_0)
+			il.Emit(OpCodes.Ceq)
 	
 class EqualityBinaryOp(BoolBinaryOp[of Expression]):
 	public static final Equal = '=='
@@ -153,6 +186,14 @@ class EqualityBinaryOp(BoolBinaryOp[of Expression]):
 				return l != r
 			raise WhileException("Unknown operator '${Op}'")
 
+	def Compile(il as ILGenerator):
+		_left.Compile(il)
+		_right.Compile(il)
+		if Op == Equal: il.Emit(OpCodes.Ceq)
+		elif Op == NotEqual:
+			il.Emit(OpCodes.Ceq)
+			il.Emit(OpCodes.Ldc_I4_0)
+			il.Emit(OpCodes.Ceq)
 
 class BitBinaryOp(IntBinaryOp[of IntExpression]):
 	public static final ShiftLeft = '<<'
@@ -179,6 +220,15 @@ class BitBinaryOp(IntBinaryOp[of IntExpression]):
 				return l ^ r
 			raise WhileException("Unknown operator '${Op}'")
 
+	def Compile(il as ILGenerator):
+		_left.Compile(il)
+		_right.Compile(il)
+		if _op == ShiftLeft: il.Emit(OpCodes.Shl)
+		elif _op == ShiftRight: il.Emit(OpCodes.Shr)
+		elif _op == Or: il.Emit(OpCodes.Or)
+		elif _op == And: il.Emit(OpCodes.And)
+		elif _op == Xor: il.Emit(OpCodes.Xor)
+
 class LogicBinaryOp(BoolBinaryOp[of BoolExpression]):
 	public static final And = '&&'
 	public static final Or = '||'
@@ -190,14 +240,17 @@ class LogicBinaryOp(BoolBinaryOp[of BoolExpression]):
 	BoolValue:
 		get:
 			l, r = Left.BoolValue, Right.BoolValue
-			if _op == And:
-				return l and r
-			elif _op == Or:
-				return l or r
-			elif _op == Xor:
-				return l ^ r
+			if _op == And: return l and r
+			elif _op == Or: return l or r
+			elif _op == Xor: return l ^ r
 			raise WhileException("Unknown operator '${Op}'")
 
+	def Compile(il as ILGenerator):
+		_left.Compile(il)
+		_right.Compile(il)
+		if _op == Or: il.Emit(OpCodes.Or)
+		elif _op == And: il.Emit(OpCodes.And)
+		elif _op == Xor: il.Emit(OpCodes.Xor)
 
 class MinusUnaryOp(IntExpression):
 	_exp as IntExpression
@@ -210,6 +263,9 @@ class MinusUnaryOp(IntExpression):
 		
 	def ToString():
 		return "-${_exp}"
+
+	def Compile(il as ILGenerator):
+		pass
 		
 class NotUnaryOp(BoolExpression):
 	_exp as BoolExpression
@@ -222,4 +278,7 @@ class NotUnaryOp(BoolExpression):
 		
 	def ToString():
 		return "!${_exp}"
+
+	def Compile(il as ILGenerator):
+		pass
 		

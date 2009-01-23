@@ -1,9 +1,8 @@
 namespace While.AST
 
 import System
-import System.Collections.Generic
+import System.Reflection.Emit
 
 public abstract class Node:
-	public virtual def GetChildren() as List[of Node]:
-		return List[of Node]()
-
+	abstract def Compile(il as ILGenerator):
+		pass

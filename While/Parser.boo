@@ -84,32 +84,6 @@ public class Parser:
 		return bitset[s][la.kind]
 
 	
-	private def ExpectWeak(n as int, follow as int):
-		if la.kind == n:
-			Get()
-		else:
-			SynErr(n)
-			while not StartOf(follow):
-				Get()
-
-	
-	
-	private def WeakSeparator(n as int, syFol as int, repFol as int) as bool:
-		kind as int = la.kind
-		if kind == n:
-			Get()
-			return true
-		elif StartOf(repFol):
-			return false
-		else:
-			SynErr(n)
-			while not ((bitset[syFol][kind] or bitset[repFol][kind]) or bitset[0][kind]):
-				Get()
-				kind = la.kind
-			return StartOf(syFol)
-
-	
-	
 	def Program():
 		statements as StatementSequence
 		StmtSeq(statements)
