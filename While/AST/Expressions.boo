@@ -47,7 +47,8 @@ class Variable(IntExpression):
 	_name as string
 
 	IntValue as int:
-		get:return 0 #TODO: implement stack
+		get:
+			return VariableStack.GetValue(_name)
 		
 	def constructor(name as string):
 		_name = name
