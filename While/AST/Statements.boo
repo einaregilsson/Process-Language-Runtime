@@ -7,7 +7,7 @@ import While.AST.Expressions
 abstract class Statement(Node):
 	
 	protected def Indent(str):
-		return "\t" + str.ToString().Replace("\n", "\t\n")
+		return "\t" + str.ToString().Replace("\n", "\n\t")
 
 class StatementSequence(Node):
 	_statements as Statement*
@@ -24,7 +24,7 @@ class VariableDeclarationSequence(Node):
 		_vars = vars
 
 	def ToString():
-		return join(_vars, ";\n")
+		return join(_vars, ";\n") + ";\n"
 
 
 class Assign(Statement):

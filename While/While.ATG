@@ -1,4 +1,8 @@
 COMPILER Program
+	
+	#Node
+	[Getter(AbstractSyntaxTree)]
+	_ast as WhileTree
 
 CHARACTERS
   letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
@@ -21,56 +25,58 @@ PRODUCTIONS
 
 Program<>
 =                                          			(.	statements as StatementSequence.)
-    StmtSeq<statements>
+    StmtSeq<statements>								(.	_ast = WhileTree(statements) .)
 .
 
 StmtSeq<ref statements as StatementSequence>  
-=													(. 	stmt as Statement .)
-													
-    Stmt<stmt>                         				
+=													(. stmt as Statement 
+													   slist = List[of Statement]().)
+    Stmt<stmt>                         				(. slist.Add(stmt) .)
     {
-        ';' Stmt<stmt>                 
-    }                                      
+        ';' Stmt<stmt>                 				(. slist.Add(stmt) .)
+    }                                      			(. statements = StatementSequence(slist) .)
 .
 
 Stmt<ref stmt as Statement>                   
 =													(. exp as Expression .)
-	( Assign<stmt>
-	| "skip"                               
-	| Block<stmt>                       
-	| If<stmt>
-	| While<stmt>
-	| "read" ident                         
-	| "write" Expr<exp>                
+	( AssignStmt<stmt>
+	| "skip"                               			(. stmt = Skip() .)
+	| BlockStmt<stmt>                       
+	| IfStmt<stmt>
+	| WhileStmt<stmt>
+	| "read" ident                         			(. stmt = Read(Variable(t.val)) .)
+	| "write" Expr<exp>                				(. stmt = Write(exp) .)
 	)
 .
 
-VarDec<ref vars as (VariableDeclaration)>
-=
-	"var" ident ';'                            
+VarDecStmt<ref vars as VariableDeclarationSequence>
+=													(. list = List[of VariableDeclaration]() .)
+	"var" ident                             		(. list.Add(VariableDeclaration(Variable(t.val))) .)
+	';'
 	{
-	    "var" ident                    
+	    "var" ident                    				(. list.Add(VariableDeclaration(Variable(t.val))) .)
 	    ';'
-	}
+	}												(. vars = VariableDeclarationSequence(list) .)
 .
 
-Block<ref block as Statement>                 
+BlockStmt<ref block as Statement>                 
 =
-	"begin"                                 (. vars as (VariableDeclaration).)
-	[ VarDec<vars> ]						(. statements as StatementSequence .)
+	"begin"                                 		(. vars as VariableDeclarationSequence.)
+	[ VarDecStmt<vars> ]							(. statements as StatementSequence .)
 	StmtSeq<statements>                
-	"end"                       
+	"end"                       					(. block = Block(vars, statements) .)
 .
 
-Assign<ref assign as Statement>             (. exp as Expression .)
-=	ident                                  
+AssignStmt<ref assign as Statement>            		(. exp as Expression 
+													   var as Variable .)
+=	ident                                  			(. var = Variable(t.val) .)
 	":="
-	Expr<exp>                          
+	Expr<exp>                          				(. assign = Assign(var, exp) .)
 .
 
-If<ref ifStmt as Statement>               	(. 	ifBranch as StatementSequence; elseBranch as StatementSequence
-														exp as Expression 
-													foo as int.)
+IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence; 
+														elseBranch as StatementSequence
+														exp as Expression .)
 =
 	"if"
 	Expr<exp>
@@ -80,16 +86,17 @@ If<ref ifStmt as Statement>               	(. 	ifBranch as StatementSequence; el
 	    "else"
 	    StmtSeq<elseBranch>
 	]
-	"fi"                                   
+	"fi"                                  			(. ifStmt = If(exp, ifBranch, elseBranch) .) 
 .
 
-While<ref whileStmt as Statement>             	(.			exp as Expression; whileBranch as StatementSequence .)
+WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
+														whileBranch as StatementSequence .)
 =
 	"while"
 	Expr<exp>
 	"do"
 	StmtSeq<whileBranch>
-	"od"                                   
+	"od"                                   			(. whileStmt = While(exp, whileBranch) .)
 .
 
 Expr<ref exp as Expression>
@@ -98,104 +105,108 @@ Expr<ref exp as Expression>
 .
 
 
-LogicOr<ref exp as Expression>                (. second as Expression .)
+LogicOr<ref exp as Expression>                	(. second as Expression .)
 =	
     LogicAnd<exp>                      
     {
         "||"          
-        LogicAnd<second>                
+        LogicAnd<second>						(.	exp = LogicBinaryOp(exp, second, LogicBinaryOp.Or) .)
     }                                       
 .
 
-LogicAnd<ref exp as Expression>                (. second as Expression .)                
+LogicAnd<ref exp as Expression>                	(. second as Expression .)                
 =	
     EqualComp<exp>
     {                            
         "&&"                    
-        EqualComp<second>               
+        EqualComp<second>               		(.	exp = LogicBinaryOp(exp, second, LogicBinaryOp.And) .)
     }
 .
 
-EqualComp<ref exp as Expression>                (. second as Expression .)               
+EqualComp<ref exp as Expression>                (. 	second as Expression 
+													op as string .)
 =	
     GreatOrEqual<exp>
     [
         (
-        "=="                               
+        "=="                               		(.	op = EqualityBinaryOp.Equal .)
         |
-        "!="                               
+        "!="                               		(.	op = EqualityBinaryOp.NotEqual .)
         )                         
-        GreatOrEqual<second>           
+        GreatOrEqual<second>           			(.	exp = EqualityBinaryOp(exp, second, op) .)
     ]
 .
 
-GreatOrEqual<ref exp as Expression>                (. second as Expression .)           
+GreatOrEqual<ref exp as Expression>           	(.	second as Expression 
+													op as string .)
 =
     BitOr<exp>
     [
         (
-        "<"                                
+        "<"                            			(.	op = ComparisonBinaryOp.LessThan .)
         |
-        ">"                                
+        ">"                                		(.	op = ComparisonBinaryOp.GreaterThan .)
         |
-        "<="                               
+        "<="                               		(.	op = ComparisonBinaryOp.LessThanOrEqual .)
         |
-        ">="                               
+        ">="                               		(.	op = ComparisonBinaryOp.GreaterThanOrEqual .)
         )
-        BitOr<second>                  
+        BitOr<second>                  			(. exp = ComparisonBinaryOp(exp, second, op) .)
     ]
 .
 
-BitOr<ref exp as Expression>                (. second as Expression .)                  
+BitOr<ref exp as Expression>                	(.	second as Expression .)                  
 =	
     BitXor<exp>
     {
         "|"       
-        BitXor<second>                 
+        BitXor<second>                 			(.	exp = BitBinaryOp(exp, second, BitBinaryOp.Or) .)
     }
 .
 
-BitXor<ref exp as Expression>                (. second as Expression .)                 
+BitXor<ref exp as Expression>                	(.	second as Expression .)                 
 =	
     BitAnd<exp>
     {
         "^"     
-        BitAnd<second>                 
+        BitAnd<second>                 			(.	exp = BitBinaryOp(exp, second, BitBinaryOp.Xor) .)
     }
 .
 
-BitAnd<ref exp as Expression>                (. second as Expression .)                 
+BitAnd<ref exp as Expression>                	(.	second as Expression .)                 
 =	
     BitShift<exp>
     {
         "&"                             
-        BitShift<exp>                  
+        BitShift<second>                  		(.	exp = BitBinaryOp(exp, second, BitBinaryOp.And) .)
     }
 .
 
-BitShift<ref exp as Expression>                (. second as Expression .)               
+BitShift<ref exp as Expression>                	(.	second as Expression
+													op as string .)               
 =	
     PlusMinus<exp>
     {
         (
-        "<<"                               
+        "<<"                               		(.	op = BitBinaryOp.ShiftLeft .)
         |
-        ">>"                               
+        ">>"                               		(.	op = BitBinaryOp.ShiftRight .)
         )             
-        PlusMinus<second>              
+        PlusMinus<second>              			(.	exp = BitBinaryOp(exp, second, op).)
     }
 .
 
-PlusMinus<ref exp as Expression>                (. second as Expression .)              
+PlusMinus<ref exp as Expression>                (. 	second as Expression 
+													op as string.)              
 =	
     MulDivMod<exp>
     {
         (
-        "+"                                
+        "+"                                		(. 	op = ArithmeticBinaryOp.Plus .)
         |
-        "-"                                
+        "-"                                		(. 	op = ArithmeticBinaryOp.Minus .)
         )             
-        MulDivMod<second>              
+        MulDivMod<second>              			(.	exp = ArithmeticBinaryOp(exp, second, op) .)
     }
 .
 
@@ -204,33 +215,34 @@ MulDivMod<ref exp as Expression>                (. second as Expression .)
     UnaryOperator<exp>
     {
         (
-        "*"                                
+        "*"                                		(. 	op = ArithmeticBinaryOp.Multiplication .)
         |
-        "/"                                
+        "/"                                		(. 	op = ArithmeticBinaryOp.Division .)
         |
-        "%"                                
+        "%"                                		(. 	op = ArithmeticBinaryOp.Modulo .)
         )             
-        UnaryOperator<second>          
+        UnaryOperator<second>          			(.	exp = ArithmeticBinaryOp(exp, second, op) .)
     }
 .
 
 
-UnaryOperator<ref exp as Expression>          
+UnaryOperator<ref exp as Expression>          	(.	op as string = null .)
 =                               
-	[                                      	
-	'-'                                    
+	[
+	'-'                                    		(. 	op = t.val .)
 	|
-	'~'                                    
+	'~'                                    		(. 	op = t.val .)
 	]
-	Terminal<exp>                      
+	Terminal<exp>                      			(. 	if op == '-': exp = MinusUnaryOp(exp) 
+													elif op == '~': exp = NotUnaryOp(exp) .)
 .
 
 Terminal<ref exp as Expression>               
 =
-	( ident                                
-	| number                               
-	| "true"                               
-	| "false"                              
+	( ident                                		(. exp = Variable(t.val) .)
+	| number                               		(. exp = Number(int.Parse(t.val)) .)
+	| "true"                               		(. exp = Bool(true) .)
+	| "false"                              		(. exp = Bool(false) .)
 	| '(' Expr<exp> ')'
 	)
 .

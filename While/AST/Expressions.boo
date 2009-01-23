@@ -28,6 +28,9 @@ class Bool(BoolExpression):
 	
 	def constructor(val as bool):
 		_boolValue = val
+		
+	def ToString():
+		return _boolValue.ToString().ToLower()
 	
 class Number(IntExpression):
 	[Getter(IntValue)]
@@ -65,7 +68,7 @@ class IntBinaryOp[of ChildType](IntExpression):
 		_left,_right,_op = l,r,op
 		
 	def ToString():
-		return "(${_left} ${_op} ${_right} )"
+		return "(${_left} ${_op} ${_right})"
 		
 	
 class BoolBinaryOp[of ChildType](BoolExpression):
@@ -83,7 +86,7 @@ class BoolBinaryOp[of ChildType](BoolExpression):
 		_op = op
 
 	def ToString():
-		return "(${_left} ${_op} ${_right} )"
+		return "(${_left} ${_op} ${_right})"
 
 class ArithmeticBinaryOp(IntBinaryOp[of IntExpression]):
 
