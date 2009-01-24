@@ -48,6 +48,8 @@
     <Compile Include="Test\InterpretTest.boo" />
     <Compile Include="Test\ParseTest.boo" />
     <Compile Include="WhileException.boo" />
+    <None Include="CSharpTest.cs" />
+    <None Include="CSharpTest.msil" />
     <None Include="Parser.frame" />
     <None Include="Scanner.frame" />
     <None Include="While.ATG" />
@@ -57,4 +59,7 @@
     <Folder Include="Test" />
   </ItemGroup>
   <Import Project="C:\programs\Boo\bin\Boo.Microsoft.Build.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>..\..\GenMSIL.bat</PostBuildEvent>
+  </PropertyGroup>
 </Project>
