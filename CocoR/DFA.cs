@@ -896,7 +896,7 @@ public class DFA {
 			} else {
 				CharSet s = tab.CharClassSet(action.sym);
 				for (CharSet.Range r = s.head; r != null; r = r.next) {
-					gen.WriteLine("\t\tfor i in range(" + r.from + ", " + r.to+1 + "): start[i] = " + targetState);
+					gen.WriteLine("\t\tfor i in range(" + r.from + ", " + (r.to+1) + "): start[i] = " + targetState);
 				}
       }
 		}
@@ -934,8 +934,7 @@ public class DFA {
 		CopyFramePart("-->namespace");
 		if (tab.nsName != null && tab.nsName.Length > 0) {
 			gen.Write("namespace ");
-			gen.Write(tab.nsName);
-			gen.Write(" {");
+			gen.WriteLine(tab.nsName);
 		}
 		CopyFramePart("-->declarations");
 		gen.WriteLine("\tstatic final maxT as int = {0}", tab.terminals.Count - 1);
@@ -945,14 +944,13 @@ public class DFA {
 		CopyFramePart("-->initialization");
 		WriteStartTab();
 		CopyFramePart("-->casing1");
-		if (ignoreCase) {
-			gen.WriteLine("\t\tif ch != Buffer.EOF:");
-			gen.WriteLine("\t\t\tvalCh = cast(char, ch)");
-			gen.WriteLine("\t\t\tch = char.ToLower(cast(char,ch))");
-		}
 		CopyFramePart("-->casing2");
-		gen.Write("\t\t\ttval[tlen++] = ");
-		if (ignoreCase) gen.Write("valCh;"); else gen.Write("cast(char,ch)");
+		gen.WriteLine("\t\tif ch != Buffer.EOF:");
+		if (ignoreCase) {
+			gen.WriteLine("\t\t\ttval[tlen++] = char.ToLower(cast(char,ch))");
+		} else {
+			gen.WriteLine("\t\t\ttval[tlen++] = cast(char,ch)");
+		}
 		CopyFramePart("-->comments");
 		Comment com = firstComment; i = 0;
 		while (com != null) {
@@ -981,7 +979,6 @@ public class DFA {
 		for (State state = firstState.next; state != null; state = state.next)
 			WriteState(state);
 		CopyFramePart("$$$");
-		if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
 		gen.Close();
 	}
 	
