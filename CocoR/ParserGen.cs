@@ -5,7 +5,9 @@ Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
 extended by M. Loeberbauer & A. Woess, Univ. of Linz
 with improvements by Pat Terry, Rhodes University
 
-This program is free software; you can redistribute it and/or modify it 
+Changed to output Boo code by Einar Egilsson (http://tech.einaregilsson.com)
+
+This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the 
 Free Software Foundation; either version 2, or (at your option) any 
 later version.
@@ -94,28 +96,44 @@ public class ParserGen {
 
 	void CopySourcePart (Position pos, int indent) {
 		// Copy text described by pos from atg to gen
-		int ch,  nChars, i;
+		int ch,  nChars;
+		StringBuilder builder = new StringBuilder();
 		if (pos != null) {
 			buffer.Pos = pos.beg; ch = buffer.Read(); nChars = pos.len - 1;
-			Indent(indent);
 			
 			while (nChars >= 0) {
-				while (ch == CR || ch == LF) {  // eol is either CR or CRLF or LF
-					gen.WriteLine(); Indent(indent);
-					if (ch == CR) { ch = buffer.Read(); nChars--; }  // skip CR
-					if (ch == LF) { ch = buffer.Read(); nChars--; }  // skip LF
-					for (i = 1; i <= pos.col && (ch == ' ' || ch == '\t'); i++) {
-						// skip blanks at beginning of line
-						ch = buffer.Read(); nChars--;
-					}
-					if (i <= pos.col) pos.col = i - 1; // heading TABs => not enough blanks
-					if (nChars < 0) goto done;
-				}
-				gen.Write((char)ch);
-				ch = buffer.Read(); nChars--;
+				builder.Append((char)ch);
+				ch = buffer.Read(); 
+				nChars--;
 			}
-			done:
-			if (indent > 0) gen.WriteLine();
+
+			string[] lines = builder.ToString().Split('\n');
+			if (lines.Length == 1) {
+				Indent(indent);
+				gen.WriteLine(lines[0]);
+			} else {
+				lines[0] = lines[0].Trim();
+				int tabCount = 0;
+				
+				while (tabCount < lines[1].Length && lines[1][tabCount] == '\t') {
+					tabCount++;	
+				}
+				if (lines[0].EndsWith(":")) {
+					tabCount--;
+				}				
+				
+				Indent(indent);
+				gen.WriteLine(lines[0]);
+				for (int j = 1; j < lines.Length; j++) {
+					Indent(indent);
+					lines[j] = lines[j].Replace("\r", "");
+					if (lines[j].Trim() == String.Empty) {
+						gen.WriteLine();
+					} else {
+						gen.WriteLine(lines[j].Substring(tabCount));
+					}
+				}
+			}
 		}
 	}
 
@@ -144,8 +162,9 @@ public class ParserGen {
 	}
 	
 	void GenCond (BitArray s, Node p) {
-		if (p.typ == Node.rslv) CopySourcePart(p.pos, 0);
-		else {
+		if (p.typ == Node.rslv)  {
+			CopySourcePart(p.pos, 0);
+		}	else {
 			int n = Sets.Elements(s);
 			if (n == 0) gen.Write("false"); // should never happen
 			else if (n <= maxTerm)
@@ -346,7 +365,10 @@ public class ParserGen {
 		if (!tab.srcName.ToLower().EndsWith("coco.atg")) {
 			gen.Close(); OpenGen(false); /* pdt */
 		}
-		if (usingPos != null) {CopySourcePart(usingPos, 0); gen.WriteLine();}
+		if (usingPos != null) {
+
+			CopySourcePart(usingPos, 0); gen.WriteLine();
+		}
 		CopyFramePart("-->namespace");
 		/* AW open namespace, if it exists */
 		if (tab.nsName != null && tab.nsName.Length > 0) {
@@ -357,7 +379,7 @@ public class ParserGen {
 		GenTokens(); /* ML 2002/09/07 write the token kinds */
 		gen.WriteLine("\tpublic static final maxT as int= {0}", tab.terminals.Count-1);
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
-		CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 0);
+		CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 1);
 		CopyFramePart("-->pragmas"); GenCodePragmas();
 		CopyFramePart("-->productions"); GenProductions();
 		CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}()", tab.gramSy.name);

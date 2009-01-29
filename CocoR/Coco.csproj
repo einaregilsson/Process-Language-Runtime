@@ -31,12 +31,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="build.bat" />
-    <None Include="coc.bat" />
-    <None Include="Coco.atg" />
-    <None Include="Coco.csproj" />
-    <None Include="Parser.frame" />
-    <None Include="Scanner.frame" />
     <Compile Include="Coco.cs" />
     <Compile Include="DFA.cs" />
     <Compile Include="Parser.cs" />
