@@ -5,7 +5,7 @@ Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
 extended by M. Loeberbauer & A. Woess, Univ. of Linz
 with improvements by Pat Terry, Rhodes University
 
-Changed to output Boo code by Einar Egilsson (http://tech.einaregilsson.com)
+Ported for Boo by Einar Egilsson, see http://tech.einaregilsson.com/2009/01/29/cocor-for-boo/
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the 
@@ -774,13 +774,13 @@ public class DFA {
 		gen.WriteLine();
 		gen.WriteLine("\tdef Comment{0}() as bool:", i);
 		gen.WriteLine("\t\tlevel as int = 1");
-		gen.WriteLine("\t\tpos0 as int = pos");
 		gen.WriteLine("\t\tline0 as int = line");
-		gen.WriteLine("\t\tcol0 as int = col");
 		if (com.start.Length == 1) {
 			gen.WriteLine("\t\tNextCh()");
 			GenComBody(com, "\t\t");
 		} else {
+			gen.WriteLine("\t\tpos0 as int = pos");
+			gen.WriteLine("\t\tcol0 as int = col");
 			gen.WriteLine("\t\tNextCh()");
 			gen.WriteLine("\t\tif {0}:", ChCond(com.start[1]));
 			gen.WriteLine("\t\t\tNextCh()");

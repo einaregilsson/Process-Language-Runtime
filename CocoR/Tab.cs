@@ -5,7 +5,7 @@ Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
 extended by M. Loeberbauer & A. Woess, Univ. of Linz
 with improvements by Pat Terry, Rhodes University
 
-Changed to output Boo code by Einar Egilsson (http://tech.einaregilsson.com)
+Ported for Boo by Einar Egilsson, see http://tech.einaregilsson.com/2009/01/29/cocor-for-boo/
 
 This program is free software; you can redistribute it and/or modify it 
 under the terms of the GNU General Public License as published by the 
