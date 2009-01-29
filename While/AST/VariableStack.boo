@@ -6,6 +6,7 @@ import While
 static class VariableStack:
 
 	private _stack = List[of Dictionary[of string, int]]()
+	private _nr = 0
 	
 	def PushScope():
 		_stack.Add(Dictionary[of string, int]())
@@ -13,12 +14,17 @@ static class VariableStack:
 	def PopScope():
 		_stack.RemoveAt(_stack.Count-1)
 
-	def DefineVariable(name as string):
+	def DefineVariable(name as string, assignNumber as bool):
 		if _stack.Count == 0:
 			raise WhileException("Stack is empty, cannot define variable ${name}")
 		if _stack[_stack.Count-1].ContainsKey(name):
 			raise WhileException("Variable ${name} is already defined in this scope!")
-		_stack[_stack.Count-1].Add(name, 0)
+		if assignNumber:	
+			_stack[_stack.Count-1].Add(name, _nr)
+			_nr++
+		else:
+			_stack[_stack.Count-1].Add(name, 0)
+			
 
 	def AssignValue(name as string, val as int):
 		scope = FindScopeForVariable(name)

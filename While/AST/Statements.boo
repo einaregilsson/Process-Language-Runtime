@@ -87,11 +87,10 @@ class VariableDeclaration(Statement):
 		return "var ${_var}"
 
 	def Execute():
-		VariableStack.DefineVariable(_var.Name)
+		VariableStack.DefineVariable(_var.Name, false)
 
 	def Compile(il as ILGenerator):
-		VariableStack.DefineVariable(_var.Name);
-		VariableStack.AssignValue(_var.Name, 
+		VariableStack.DefineVariable(_var.Name, true);
 		lb as LocalBuilder = il.DeclareLocal(typeof(int))
 		
 		
