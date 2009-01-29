@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-# SharpDevelop 2.2.1.2648
+# SharpDevelop 3.0.0.3683
 Project("{A33008B1-5DAC-44D5-9060-242E3B6E38F2}") = "While", "While.booproj", "{A4764F3E-B57F-44B8-97AA-1CFDD29C2A74}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coco", "..\CocoR\Coco.csproj", "{06B1DD1A-7828-440D-8268-8C6152195E53}"
@@ -20,9 +20,5 @@ Global
 		{06B1DD1A-7828-440D-8268-8C6152195E53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{06B1DD1A-7828-440D-8268-8C6152195E53}.Release|Any CPU.Build.0 = Release|Any CPU
 		{06B1DD1A-7828-440D-8268-8C6152195E53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09822C24-933F-4383-9653-E5FF64222238}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09822C24-933F-4383-9653-E5FF64222238}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09822C24-933F-4383-9653-E5FF64222238}.Release|Any CPU.Build.0 = Release|Any CPU
-		{09822C24-933F-4383-9653-E5FF64222238}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

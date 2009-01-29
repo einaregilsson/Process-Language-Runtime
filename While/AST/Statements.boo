@@ -64,7 +64,7 @@ class Assign(Statement):
 
 	def Compile(il as ILGenerator):
 		_exp.Compile(il)
-		il.Emit(OpCodes.Stloc, 0)
+		il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
 		
 class Skip(Statement):
 	def ToString():
@@ -91,7 +91,8 @@ class VariableDeclaration(Statement):
 
 	def Compile(il as ILGenerator):
 		VariableStack.DefineVariable(_var.Name, true);
-		lb as LocalBuilder = il.DeclareLocal(typeof(int))
+		lb = il.DeclareLocal(typeof(int))
+		lb.SetLocalSymInfo(_var.Name)
 		
 		
 class Write(Statement):
@@ -133,9 +134,11 @@ class Read(Statement):
 		VariableStack.AssignValue(_var.Name, int.Parse(System.Console.ReadLine()))
 
 	def Compile(il as ILGenerator):
-		#_exp.Compile(il)
-		mi = typeof(System.Console).GetMethod("ReadLine")
-		il.Emit(OpCodes.Call, mi)
+		il.Emit(OpCodes.Ldstr, "${_var.Name}: ");
+		il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("Write", (typeof(string),)))
+		il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("ReadLine"))
+		il.Emit(OpCodes.Call, typeof(int).GetMethod("Parse", (typeof(string),)))
+		il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
 
 class Block(Statement):
 
@@ -158,11 +161,12 @@ class Block(Statement):
 		VariableStack.PopScope()
 
 	def Compile(il as ILGenerator):
+		VariableStack.PushScope()
 		il.BeginScope()
 		_vars.Compile(il)
 		_stmts.Compile(il)
 		il.EndScope()
-
+		VariableStack.PopScope()
 class If(Statement):
 
 	[Getter(Expression)]

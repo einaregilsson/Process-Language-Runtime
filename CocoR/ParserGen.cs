@@ -30,6 +30,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 using System;
 using System.IO;
 using System.Collections;
+using StringList = System.Collections.Generic.List<string>;
 using System.Text;
 
 namespace at.jku.ssw.Coco {
@@ -50,9 +51,11 @@ public class ParserGen {
 	int errorNr;      // highest parser error number
 	Symbol curSy;     // symbol whose production is currently generated
 	FileStream fram;  // parser frame file
-	StreamWriter gen; // generated parser source file
+	TextWriter gen; // generated parser source file
+	StringBuilder outputBuffer;
 	StringWriter err; // generated parser error messages
 	ArrayList symSet = new ArrayList();
+	bool backUp;
 	
 	Tab tab;          // other Coco objects
 	TextWriter trace;
@@ -94,7 +97,7 @@ public class ParserGen {
 		throw new FatalError("Incomplete or corrupt parser frame file");
 	}
 
-	void CopySourcePart (Position pos, int indent) {
+	void CopySourcePart (Position pos, int indent, bool newLineOnSingleLine) {
 		// Copy text described by pos from atg to gen
 		int ch,  nChars;
 		StringBuilder builder = new StringBuilder();
@@ -107,10 +110,14 @@ public class ParserGen {
 				nChars--;
 			}
 
-			string[] lines = builder.ToString().Split('\n');
+			string[] lines = builder.ToString().Replace("\r","").Split('\n');
 			if (lines.Length == 1) {
 				Indent(indent);
-				gen.WriteLine(lines[0]);
+				if (newLineOnSingleLine) {
+					gen.WriteLine(lines[0]);
+				} else {
+					gen.Write(lines[0]);
+				}
 			} else {
 				lines[0] = lines[0].Trim();
 				int tabCount = 0;
@@ -163,7 +170,7 @@ public class ParserGen {
 	
 	void GenCond (BitArray s, Node p) {
 		if (p.typ == Node.rslv)  {
-			CopySourcePart(p.pos, 0);
+			CopySourcePart(p.pos, 0, false);
 		}	else {
 			int n = Sets.Elements(s);
 			if (n == 0) gen.Write("false"); // should never happen
@@ -188,7 +195,7 @@ public class ParserGen {
 				case Node.nt: {
 					Indent(indent);
 					gen.Write(p.sym.name + "(");
-					CopySourcePart(p.pos, 0);
+					CopySourcePart(p.pos, 0, false);
 					gen.WriteLine(")");
 					break;
 				}
@@ -213,7 +220,7 @@ public class ParserGen {
 				case Node.eps: break; // nothing
 				case Node.rslv: break; // nothing
 				case Node.sem: {
-					CopySourcePart(p.pos, indent);
+					CopySourcePart(p.pos, indent, true);
 					break;
 				}
 				case Node.sync: {
@@ -300,7 +307,7 @@ public class ParserGen {
 	void GenCodePragmas() {
 		foreach (Symbol sym in tab.pragmas) {
 			gen.WriteLine("\t\t\t\tif (la.kind == 0}:", sym.n);
-			CopySourcePart(sym.semPos, 4);
+			CopySourcePart(sym.semPos, 4, true);
 		}
 	}
 
@@ -308,9 +315,9 @@ public class ParserGen {
 		foreach (Symbol sym in tab.nonterminals) {
 			curSy = sym;
 			gen.Write("\tdef {0}(", sym.name);
-			CopySourcePart(sym.attrPos, 0);
+			CopySourcePart(sym.attrPos, 0, false);
 			gen.WriteLine("):");
-			CopySourcePart(sym.semPos, 2);
+			CopySourcePart(sym.semPos, 2, true);
 			GenCode(sym.graph, 2, new BitArray(tab.terminals.Count));
 			gen.WriteLine();
 		}
@@ -331,10 +338,10 @@ public class ParserGen {
 	}
 	
 	void OpenGen(bool backUp) { /* pdt */
+		this.backUp = backUp;
 		try {
-			string fn = Path.Combine(tab.outDir, "Parser.boo"); /* pdt */
-			if (File.Exists(fn) && backUp) File.Copy(fn, fn + ".old", true);
-			gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
+			outputBuffer = new StringBuilder();
+			gen = new StringWriter(outputBuffer); /* pdt */
 		} catch (IOException) {
 			throw new FatalError("Cannot generate parser file");
 		}
@@ -367,7 +374,7 @@ public class ParserGen {
 		}
 		if (usingPos != null) {
 
-			CopySourcePart(usingPos, 0); gen.WriteLine();
+			CopySourcePart(usingPos, 0, true); gen.WriteLine();
 		}
 		CopyFramePart("-->namespace");
 		/* AW open namespace, if it exists */
@@ -379,17 +386,61 @@ public class ParserGen {
 		GenTokens(); /* ML 2002/09/07 write the token kinds */
 		gen.WriteLine("\tpublic static final maxT as int= {0}", tab.terminals.Count-1);
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
-		CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 1);
+		CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 1, true);
 		CopyFramePart("-->pragmas"); GenCodePragmas();
 		CopyFramePart("-->productions"); GenProductions();
 		CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}()", tab.gramSy.name);
 		CopyFramePart("-->initialization"); InitSets();
 		CopyFramePart("-->errors"); gen.Write(err.ToString());
 		CopyFramePart("$$$");
+		PostProcess();
 		gen.Close();
 		buffer.Pos = oldPos;
 	}
+
+	private string[] RemoveUnusedMethod(string methodName, string[] lines) {
+		StringList outlines = new StringList();
+		int count = 0;
+		foreach (string line in lines) {
+			if (line.IndexOf(methodName) != -1) {
+				count++;
+			}
+		}
+		
+		if (count > 1) { //If we find a call we'll return the original lines, it's not unused
+			return lines;
+		}
+		bool output = true;
+		foreach (string line in lines) {
+			if (count == 1 && line.IndexOf(methodName) != -1) {
+			    output = false;	
+			} else if (output) {
+				outlines.Add(line);
+			} else if (!output && line.Trim() == "") {
+				output = true;
+			}
+		}
+		return outlines.ToArray();
+	}
 	
+	public void PostProcess() {
+		gen.Flush();
+		string[] lines = outputBuffer.ToString().Replace("\r","").Split('\n');
+		lines = RemoveUnusedMethod("ExpectWeak", lines);
+		lines = RemoveUnusedMethod("WeakSeparator", lines);
+
+		string fn = Path.Combine(tab.outDir, "Parser.boo"); /* pdt */
+		if (File.Exists(fn) && backUp) {
+			File.Copy(fn, fn + ".old", true);
+		}
+		
+		StreamWriter writer = new StreamWriter(new FileStream(fn, FileMode.Create));
+		foreach (string line in lines) {
+			writer.WriteLine(line);
+		}
+		writer.Close();
+	}
+
 	public void WriteStatistics () {
 		trace.WriteLine();
 		trace.WriteLine("{0} terminals", tab.terminals.Count);

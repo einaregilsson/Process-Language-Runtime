@@ -388,9 +388,7 @@ public class Scanner:
 
 	def Comment0() as bool:
 		level as int = 1
-		pos0 as int = pos
 		line0 as int = line
-		col0 as int = col
 		NextCh()
 		while true:
 			if ch == 10:
@@ -407,8 +405,8 @@ public class Scanner:
 
 	def Comment1() as bool:
 		level as int = 1
-		pos0 as int = pos
 		line0 as int = line
+		pos0 as int = pos
 		col0 as int = col
 		NextCh()
 		if ch == char('/'):
@@ -434,8 +432,8 @@ public class Scanner:
 
 	def Comment2() as bool:
 		level as int = 1
-		pos0 as int = pos
 		line0 as int = line
+		pos0 as int = pos
 		col0 as int = col
 		NextCh()
 		if ch == char('*'):

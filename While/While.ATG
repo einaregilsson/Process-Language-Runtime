@@ -68,11 +68,7 @@ BlockStmt<ref block as Statement>
 .
 
 AssignStmt<ref assign as Statement>            		(. 	exp as Expression 
-														var as Variable 
-														if true:
-															print "hi"
-															while 31 < 4:
-																print "foo" .)
+														var as Variable .)
 =	ident                                  			(. var = Variable(t.val) .)
 	":="
 	Expr<exp>                          				(. assign = Assign(var, exp) .)
@@ -237,8 +233,10 @@ UnaryOperator<ref exp as Expression>          	(.	op as string = null .)
 	|
 	'~'                                    		(. 	op = t.val .)
 	]
-	Terminal<exp>                      			(. 	if op == '-': exp = MinusUnaryOp(exp) 
-													elif op == '~': exp = NotUnaryOp(exp) .)
+	Terminal<exp>                      			(.	if op == '-': 
+														exp = MinusUnaryOp(exp)
+													elif op == '~':
+														exp = NotUnaryOp(exp) .)
 .
 
 Terminal<ref exp as Expression>               

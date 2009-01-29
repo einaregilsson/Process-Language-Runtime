@@ -60,6 +60,6 @@
   </ItemGroup>
   <Import Project="C:\programs\Boo\bin\Boo.Microsoft.Build.targets" />
   <PropertyGroup>
-    <PostBuildEvent>..\..\GenMSIL.bat</PostBuildEvent>
+    <PostBuildEvent>cd ..\..&amp;&amp; GenMSIL.bat</PostBuildEvent>
   </PropertyGroup>
 </Project>

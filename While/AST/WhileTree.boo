@@ -23,7 +23,7 @@ class WhileTree:
 	def Compile():
 		name = AssemblyName(Name:"WhileProgram")
 		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
-		module = assembly.DefineDynamicModule("WhileProgram.exe")
+		module = assembly.DefineDynamicModule("WhileProgram.exe", true)
 
 		#Create the type that holds our main method
 		type = module.DefineType("WhileType", TypeAttributes.Public | TypeAttributes.Class)
