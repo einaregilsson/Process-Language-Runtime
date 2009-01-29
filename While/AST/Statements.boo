@@ -74,7 +74,7 @@ class Skip(Statement):
 		pass
 
 	def Compile(il as ILGenerator):
-		pass
+		il.Emit(OpCodes.Nop)
 		
 class VariableDeclaration(Statement):
 	[Getter(Variable)]
@@ -90,7 +90,10 @@ class VariableDeclaration(Statement):
 		VariableStack.DefineVariable(_var.Name)
 
 	def Compile(il as ILGenerator):
-		pass
+		VariableStack.DefineVariable(_var.Name);
+		VariableStack.AssignValue(_var.Name, 
+		lb as LocalBuilder = il.DeclareLocal(typeof(int))
+		
 		
 class Write(Statement):
 	[Getter(Expression)]
