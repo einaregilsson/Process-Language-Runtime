@@ -34,5 +34,5 @@ class WhileTree:
 		type.CreateType()
 
 		assembly.SetEntryPoint(method, PEFileKinds.ConsoleApplication)
-		assembly.Save("c:\\WhileProgram.exe")
+		assembly.Save("WhileProgram.exe")
 	

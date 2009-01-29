@@ -38,10 +38,11 @@ public class Parser:
 	private errDist as int = minErrDist
 
 	
-#Node
+	#Node
 	[Getter(AbstractSyntaxTree)]
 	_ast as WhileTree
-
+	
+	
 
 	
 	public def constructor(scanner as Scanner):
@@ -84,92 +85,147 @@ public class Parser:
 		return bitset[s][la.kind]
 
 	
+	private def ExpectWeak(n as int, follow as int):
+		if la.kind == n:
+			Get()
+		else:
+			SynErr(n)
+			while not StartOf(follow):
+				Get()
+
+	
+	
+	private def WeakSeparator(n as int, syFol as int, repFol as int) as bool:
+		kind as int = la.kind
+		if kind == n:
+			Get()
+			return true
+		elif StartOf(repFol):
+			return false
+		else:
+			SynErr(n)
+			while not ((bitset[syFol][kind] or bitset[repFol][kind]) or bitset[0][kind]):
+				Get()
+				kind = la.kind
+			return StartOf(syFol)
+
+	
+	
 	def Program():
 		statements as StatementSequence
-		StmtSeq(statements)
+		StmtSeq(statements
+)
 		_ast = WhileTree(statements) 
 
-	def StmtSeq(ref statements as StatementSequence):
-		stmt as Statement 
+	def StmtSeq(ref statements as StatementSequence
+):
+		stmt as Statement
 		slist = List[of Statement]()
-		Stmt(stmt)
+		Stmt(stmt
+)
 		slist.Add(stmt) 
 		while la.kind == 3:
 			Get()
-			Stmt(stmt)
+			Stmt(stmt
+)
 			slist.Add(stmt) 
 		statements = StatementSequence(slist) 
 
-	def Stmt(ref stmt as Statement):
+	def Stmt(ref stmt as Statement
+):
 		exp as Expression 
 		if la.kind == 1:
-			AssignStmt(stmt)
+			AssignStmt(stmt
+)
 		elif la.kind == 4:
 			Get()
 			stmt = Skip() 
 		elif la.kind == 8:
-			BlockStmt(stmt)
+			BlockStmt(stmt
+)
 		elif la.kind == 11:
-			IfStmt(stmt)
+			IfStmt(stmt
+)
 		elif la.kind == 15:
-			WhileStmt(stmt)
+			WhileStmt(stmt
+)
 		elif la.kind == 5:
 			Get()
 			Expect(1)
 			stmt = Read(Variable(t.val)) 
 		elif la.kind == 6:
 			Get()
-			Expr(exp)
+			Expr(exp
+)
 			stmt = Write(exp) 
 		else: SynErr(42)
 
-	def AssignStmt(ref assign as Statement):
-		exp as Expression 
+	def AssignStmt(ref assign as Statement
+):
+		exp as Expression
 		var as Variable 
+		if true:
+			print "hi"
+			while 31 < 4:
+				print "foo" 
 		Expect(1)
 		var = Variable(t.val) 
 		Expect(10)
-		Expr(exp)
+		Expr(exp
+)
 		assign = Assign(var, exp) 
 
-	def BlockStmt(ref block as Statement):
+	def BlockStmt(ref block as Statement
+):
 		Expect(8)
 		vars as VariableDeclarationSequence
 		if la.kind == 7:
-			VarDecStmt(vars)
+			VarDecStmt(vars
+)
 		statements as StatementSequence 
-		StmtSeq(statements)
+		StmtSeq(statements
+)
 		Expect(9)
 		block = Block(vars, statements) 
 
-	def IfStmt(ref ifStmt as Statement):
-		ifBranch as StatementSequence; 
+	def IfStmt(ref ifStmt as Statement
+):
+		ifBranch as StatementSequence;
 		elseBranch as StatementSequence
 		exp as Expression 
 		Expect(11)
-		Expr(exp)
+		Expr(exp
+)
 		Expect(12)
-		StmtSeq(ifBranch)
+		StmtSeq(ifBranch
+)
 		if la.kind == 13:
 			Get()
-			StmtSeq(elseBranch)
+			StmtSeq(elseBranch
+)
 		Expect(14)
 		ifStmt = If(exp, ifBranch, elseBranch) 
 
-	def WhileStmt(ref whileStmt as Statement):
+	def WhileStmt(ref whileStmt as Statement
+):
 		exp as Expression
 		whileBranch as StatementSequence 
 		Expect(15)
-		Expr(exp)
+		Expr(exp
+)
 		Expect(16)
-		StmtSeq(whileBranch)
+		StmtSeq(whileBranch
+)
 		Expect(17)
 		whileStmt = While(exp, whileBranch) 
 
-	def Expr(ref exp as Expression):
-		LogicOr(exp)
+	def Expr(ref exp as Expression
+):
+		LogicOr(exp
+)
 
-	def VarDecStmt(ref vars as VariableDeclarationSequence):
+	def VarDecStmt(ref vars as VariableDeclarationSequence
+):
 		list = List[of VariableDeclaration]() 
 		Expect(7)
 		Expect(1)
@@ -182,26 +238,34 @@ public class Parser:
 			Expect(3)
 		vars = VariableDeclarationSequence(list) 
 
-	def LogicOr(ref exp as Expression):
+	def LogicOr(ref exp as Expression
+):
 		second as Expression 
-		LogicAnd(exp)
+		LogicAnd(exp
+)
 		while la.kind == 18:
 			Get()
-			LogicAnd(second)
+			LogicAnd(second
+)
 			exp = LogicBinaryOp(exp, second, LogicBinaryOp.Or) 
 
-	def LogicAnd(ref exp as Expression):
+	def LogicAnd(ref exp as Expression
+):
 		second as Expression 
-		EqualComp(exp)
+		EqualComp(exp
+)
 		while la.kind == 19:
 			Get()
-			EqualComp(second)
+			EqualComp(second
+)
 			exp = LogicBinaryOp(exp, second, LogicBinaryOp.And) 
 
-	def EqualComp(ref exp as Expression):
-		second as Expression 
+	def EqualComp(ref exp as Expression
+):
+		second as Expression
 		op as string 
-		GreatOrEqual(exp)
+		GreatOrEqual(exp
+)
 		if la.kind == 20 or la.kind == 21:
 			if la.kind == 20:
 				Get()
@@ -209,13 +273,16 @@ public class Parser:
 			else:
 				Get()
 				op = EqualityBinaryOp.NotEqual 
-			GreatOrEqual(second)
+			GreatOrEqual(second
+)
 			exp = EqualityBinaryOp(exp, second, op) 
 
-	def GreatOrEqual(ref exp as Expression):
-		second as Expression 
+	def GreatOrEqual(ref exp as Expression
+):
+		second as Expression
 		op as string 
-		BitOr(exp)
+		BitOr(exp
+)
 		if StartOf(1):
 			if la.kind == 22:
 				Get()
@@ -229,37 +296,49 @@ public class Parser:
 			else:
 				Get()
 				op = ComparisonBinaryOp.GreaterThanOrEqual 
-			BitOr(second)
+			BitOr(second
+)
 			exp = ComparisonBinaryOp(exp, second, op) 
 
-	def BitOr(ref exp as Expression):
+	def BitOr(ref exp as Expression
+):
 		second as Expression 
-		BitXor(exp)
+		BitXor(exp
+)
 		while la.kind == 26:
 			Get()
-			BitXor(second)
+			BitXor(second
+)
 			exp = BitBinaryOp(exp, second, BitBinaryOp.Or) 
 
-	def BitXor(ref exp as Expression):
+	def BitXor(ref exp as Expression
+):
 		second as Expression 
-		BitAnd(exp)
+		BitAnd(exp
+)
 		while la.kind == 27:
 			Get()
-			BitAnd(second)
+			BitAnd(second
+)
 			exp = BitBinaryOp(exp, second, BitBinaryOp.Xor) 
 
-	def BitAnd(ref exp as Expression):
+	def BitAnd(ref exp as Expression
+):
 		second as Expression 
-		BitShift(exp)
+		BitShift(exp
+)
 		while la.kind == 28:
 			Get()
-			BitShift(second)
+			BitShift(second
+)
 			exp = BitBinaryOp(exp, second, BitBinaryOp.And) 
 
-	def BitShift(ref exp as Expression):
+	def BitShift(ref exp as Expression
+):
 		second as Expression
 		op as string 
-		PlusMinus(exp)
+		PlusMinus(exp
+)
 		while la.kind == 29 or la.kind == 30:
 			if la.kind == 29:
 				Get()
@@ -267,13 +346,16 @@ public class Parser:
 			else:
 				Get()
 				op = BitBinaryOp.ShiftRight 
-			PlusMinus(second)
+			PlusMinus(second
+)
 			exp = BitBinaryOp(exp, second, op)
 
-	def PlusMinus(ref exp as Expression):
-		second as Expression 
+	def PlusMinus(ref exp as Expression
+):
+		second as Expression
 		op as string
-		MulDivMod(exp)
+		MulDivMod(exp
+)
 		while la.kind == 31 or la.kind == 32:
 			if la.kind == 31:
 				Get()
@@ -281,12 +363,15 @@ public class Parser:
 			else:
 				Get()
 				op = ArithmeticBinaryOp.Minus 
-			MulDivMod(second)
+			MulDivMod(second
+)
 			exp = ArithmeticBinaryOp(exp, second, op) 
 
-	def MulDivMod(ref exp as Expression):
+	def MulDivMod(ref exp as Expression
+):
 		second as Expression 
-		UnaryOperator(exp)
+		UnaryOperator(exp
+)
 		while la.kind == 33 or la.kind == 34 or la.kind == 35:
 			if la.kind == 33:
 				Get()
@@ -297,10 +382,12 @@ public class Parser:
 			else:
 				Get()
 				op = ArithmeticBinaryOp.Modulo 
-			UnaryOperator(second)
+			UnaryOperator(second
+)
 			exp = ArithmeticBinaryOp(exp, second, op) 
 
-	def UnaryOperator(ref exp as Expression):
+	def UnaryOperator(ref exp as Expression
+):
 		op as string = null 
 		if la.kind == 32 or la.kind == 36:
 			if la.kind == 32:
@@ -309,11 +396,13 @@ public class Parser:
 			else:
 				Get()
 				op = t.val 
-		Terminal(exp)
-		if op == '-': exp = MinusUnaryOp(exp) 
+		Terminal(exp
+)
+		if op == '-': exp = MinusUnaryOp(exp)
 		elif op == '~': exp = NotUnaryOp(exp) 
 
-	def Terminal(ref exp as Expression):
+	def Terminal(ref exp as Expression
+):
 		if la.kind == 1:
 			Get()
 			exp = Variable(t.val) 
@@ -328,7 +417,8 @@ public class Parser:
 			exp = Bool(false) 
 		elif la.kind == 39:
 			Get()
-			Expr(exp)
+			Expr(exp
+)
 			Expect(40)
 		else: SynErr(43)
 

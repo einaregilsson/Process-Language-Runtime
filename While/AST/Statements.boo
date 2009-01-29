@@ -109,7 +109,12 @@ class Write(Statement):
 		_writer.WriteLine(_exp.Value)
 
 	def Compile(il as ILGenerator):
-		pass
+		_exp.Compile(il)
+		if _exp isa BoolExpression:
+			mi = typeof(System.Console).GetMethod("WriteLine", (typeof(bool),))
+		elif _exp isa IntExpression:
+			mi = typeof(System.Console).GetMethod("WriteLine", (typeof(int),))
+		il.Emit(OpCodes.Call, mi)
 			
 class Read(Statement):
 	[Getter(Variable)]
@@ -126,7 +131,9 @@ class Read(Statement):
 		VariableStack.AssignValue(_var.Name, int.Parse(System.Console.ReadLine()))
 
 	def Compile(il as ILGenerator):
-		pass
+		#_exp.Compile(il)
+		mi = typeof(System.Console).GetMethod("ReadLine")
+		il.Emit(OpCodes.Call, mi)
 
 class Block(Statement):
 

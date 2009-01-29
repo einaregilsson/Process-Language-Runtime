@@ -37,5 +37,10 @@
     <Compile Include="ParserGen.cs" />
     <Compile Include="Scanner.cs" />
     <Compile Include="Tab.cs" />
+    <None Include="build.bat" />
+    <None Include="coc.bat" />
+    <None Include="Coco.atg" />
+    <None Include="Parser.frame" />
+    <None Include="Scanner.frame" />
   </ItemGroup>
 </Project>

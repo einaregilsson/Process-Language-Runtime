@@ -1,8 +1,8 @@
 COMPILER Program
 	
-	#Node
-	[Getter(AbstractSyntaxTree)]
-	_ast as WhileTree
+#Node
+[Getter(AbstractSyntaxTree)]
+_ast as WhileTree
 
 CHARACTERS
   letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
@@ -29,8 +29,8 @@ Program<>
 .
 
 StmtSeq<ref statements as StatementSequence>  
-=													(. stmt as Statement 
-													   slist = List[of Statement]().)
+=													(. 	stmt as Statement 
+														slist = List[of Statement]().)
     Stmt<stmt>                         				(. slist.Add(stmt) .)
     {
         ';' Stmt<stmt>                 				(. slist.Add(stmt) .)
@@ -67,8 +67,12 @@ BlockStmt<ref block as Statement>
 	"end"                       					(. block = Block(vars, statements) .)
 .
 
-AssignStmt<ref assign as Statement>            		(. exp as Expression 
-													   var as Variable .)
+AssignStmt<ref assign as Statement>            		(. 	exp as Expression 
+														var as Variable 
+														if true:
+															print "hi"
+															while 31 < 4:
+																print "foo" .)
 =	ident                                  			(. var = Variable(t.val) .)
 	":="
 	Expr<exp>                          				(. assign = Assign(var, exp) .)

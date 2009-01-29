@@ -265,7 +265,8 @@ class MinusUnaryOp(IntExpression):
 		return "-${_exp}"
 
 	def Compile(il as ILGenerator):
-		pass
+		_exp.Compile(il);
+		il.Emit(OpCodes.Neg);
 		
 class NotUnaryOp(BoolExpression):
 	_exp as BoolExpression
