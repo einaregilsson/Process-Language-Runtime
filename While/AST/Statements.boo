@@ -167,6 +167,7 @@ class Block(Statement):
 		_stmts.Compile(il)
 		il.EndScope()
 		VariableStack.PopScope()
+
 class If(Statement):
 
 	[Getter(Expression)]
@@ -194,7 +195,15 @@ class If(Statement):
 			_elseBranch.Execute()
 
 	def Compile(il as ILGenerator):
-		pass
+		_exp.Compile(il)
+		ifFalseLabel = il.DefineLabel()
+		endLabel = il.DefineLabel()
+		il.Emit(OpCodes.Brfalse, ifFalseLabel)
+		_ifBranch.Compile(il)
+		il.Emit(OpCodes.Br, endLabel)		
+		il.MarkLabel(ifFalseLabel)
+		_elseBranch.Compile(il) if _elseBranch
+		il.MarkLabel(endLabel)
 
 class While(Statement):
 
@@ -215,4 +224,11 @@ class While(Statement):
 			_statements.Execute()
 
 	def Compile(il as ILGenerator):
-		pass
+		evalConditionLabel = il.DefineLabel()
+		afterTheLoopLabel = il.DefineLabel()
+		il.MarkLabel(evalConditionLabel)
+		_exp.Compile(il)
+		il.Emit(OpCodes.Brfalse, afterTheLoopLabel)
+		_statements.Compile(il)
+		il.Emit(OpCodes.Br, evalConditionLabel)		
+		il.MarkLabel(afterTheLoopLabel)
