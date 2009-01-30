@@ -57,15 +57,20 @@ StmtSeq<ref statements as StatementSequence>
 .
 
 Stmt<ref stmt as Statement>                   
-=													(. exp as Expression .)
+=													(. 	exp as Expression 
+														start = la .)
+
 	( AssignStmt<stmt>
 	| "skip"                               			(. stmt = Skip() .)
 	| BlockStmt<stmt>                       
 	| IfStmt<stmt>
 	| WhileStmt<stmt>
-	| "read" ident                         			(. stmt = Read(Variable(t.val)) .)
-	| "write" Expr<exp>                				(. stmt = Write(exp) .)
+	| "read" ident                         			(. 	stmt = Read(Variable(t.val)).)
+	| "write" Expr<exp>                				(. 	stmt = Write(exp) .)
 	)
+													(. 	stmt.SetStartDebugInfo(start.line, start.col) 
+														if stmt.GetType() in (Write, Read, Skip, Assign):
+															stmt.SetEndDebugInfo(t.line, t.col+t.val.Length) .)
 .
 
 VarDecStmt<ref vars as VariableDeclarationSequence>
@@ -78,14 +83,18 @@ VarDecStmt<ref vars as VariableDeclarationSequence>
 
 VarDec<list as List[of VariableDeclaration]>
 =
-	"var" ident                             		(. 	if VariableStack.IsDeclaredInCurrentScope(t.val):
+	"var" 											(. start = t; end = la .)
+	ident                             				(. 	if VariableStack.IsDeclaredInCurrentScope(t.val):
 															errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope") 
 														elif VariableStack.IsInScope(t.val):
 															errors.Warning(t.line, t.col, "Variable '${t.val}' hides variable with same name in outer block")
 															VariableStack.DefineVariable(t.val, true)
 														else:
 															VariableStack.DefineVariable(t.val, true) 
-														list.Add(VariableDeclaration(Variable(t.val))) .)
+														vd = VariableDeclaration(Variable(t.val))
+														vd.SetStartDebugInfo(start.line, start.col)
+														vd.SetEndDebugInfo(end.line, end.col+end.val.Length)
+														list.Add(vd) .)
 	';'
 .
 
@@ -115,23 +124,25 @@ IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence;
 =
 	"if"											(.  tok = t .)
 	Expr<exp>										(.	return unless ExpectBool(exp, tok, true) .)
-	"then"
+	"then"											(. 	endDbgTok = t .)
 	StmtSeq<ifBranch>
 	[
 	    "else"
 	    StmtSeq<elseBranch>
 	]
-	"fi"                                  			(. ifStmt = If(exp, ifBranch, elseBranch) .) 
+	"fi"                                  			(. 	ifStmt = If(exp, ifBranch, elseBranch) 
+														ifStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) .)
 .
 
 WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 														whileBranch as StatementSequence .)
 =
-	"while"											(. tok = t .)
-	Expr<exp>										(. return unless ExpectBool(exp, tok, true) .)
-	"do"
+	"while"											(. 	tok = t .)
+	Expr<exp>										(. 	return unless ExpectBool(exp, tok, true) .)
+	"do"											(.	endDbgTok = t .)
 	StmtSeq<whileBranch>
-	"od"                                   			(. whileStmt = While(exp, whileBranch) .)
+	"od"                                   			(. 	whileStmt = While(exp, whileBranch) 
+														whileStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) .)
 .
 
 Expr<ref exp as Expression>

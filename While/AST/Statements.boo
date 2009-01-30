@@ -1,14 +1,32 @@
 ﻿namespace While.AST.Statements
 
+import While
 import While.AST
 import While.AST.Expressions
 import System.Reflection.Emit
 
 abstract class Statement(Node):
 	
+	_startLine as int
+	_startCol as int
+	_endLine as int
+	_endCol as int
+
 	protected def Indent(str):
 		return "\t" + str.ToString().Replace("\n", "\n\t")
 	
+	def SetStartDebugInfo(startLine, startCol):
+		_startLine = startLine		
+		_startCol = startCol
+		
+	def SetEndDebugInfo(endLine, endCol):
+		_endLine = endLine
+		_endCol = endCol
+
+	def EmitDebugInfo(il as ILGenerator):
+		if CompileOptions.Debug:
+			il.MarkSequencePoint(null, _startLine, _startCol, _endLine, _endCol)
+		
 	abstract def Execute():
 		pass
 	
@@ -63,6 +81,7 @@ class Assign(Statement):
 		VariableStack.AssignValue(_var.Name, _exp.IntValue)
 
 	def Compile(il as ILGenerator):
+		EmitDebugInfo(il)
 		_exp.Compile(il)
 		il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
 		
@@ -92,7 +111,8 @@ class VariableDeclaration(Statement):
 	def Compile(il as ILGenerator):
 		VariableStack.DefineVariable(_var.Name, true);
 		lb = il.DeclareLocal(typeof(int))
-		lb.SetLocalSymInfo(_var.Name)
+		if CompileOptions.Debug:
+			lb.SetLocalSymInfo(_var.Name)
 		
 		
 class Write(Statement):

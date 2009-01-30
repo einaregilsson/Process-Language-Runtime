@@ -125,7 +125,8 @@ public class Parser:
 		statements = StatementSequence(slist) 
 
 	def Stmt(ref stmt as Statement):
-		exp as Expression 
+		exp as Expression
+		start = la 
 		if la.kind == 1:
 			AssignStmt(stmt)
 		elif la.kind == 4:
@@ -140,12 +141,15 @@ public class Parser:
 		elif la.kind == 5:
 			Get()
 			Expect(1)
-			stmt = Read(Variable(t.val)) 
+			stmt = Read(Variable(t.val))
 		elif la.kind == 6:
 			Get()
 			Expr(exp)
 			stmt = Write(exp) 
 		else: SynErr(44)
+		stmt.SetStartDebugInfo(start.line, start.col)
+		if stmt.GetType() in (Write, Read, Skip, Assign):
+			stmt.SetEndDebugInfo(t.line, t.col+t.val.Length) 
 
 	def AssignStmt(ref assign as Statement):
 		exp as Expression
@@ -181,12 +185,14 @@ public class Parser:
 		Expr(exp)
 		return unless ExpectBool(exp, tok, true) 
 		Expect(12)
+		endDbgTok = t 
 		StmtSeq(ifBranch)
 		if la.kind == 13:
 			Get()
 			StmtSeq(elseBranch)
 		Expect(14)
-		ifStmt = If(exp, ifBranch, elseBranch) 
+		ifStmt = If(exp, ifBranch, elseBranch)
+		ifStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) 
 
 	def WhileStmt(ref whileStmt as Statement):
 		exp as Expression
@@ -196,9 +202,11 @@ public class Parser:
 		Expr(exp)
 		return unless ExpectBool(exp, tok, true) 
 		Expect(16)
+		endDbgTok = t 
 		StmtSeq(whileBranch)
 		Expect(17)
-		whileStmt = While(exp, whileBranch) 
+		whileStmt = While(exp, whileBranch)
+		whileStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) 
 
 	def Expr(ref exp as Expression):
 		LogicOr(exp)
@@ -212,6 +220,7 @@ public class Parser:
 
 	def VarDec(list as List[of VariableDeclaration]):
 		Expect(7)
+		start = t; end = la 
 		Expect(1)
 		if VariableStack.IsDeclaredInCurrentScope(t.val):
 			errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope") 
@@ -220,7 +229,10 @@ public class Parser:
 			VariableStack.DefineVariable(t.val, true)
 		else:
 			VariableStack.DefineVariable(t.val, true) 
-		list.Add(VariableDeclaration(Variable(t.val))) 
+		vd = VariableDeclaration(Variable(t.val))
+		vd.SetStartDebugInfo(start.line, start.col)
+		vd.SetEndDebugInfo(end.line, end.col+end.val.Length)
+		list.Add(vd) 
 		Expect(3)
 
 	def LogicOr(ref exp as Expression):
