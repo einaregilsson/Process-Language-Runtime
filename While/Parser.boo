@@ -45,18 +45,18 @@ public class Parser:
 	def ExpectBool(exp as Expression, t as Token, isRightHandSide as bool):
 		if not exp isa BoolExpression:
 			if isRightHandSide:
-				errors.SemErr(t.line, t.col, "'${t.val}' expects a boolean expression on its right side!")
+				errors.SemErr(t.line, t.col, "'${t.val}' expects a boolean expression on its right side")
 			else:
-				errors.SemErr(t.line, t.col, "'${t.val}' expects a boolean expression on its left side!")
+				errors.SemErr(t.line, t.col, "'${t.val}' expects a boolean expression on its left side")
 			return false
 		return true
 	
 	def ExpectInt(exp as Expression, t as Token, isRightHandSide as bool):
 		if not exp isa IntExpression:
 			if isRightHandSide:
-				errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its right side!")
+				errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its right side")
 			else:
-				errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its left side!")
+				errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its left side")
 			return false
 		return true
 	
@@ -214,9 +214,9 @@ public class Parser:
 		Expect(7)
 		Expect(1)
 		if VariableStack.IsDeclaredInCurrentScope(t.val):
-			errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope!") 
+			errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope") 
 		elif VariableStack.IsInScope(t.val):
-			errors.Warning(t.line, t.col, "Variable '${t.val}' hides variable with same name in outer block!")
+			errors.Warning(t.line, t.col, "Variable '${t.val}' hides variable with same name in outer block")
 			VariableStack.DefineVariable(t.val, true)
 		else:
 			VariableStack.DefineVariable(t.val, true) 

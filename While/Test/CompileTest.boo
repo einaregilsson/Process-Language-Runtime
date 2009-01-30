@@ -22,4 +22,4 @@ class CompileTest:
 		result = StringWriter()
 		p.errors.errorStream = result
 		p.Parse()
-		p.AbstractSyntaxTree.Compile()
+		p.AbstractSyntaxTree.Compile("test.exe")

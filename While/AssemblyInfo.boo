@@ -4,12 +4,12 @@ import System.Runtime.InteropServices
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("While")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("While.NET Compiler")]
+[assembly: AssemblyDescription("A compiler for the While language on the .NET platform")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("While")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyProduct("While.NET Compiler")]
+[assembly: AssemblyCopyright("Einar Egilsson")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -24,4 +24,4 @@ import System.Runtime.InteropServices
 // You can specify all values by your own or you can build default build and revision
 // numbers with the '*' character (the default):
 
-[assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("0.9.*")]

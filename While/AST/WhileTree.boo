@@ -20,10 +20,10 @@ class WhileTree:
 	def Execute():
 		_stmts.Execute()
 
-	def Compile():
-		name = AssemblyName(Name:"WhileProgram")
+	def Compile(filename):
+		name = AssemblyName(Name:filename)
 		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
-		module = assembly.DefineDynamicModule("WhileProgram.exe", true)
+		module = assembly.DefineDynamicModule(filename, true)
 
 		#Create the type that holds our main method
 		type = module.DefineType("WhileType", TypeAttributes.Public | TypeAttributes.Class)
@@ -34,5 +34,5 @@ class WhileTree:
 		type.CreateType()
 
 		assembly.SetEntryPoint(method, PEFileKinds.ConsoleApplication)
-		assembly.Save("WhileProgram.exe")
+		assembly.Save(filename)
 	
