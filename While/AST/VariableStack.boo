@@ -37,6 +37,12 @@ static class VariableStack:
 		if not scope:
 			raise WhileException("Variable ${name} is not in scope!")
 		return scope[name]
+	
+	def IsInScope(name as string) as bool:
+		return FindScopeForVariable(name) != null
+		
+	def IsDeclaredInCurrentScope(name as string) as bool:
+		return _stack.Count > 0 and _stack[_stack.Count-1].ContainsKey(name)
 
 	def FindScopeForVariable(name as string) as Dictionary[of string, int]:
 		for i in range(_stack.Count-1, -1, -1):

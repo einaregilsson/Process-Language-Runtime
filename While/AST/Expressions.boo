@@ -139,6 +139,8 @@ class ComparisonBinaryOp(BoolBinaryOp[of IntExpression]):
 	public static final LessThan = '<'
 	public static final GreaterThanOrEqual = '>='
 	public static final LessThanOrEqual = '<='
+	public static final Equal = '=='
+	public static final NotEqual = '!='
 
 	def constructor(l as IntExpression, r as IntExpression, op as string):
 		super(l,r,op)
@@ -154,6 +156,10 @@ class ComparisonBinaryOp(BoolBinaryOp[of IntExpression]):
 				return l >= r
 			elif _op == LessThanOrEqual:
 				return l <= r
+			elif _op == Equal:
+				return l == r
+			elif _op == NotEqual:
+				return l != r
 			raise WhileException("Unknown operator '${Op}'")
 
 	def Compile(il as ILGenerator):
@@ -169,32 +175,12 @@ class ComparisonBinaryOp(BoolBinaryOp[of IntExpression]):
 			il.Emit(OpCodes.Cgt)
 			il.Emit(OpCodes.Ldc_I4_0)
 			il.Emit(OpCodes.Ceq)
-	
-class EqualityBinaryOp(BoolBinaryOp[of Expression]):
-	public static final Equal = '=='
-	public static final NotEqual = '!='
-
-	def constructor(l as Expression, r as Expression, op as string):
-		super(l,r,op)
-
-	BoolValue:
-		get:
-			l, r = Left.Value, Right.Value
-			if _op == Equal:
-				return l == r
-			elif _op == NotEqual:
-				return l != r
-			raise WhileException("Unknown operator '${Op}'")
-
-	def Compile(il as ILGenerator):
-		_left.Compile(il)
-		_right.Compile(il)
-		if Op == Equal: il.Emit(OpCodes.Ceq)
+		elif Op == Equal: il.Emit(OpCodes.Ceq)
 		elif Op == NotEqual:
 			il.Emit(OpCodes.Ceq)
 			il.Emit(OpCodes.Ldc_I4_0)
 			il.Emit(OpCodes.Ceq)
-
+	
 class BitBinaryOp(IntBinaryOp[of IntExpression]):
 	public static final ShiftLeft = '<<'
 	public static final ShiftRight = '>>'
@@ -252,21 +238,35 @@ class LogicBinaryOp(BoolBinaryOp[of BoolExpression]):
 		elif _op == And: il.Emit(OpCodes.And)
 		elif _op == Xor: il.Emit(OpCodes.Xor)
 
-class MinusUnaryOp(IntExpression):
+class IntUnaryOp(IntExpression):
+	public static final Minus = '-'
+	public static final OnesComplement = '~'
+	
+	[Getter(Expression)]
 	_exp as IntExpression
-	
+	[Getter(Op)]	
+	_op as string
+		
 	IntValue:
-		get: return -_exp.IntValue
+		get: 
+			if Op == Minus:
+				return -_exp.IntValue
+			elif Op == OnesComplement:
+				return ~_exp.IntValue
 	
-	def constructor(exp as IntExpression):
-		_exp = exp	
+	def constructor(exp as IntExpression, op as string):
+		_exp = exp
+		_op = op
 		
 	def ToString():
 		return "-${_exp}"
 
 	def Compile(il as ILGenerator):
 		_exp.Compile(il);
-		il.Emit(OpCodes.Neg);
+		if Op == Minus:
+			il.Emit(OpCodes.Neg);
+		elif Op == Minus:
+			il.Emit(OpCodes.Not);
 		
 class NotUnaryOp(BoolExpression):
 	_exp as BoolExpression
@@ -281,5 +281,6 @@ class NotUnaryOp(BoolExpression):
 		return "!${_exp}"
 
 	def Compile(il as ILGenerator):
-		pass
-		
+		_exp.Compile(il)
+		il.Emit(OpCodes.Ldc_I4_0)
+		il.Emit(OpCodes.Ceq)

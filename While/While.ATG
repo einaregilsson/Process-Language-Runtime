@@ -4,6 +4,25 @@ COMPILER Program
 [Getter(AbstractSyntaxTree)]
 _ast as WhileTree
 
+def ExpectBool(exp as Expression, t as Token, isRightHandSide as bool):
+	if not exp isa BoolExpression:
+		if isRightHandSide:
+			errors.SemErr(t.line, t.col, "'${t.val}' expects a boolean expression on its right side!")
+		else:
+			errors.SemErr(t.line, t.col, "'${t.val}' expects a boolean expression on its left side!")
+		return false
+	return true
+		
+def ExpectInt(exp as Expression, t as Token, isRightHandSide as bool):
+	if not exp isa IntExpression:
+		if isRightHandSide:
+			errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its right side!")
+		else:
+			errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its left side!")
+		return false
+	return true
+
+
 CHARACTERS
   letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
   digit = "0123456789".
@@ -51,35 +70,51 @@ Stmt<ref stmt as Statement>
 
 VarDecStmt<ref vars as VariableDeclarationSequence>
 =													(. list = List[of VariableDeclaration]() .)
-	"var" ident                             		(. list.Add(VariableDeclaration(Variable(t.val))) .)
-	';'
+	VarDec<list>
 	{
-	    "var" ident                    				(. list.Add(VariableDeclaration(Variable(t.val))) .)
-	    ';'
+	    VarDec<list>
 	}												(. vars = VariableDeclarationSequence(list) .)
+.
+
+VarDec<list as List[of VariableDeclaration]>
+=
+	"var" ident                             		(. 	if VariableStack.IsDeclaredInCurrentScope(t.val):
+															errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope!") 
+														elif VariableStack.IsInScope(t.val):
+															errors.Warning(t.line, t.col, "Variable '${t.val}' hides variable with same name in outer block!")
+															VariableStack.DefineVariable(t.val, true)
+														else:
+															VariableStack.DefineVariable(t.val, true) 
+														list.Add(VariableDeclaration(Variable(t.val))) .)
+	';'
 .
 
 BlockStmt<ref block as Statement>                 
 =
-	"begin"                                 		(. vars as VariableDeclarationSequence.)
+	"begin"                                 		(. 	vars as VariableDeclarationSequence
+														VariableStack.PushScope() .)
 	[ VarDecStmt<vars> ]							(. statements as StatementSequence .)
 	StmtSeq<statements>                
-	"end"                       					(. block = Block(vars, statements) .)
+	"end"                       					(. 	block = Block(vars, statements) 
+														VariableStack.PopScope() .)
 .
 
 AssignStmt<ref assign as Statement>            		(. 	exp as Expression 
 														var as Variable .)
-=	ident                                  			(. var = Variable(t.val) .)
-	":="
-	Expr<exp>                          				(. assign = Assign(var, exp) .)
+=	ident                                  			(. 	var = Variable(t.val) 
+														if not VariableStack.IsInScope(t.val):
+															errors.SemErr(t.line, t.col, "Assignment to undeclared variable '${t.val}'") .)
+	":="											(. tok = t .)
+	Expr<exp>                          				(. return unless ExpectInt(exp, tok, true) .)
+													(. assign = Assign(var, exp) .)
 .
 
 IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence; 
 														elseBranch as StatementSequence
 														exp as Expression .)
 =
-	"if"
-	Expr<exp>
+	"if"											(.  tok = t .)
+	Expr<exp>										(.	return unless ExpectBool(exp, tok, true) .)
 	"then"
 	StmtSeq<ifBranch>
 	[
@@ -92,8 +127,8 @@ IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence;
 WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 														whileBranch as StatementSequence .)
 =
-	"while"
-	Expr<exp>
+	"while"											(. tok = t .)
+	Expr<exp>										(. return unless ExpectBool(exp, tok, true) .)
 	"do"
 	StmtSeq<whileBranch>
 	"od"                                   			(. whileStmt = While(exp, whileBranch) .)
@@ -109,35 +144,25 @@ LogicOr<ref exp as Expression>                	(. second as Expression .)
 =	
     LogicAnd<exp>                      
     {
-        "||"          
-        LogicAnd<second>						(.	exp = LogicBinaryOp(exp, second, LogicBinaryOp.Or) .)
+        "or"          							(. tok = t .)
+        LogicAnd<second>						(.	return unless ExpectBool(exp, tok, false) 
+													return unless ExpectBool(second, tok, true) 
+													exp = LogicBinaryOp(exp, second, LogicBinaryOp.Or) .)
     }                                       
 .
 
 LogicAnd<ref exp as Expression>                	(. second as Expression .)                
 =	
-    EqualComp<exp>
+    Comparison<exp>
     {                            
-        "&&"                    
-        EqualComp<second>               		(.	exp = LogicBinaryOp(exp, second, LogicBinaryOp.And) .)
+        "and"                    				(. 	tok = t .)
+        Comparison<second>						(.	return unless ExpectBool(exp, tok, false) 
+													return unless ExpectBool(second, tok, true) 
+													exp = LogicBinaryOp(exp, second, LogicBinaryOp.And) .)
     }
 .
 
-EqualComp<ref exp as Expression>                (. 	second as Expression 
-													op as string .)
-=	
-    GreatOrEqual<exp>
-    [
-        (
-        "=="                               		(.	op = EqualityBinaryOp.Equal .)
-        |
-        "!="                               		(.	op = EqualityBinaryOp.NotEqual .)
-        )                         
-        GreatOrEqual<second>           			(.	exp = EqualityBinaryOp(exp, second, op) .)
-    ]
-.
-
-GreatOrEqual<ref exp as Expression>           	(.	second as Expression 
+Comparison<ref exp as Expression>           	(.	second as Expression 
 													op as string .)
 =
     BitOr<exp>
@@ -150,8 +175,15 @@ GreatOrEqual<ref exp as Expression>           	(.	second as Expression
         "<="                               		(.	op = ComparisonBinaryOp.LessThanOrEqual .)
         |
         ">="                               		(.	op = ComparisonBinaryOp.GreaterThanOrEqual .)
-        )
-        BitOr<second>                  			(. exp = ComparisonBinaryOp(exp, second, op) .)
+		|
+        "=="                               		(.	op = ComparisonBinaryOp.Equal.)
+        |
+        "!="                               		(.	op = ComparisonBinaryOp.NotEqual .)
+        
+        )										(. 	tok = t .)
+        Comparison<second>						(.	return unless ExpectInt(exp, tok, false) 
+													return unless ExpectInt(second, tok, true) 
+													exp = ComparisonBinaryOp(exp, second, op) .)
     ]
 .
 
@@ -159,8 +191,10 @@ BitOr<ref exp as Expression>                	(.	second as Expression .)
 =	
     BitXor<exp>
     {
-        "|"       
-        BitXor<second>                 			(.	exp = BitBinaryOp(exp, second, BitBinaryOp.Or) .)
+        "|"       								(. 	tok = t .)
+        BitXor<second>                 			(.	return unless ExpectInt(exp, tok, false) 
+													return unless ExpectInt(second, tok, true) 
+													exp = BitBinaryOp(exp, second, BitBinaryOp.Or) .)
     }
 .
 
@@ -168,8 +202,10 @@ BitXor<ref exp as Expression>                	(.	second as Expression .)
 =	
     BitAnd<exp>
     {
-        "^"     
-        BitAnd<second>                 			(.	exp = BitBinaryOp(exp, second, BitBinaryOp.Xor) .)
+        "^"     								(.	tok = t .)
+        BitAnd<second>                 			(.	return unless ExpectInt(exp, tok, false) 
+													return unless ExpectInt(second, tok, true) 
+													exp = BitBinaryOp(exp, second, BitBinaryOp.Xor) .)
     }
 .
 
@@ -177,8 +213,10 @@ BitAnd<ref exp as Expression>                	(.	second as Expression .)
 =	
     BitShift<exp>
     {
-        "&"                             
-        BitShift<second>                  		(.	exp = BitBinaryOp(exp, second, BitBinaryOp.And) .)
+        "&"                             		(. 	tok = t .)
+        BitShift<second>                  		(.	return unless ExpectInt(exp, tok, false) 
+													return unless ExpectInt(second, tok, true) 
+													exp = BitBinaryOp(exp, second, BitBinaryOp.And) .)
     }
 .
 
@@ -191,8 +229,10 @@ BitShift<ref exp as Expression>                	(.	second as Expression
         "<<"                               		(.	op = BitBinaryOp.ShiftLeft .)
         |
         ">>"                               		(.	op = BitBinaryOp.ShiftRight .)
-        )             
-        PlusMinus<second>              			(.	exp = BitBinaryOp(exp, second, op).)
+        )             							(. 	tok = t .)
+        PlusMinus<second>              			(.	return unless ExpectInt(exp, tok, false) 
+													return unless ExpectInt(second, tok, true) 
+													exp = BitBinaryOp(exp, second, op).)
     }
 .
 
@@ -205,8 +245,10 @@ PlusMinus<ref exp as Expression>                (. 	second as Expression
         "+"                                		(. 	op = ArithmeticBinaryOp.Plus .)
         |
         "-"                                		(. 	op = ArithmeticBinaryOp.Minus .)
-        )             
-        MulDivMod<second>              			(.	exp = ArithmeticBinaryOp(exp, second, op) .)
+        )             							(. 	tok = t .)
+        MulDivMod<second>              			(.	return unless ExpectInt(exp, tok, false) 
+													return unless ExpectInt(second, tok, true) 
+													exp = ArithmeticBinaryOp(exp, second, op) .)
     }
 .
 
@@ -220,8 +262,10 @@ MulDivMod<ref exp as Expression>                (. second as Expression .)
         "/"                                		(. 	op = ArithmeticBinaryOp.Division .)
         |
         "%"                                		(. 	op = ArithmeticBinaryOp.Modulo .)
-        )             
-        UnaryOperator<second>          			(.	exp = ArithmeticBinaryOp(exp, second, op) .)
+        )             							(. 	tok = t .)
+        UnaryOperator<second>          			(.	return unless ExpectInt(exp, tok, false) 
+													return unless ExpectInt(second, tok, true) 
+													exp = ArithmeticBinaryOp(exp, second, op) .)
     }
 .
 
@@ -232,16 +276,23 @@ UnaryOperator<ref exp as Expression>          	(.	op as string = null .)
 	'-'                                    		(. 	op = t.val .)
 	|
 	'~'                                    		(. 	op = t.val .)
+	|
+	"not"                                  		(. 	op = t.val .)
+												(.	tok = t .)
 	]
-	Terminal<exp>                      			(.	if op == '-': 
-														exp = MinusUnaryOp(exp)
-													elif op == '~':
+	Terminal<exp>                      			(.	if op in ('-','~'): 
+														return unless ExpectInt(exp, tok, true)
+														exp = IntUnaryOp(exp, op)
+													elif op == 'not':
+														return unless ExpectBool(exp, tok, true)
 														exp = NotUnaryOp(exp) .)
 .
 
 Terminal<ref exp as Expression>               
 =
-	( ident                                		(. exp = Variable(t.val) .)
+	( ident                                		(. 	exp = Variable(t.val) 
+													if not VariableStack.IsInScope(t.val):
+														errors.SemErr(t.line, t.col, "Undeclared variable '${t.val}'") .)
 	| number                               		(. exp = Number(int.Parse(t.val)) .)
 	| "true"                               		(. exp = Bool(true) .)
 	| "false"                              		(. exp = Bool(false) .)

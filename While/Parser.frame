@@ -152,33 +152,24 @@ public class Errors:
 	public errorStream as System.IO.TextWriter = Console.Out
 
 	// error messages go to this stream
-	public errMsgFormat = '-- line {0} col {1}: {2}'
+	public errMsgFormat = '({0},{1}) {2}: {3}'
 
 	// 0=line, 1=column, 2=text
 	public def SynErr(line as int, col as int, n as int):
 		s as string
 -->errors
 		else: s = ('error ' + n)
-		errorStream.WriteLine(errMsgFormat, line, col, s)
+		errorStream.WriteLine(errMsgFormat, line, col, "ERROR", s)
 		count += 1
 
 	
 	public def SemErr(line as int, col as int, s as string):
-		errorStream.WriteLine(errMsgFormat, line, col, s)
-		count += 1
-
-	
-	public def SemErr(s as string):
-		errorStream.WriteLine(s)
+		errorStream.WriteLine(errMsgFormat, line, col, "ERROR", s)
 		count += 1
 
 	
 	public def Warning(line as int, col as int, s as string):
-		errorStream.WriteLine(errMsgFormat, line, col, s)
-
-	
-	public def Warning(s as string):
-		errorStream.WriteLine(s)
+		errorStream.WriteLine(errMsgFormat, line, col, "WARNING", s)
 
 // Errors
 
