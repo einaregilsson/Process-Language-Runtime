@@ -153,12 +153,23 @@ LogicOr<ref exp as Expression>                	(. second as Expression .)
 
 LogicAnd<ref exp as Expression>                	(. second as Expression .)                
 =	
-    Comparison<exp>
+    LogicXor<exp>
     {                            
         "and"                    				(. 	tok = t .)
-        Comparison<second>						(.	return unless ExpectBool(exp, tok, false) 
+        LogicXor<second>						(.	return unless ExpectBool(exp, tok, false) 
 													return unless ExpectBool(second, tok, true) 
 													exp = LogicBinaryOp(exp, second, LogicBinaryOp.And) .)
+    }
+.
+
+LogicXor<ref exp as Expression>                	(. second as Expression .)                
+=	
+    Comparison<exp>
+    {                            
+        "xor"                    				(. 	tok = t .)
+        Comparison<second>						(.	return unless ExpectBool(exp, tok, false) 
+													return unless ExpectBool(second, tok, true) 
+													exp = LogicBinaryOp(exp, second, LogicBinaryOp.Xor) .)
     }
 .
 

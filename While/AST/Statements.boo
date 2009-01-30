@@ -130,15 +130,21 @@ class Read(Statement):
 		return "read ${_var}"
 
 	def Execute():
+		val as int
 		System.Console.Write(_var.Name + ": ")
-		VariableStack.AssignValue(_var.Name, int.Parse(System.Console.ReadLine()))
+		while not int.TryParse(System.Console.ReadLine(), val):
+			System.Console.Write(_var.Name + ": ")	
+		VariableStack.AssignValue(_var.Name, val)
 
 	def Compile(il as ILGenerator):
+		startLabel = il.DefineLabel()
+		il.MarkLabel(startLabel)
 		il.Emit(OpCodes.Ldstr, "${_var.Name}: ");
 		il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("Write", (typeof(string),)))
 		il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("ReadLine"))
-		il.Emit(OpCodes.Call, typeof(int).GetMethod("Parse", (typeof(string),)))
-		il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
+		il.Emit(OpCodes.Ldloca_S, VariableStack.GetValue(_var.Name))
+		il.Emit(OpCodes.Call, typeof(int).GetMethod("TryParse", (typeof(string),typeof(int).MakeByRefType())))
+		il.Emit(OpCodes.Brfalse, startLabel)
 
 class Block(Statement):
 

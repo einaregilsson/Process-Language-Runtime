@@ -216,9 +216,9 @@ class BitBinaryOp(IntBinaryOp[of IntExpression]):
 		elif _op == Xor: il.Emit(OpCodes.Xor)
 
 class LogicBinaryOp(BoolBinaryOp[of BoolExpression]):
-	public static final And = '&&'
-	public static final Or = '||'
-	public static final Xor = '^'
+	public static final And = 'and'
+	public static final Or = 'or'
+	public static final Xor = 'xor'
 
 	def constructor(l as BoolExpression, r as BoolExpression, op as string):
 		super(l,r,op)

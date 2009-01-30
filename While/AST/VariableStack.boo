@@ -14,6 +14,10 @@ static class VariableStack:
 	def PopScope():
 		_stack.RemoveAt(_stack.Count-1)
 
+	def Clear():
+		_stack.Clear()
+		_nr = 0
+		
 	def DefineVariable(name as string, assignNumber as bool):
 		if _stack.Count == 0:
 			raise WhileException("Stack is empty, cannot define variable ${name}")
