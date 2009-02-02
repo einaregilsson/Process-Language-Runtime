@@ -22,7 +22,6 @@ def ExpectInt(exp as Expression, t as Token, isRightHandSide as bool):
 		return false
 	return true
 
-
 CHARACTERS
   letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
   digit = "0123456789".

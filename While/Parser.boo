@@ -61,7 +61,6 @@ public class Parser:
 		return true
 	
 	
-	
 
 	
 	public def constructor(scanner as Scanner):
