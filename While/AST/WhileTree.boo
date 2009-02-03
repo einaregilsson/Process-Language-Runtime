@@ -17,8 +17,9 @@ static class WhileTree:
 	[getter(Procedures)]
 	_procs as Dictionary[of string, Procedure]
 	
-	[getter(TypeBuilder)]
-	_typeBuilder as TypeBuilder
+	[getter(CompiledProcedures)]
+	_compiledProcs = Dictionary[of string, MethodBuilder]()
+
 
 	def SetParseResults(stmts as StatementSequence, procs as Dictionary[of string, Procedure]):
 		_stmts = stmts
@@ -32,21 +33,27 @@ static class WhileTree:
 		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave)
 		module = assembly.DefineDynamicModule(filename, CompileOptions.Debug)
 
-		_typeBuilder = module.DefineType("WhileProgram", TypeAttributes.Class | TypeAttributes.Public)
-		method = _typeBuilder.DefineMethod("WhileMain", MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), array(Type,0))
-		il = method.GetILGenerator()		
+		mainMethod = module.DefineGlobalMethod("Main", MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), array(Type,0))
+		
 		if CompileOptions.Debug:
 			Node.DebugWriter = module.DefineDocument(CompileOptions.InputFilename, Guid.Empty, Guid.Empty, SymDocumentType.Text)
 		
+		#First compile the signatures
 		for proc as Procedure in _procs.Values:
-			proc.Compile(_typeBuilder)
+			method = proc.CompileSignature(module)
+			_compiledProcs.Add(proc.Name, method)
+		
+		for proc as Procedure in _procs.Values:
+			method = _compiledProcs[proc.Name]
+			proc.Compile(method.GetILGenerator())
 			
+		il = mainMethod.GetILGenerator()		
 		_stmts.Compile(il)
 		il.Emit(OpCodes.Ret)
-		_typeBuilder.CreateType()
-		assembly.SetEntryPoint(method, PEFileKinds.ConsoleApplication)
+		module.CreateGlobalFunctions()
+		assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication)
 		if CompileOptions.Debug:
-	       module.SetUserEntryPoint(method)
+	       module.SetUserEntryPoint(mainMethod)
 		
 		assembly.Save(filename)
 	

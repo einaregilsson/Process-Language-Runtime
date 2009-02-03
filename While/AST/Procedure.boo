@@ -18,10 +18,6 @@ class Procedure(Node):
 	[getter(Name)]
 	_name as string
 	
-	#Dict of the methods that are already compiled
-	[getter(Compiled)]
-	static _compiled = Dictionary[of string, MethodBuilder]()
-	
 	def constructor(name as string, valArgs as List[of Variable], resultArg as Variable, statements as StatementSequence):
 		_valArgs = valArgs
 		_resultArg = resultArg
@@ -37,10 +33,16 @@ class Procedure(Node):
 				return _valArgs.Count
 
 	def Compile(il as ILGenerator):
-		pass
+		for arg in _valArgs:
+			VariableStack.DefineArgument(arg.Name)
+		if _resultArg:
+			VariableStack.DefineArgument(_resultArg.Name)
+		_stmts.Compile(il)
+		il.Emit(OpCodes.Ret)
+		VariableStack.Clear()
 
 				
-	def Compile(typeBuilder as TypeBuilder):
+	def CompileSignature(module as ModuleBuilder):
 		argCount = _valArgs.Count
 		if _resultArg: argCount += 1
 		argtypes = array(Type, argCount)
@@ -49,8 +51,7 @@ class Procedure(Node):
 		if _resultArg:
 			argtypes[-1] = typeof(int).MakeByRefType()
 			
-		method = typeBuilder.DefineMethod(_name, MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), argtypes)
-		il = method.GetILGenerator()
+		method = module.DefineGlobalMethod(_name, MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), argtypes)
 		pos = 1
 		for arg in _valArgs:
 			VariableStack.DefineArgument(arg.Name)
@@ -60,11 +61,8 @@ class Procedure(Node):
 		if _resultArg:
 			VariableStack.DefineArgument(_resultArg.Name)
 			method.DefineParameter(pos, ParameterAttributes.Out, _resultArg.Name)
-		_stmts.Compile(il)
-		il.Emit(OpCodes.Ret)
-		_compiled.Add(_name, method)
 		VariableStack.Clear()
-		
+		return method
 		
 		
 	def ToString():

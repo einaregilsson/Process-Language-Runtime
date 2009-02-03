@@ -114,10 +114,20 @@ class Call(Statement):
 			System.Console.Error.WriteLine("(${_lastArgToken.line},${_lastArgToken.col}) ERROR: Only variables are allowed for result arguments")
 			System.Environment.Exit(1)
 		
-		for exp in _expr:
-			exp.Compile(il)
+		for i in range(0, _expr.Count-1):
+			_expr[i].Compile(il)
+		
+		if proc.ResultArg:
+			v as Variable = cast(Variable,_expr[_expr.Count-1])
+			if VariableStack.IsArgument(v.Name):
+				il.Emit(OpCodes.Ldarga, VariableStack.GetValue(v.Name))
+			else:
+				il.Emit(OpCodes.Ldloca, VariableStack.GetValue(v.Name))
+				
+		else:
+			_expr[_expr.Count-1].Compile(il)
 			
-		il.Emit(OpCodes.Call, Procedure.Compiled[_name])
+		il.Emit(OpCodes.Call, WhileTree.CompiledProcedures[_name])
 		
 
 class VariableDeclaration(Statement):
