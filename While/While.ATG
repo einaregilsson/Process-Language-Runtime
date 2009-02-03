@@ -1,8 +1,5 @@
 COMPILER Program
 	
-#Node
-[Getter(AbstractSyntaxTree)]
-_ast as WhileTree
 
 def ExpectBool(exp as Expression, t as Token, isRightHandSide as bool):
 	if not exp isa BoolExpression:
@@ -21,7 +18,11 @@ def ExpectInt(exp as Expression, t as Token, isRightHandSide as bool):
 			errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its left side")
 		return false
 	return true
-	
+
+def ExpectIntArg(exp as Expression, t as Token):
+	if not exp isa IntExpression:
+		errors.SemErr(t.line, t.col, "Arguments to procedures can only be integer expressions")
+
 def IsStartOfResultArg() as bool:
 	t as Token = scanner.Peek()
 	scanner.ResetPeek()
@@ -50,7 +51,7 @@ Program<>
 =                                          				(.	statements as StatementSequence
 															procs = Dictionary[of string, Procedure]() .)
    	{Proc<procs>}
-    StmtSeq<statements>						     		(.	_ast = WhileTree(statements, procs) .)
+    StmtSeq<statements>						     		(.	WhileTree.SetParseResults(statements, procs) .)
 .
 
 Proc<procs as Dictionary[of string, Procedure]>
@@ -64,12 +65,12 @@ Proc<procs as Dictionary[of string, Procedure]>
 	[
 		(
 			"val"
-			ident										(.	valArgs.Add(Variable(t.val))
+			ident										(.	valArgs.Add(Variable(t.val,IsValueArg:true))
 															VariableStack.DefineArgument(t.val) .)
 			[Args<valArgs, resultArg>]
 		|
 			"res"
-			ident										(.	resultArg = Variable(t.val)
+			ident										(.	resultArg = Variable(t.val,IsResultArg:true)
 															VariableStack.DefineArgument(t.val).)
 		)
 	]
@@ -91,7 +92,7 @@ Args<valArgs as List[of Variable], ref resultArg as Variable>
 	IF(IsStartOfResultArg()) 
 	","
 	"res" 
-	ident									(.	resultArg = Variable(t.val)
+	ident									(.	resultArg = Variable(t.val,IsResultArg:true)
 												if VariableStack.IsDeclaredInCurrentScope(t.val):
 													errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 												else:
@@ -99,7 +100,7 @@ Args<valArgs as List[of Variable], ref resultArg as Variable>
 											.)
 	|
 	","
-	ident									(.	valArgs.Add(Variable(t.val)) 
+	ident									(.	valArgs.Add(Variable(t.val,IsValueArg:true)) 
 												if VariableStack.IsDeclaredInCurrentScope(t.val):
 													errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 												else:
@@ -129,6 +130,7 @@ Stmt<ref stmt as Statement>
 	| WhileStmt<stmt>
 	| "read" ident                         			(. 	stmt = Read(Variable(t.val)); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length).)
 	| "write" Expr<exp>                				(. 	stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
+	| CallProc<stmt>								(. 	stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
 	)
 .
 
@@ -207,6 +209,25 @@ WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 														whileStmt.AddSequencePoint(sl,sc,el,ec)
 														whileStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
 .
+
+CallProc<ref callStmt as Statement>
+=													(.	exp as Expression
+														list = List[of Expression]()	.)
+	"call"											(.	callToken = t 
+														exprToken as Token.)
+	ident											(.	proc = t.val .)
+	"("
+	[
+													(.	exprToken = la .)
+		Expr<exp>									(.	list.Add(exp); ExpectIntArg(exp, exprToken) .)
+		{ 
+			"," 									(.	exprToken = la .)
+			Expr<exp>								(.	list.Add(exp); ExpectIntArg(exp, exprToken) .)
+		}
+	]
+	")"												(.	callStmt = Call(proc, list, callToken, exprToken) .)
+.
+
 
 Expr<ref exp as Expression>
 =	

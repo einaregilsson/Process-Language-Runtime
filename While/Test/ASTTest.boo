@@ -1,6 +1,7 @@
 namespace While.Test
 
 import While
+import While.AST
 import NUnit.Framework
 import System.IO
 
@@ -109,4 +110,4 @@ od
 		p.errors.errorStream = result
 		p.Parse()
 		Assert.AreEqual("", result.ToString())
-		Assert.AreEqual(expAst.Trim().Replace("\r",""), p.AbstractSyntaxTree.ToString())
+		Assert.AreEqual(expAst.Trim().Replace("\r",""), WhileTree.ToString())

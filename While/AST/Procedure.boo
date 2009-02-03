@@ -11,7 +11,7 @@ class Procedure(Node):
 	
 	[getter(ValueArgs)]
 	_valArgs as List[of Variable]
-	[getter(Result)]
+	[getter(ResultArg)]
 	_resultArg as Variable
 	[getter(Statements)]
 	_stmts as StatementSequence
@@ -24,10 +24,19 @@ class Procedure(Node):
 		_stmts = statements
 		_name = name
 		
+
+	ArgumentCount as int:
+		get:
+			if _resultArg:
+				return _valArgs.Count+1
+			else:
+				return _valArgs.Count
+
 	def Compile(il as ILGenerator):
 		pass
 
-	def Compile(module as ModuleBuilder):
+				
+	def Compile(typeBuilder as TypeBuilder):
 		argCount = _valArgs.Count
 		if _resultArg: argCount += 1
 		argtypes = array(Type, argCount)
@@ -36,9 +45,8 @@ class Procedure(Node):
 		if _resultArg:
 			argtypes[-1] = typeof(int).MakeByRefType()
 			
-		method = module.DefineGlobalMethod(_name, MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), argtypes)
+		method = typeBuilder.DefineMethod(_name, MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), argtypes)
 		il = method.GetILGenerator()
-		
 		pos = 1
 		for arg in _valArgs:
 			VariableStack.DefineArgument(arg.Name)

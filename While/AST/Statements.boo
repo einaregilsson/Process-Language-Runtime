@@ -4,6 +4,7 @@ import While
 import While.AST
 import While.AST.Expressions
 import System.Reflection.Emit
+import System.Collections.Generic
 
 abstract class Statement(Node):
 	
@@ -76,6 +77,50 @@ class Skip(Statement):
 		EmitDebugInfo(il,0,true)
 		#Nop only emitted in debug build, otherwise nothing is emitted
 		
+class Call(Statement):
+
+	[getter(Expressions)]
+	_expr as List[of Expression]
+	[getter(ProcedureName)]
+	_name as string
+
+	[getter(CallToken)]
+	_callToken as Token
+	[getter(LastArgumentToken)]
+	_lastArgToken as Token
+	
+	def constructor(name as string, expressions as List[of Expression], callToken, lastArgToken):
+		_expr = expressions
+		_name = name
+		_callToken = callToken
+		_lastArgToken = lastArgToken
+		
+	def ToString():
+		return "call ${_name}(${join(_expr, ', ')})"
+
+	def Compile(il as ILGenerator):
+		EmitDebugInfo(il,0,false)
+		l,c = _callToken.line, _callToken.col
+		if not WhileTree.Procedures.ContainsKey(ProcedureName):
+			System.Console.Error.WriteLine("(${l},${c}) ERROR: Procedure '${_name}' is not defined")
+			System.Environment.Exit(1)
+			
+		proc = WhileTree.Procedures[ProcedureName]
+		if _expr.Count != proc.ArgumentCount:
+			System.Console.Error.WriteLine("(${l},${c}) ERROR: Procedure '${_name}' does not take ${_expr.Count} arguments")
+			System.Environment.Exit(1)
+
+		if proc.ResultArg and not _expr[-1] isa Variable:
+			System.Console.Error.WriteLine("(${_lastArgToken.line},${_lastArgToken.col}) ERROR: Only variables are allowed for result arguments")
+			System.Environment.Exit(1)
+		
+		for exp in _expr:
+			exp.Compile(il)
+			
+		method = WhileTree.TypeBuilder.GetMethod(ProcedureName)
+		il.Emit(OpCodes.Call, method)
+		
+
 class VariableDeclaration(Statement):
 	[Getter(Variable)]
 	_var as Variable

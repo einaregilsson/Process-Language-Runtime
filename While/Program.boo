@@ -28,5 +28,5 @@ Copyright (C) Einar Egilsson 2009. All rights reserved.
 	p.Parse()
 	return if p.errors.count > 0
 	VariableStack.Clear()
-	p.AbstractSyntaxTree.Compile(CompileOptions.OutputFilename)
+	WhileTree.Compile(CompileOptions.OutputFilename)
 	return 0

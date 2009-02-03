@@ -15,7 +15,7 @@ public class Parser:
 	public static final _EOF as int = 0
 	public static final _ident as int = 1
 	public static final _number as int = 2
-	public static final maxT as int= 48
+	public static final maxT as int= 49
 
 	private static final T = true
 
@@ -38,10 +38,6 @@ public class Parser:
 	private errDist as int = minErrDist
 
 	
-	#Node
-	[Getter(AbstractSyntaxTree)]
-	_ast as WhileTree
-	
 	def ExpectBool(exp as Expression, t as Token, isRightHandSide as bool):
 		if not exp isa BoolExpression:
 			if isRightHandSide:
@@ -59,6 +55,10 @@ public class Parser:
 				errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its left side")
 			return false
 		return true
+	
+	def ExpectIntArg(exp as Expression, t as Token):
+		if not exp isa IntExpression:
+			errors.SemErr(t.line, t.col, "Arguments to procedures can only be integer expressions")
 	
 	def IsStartOfResultArg() as bool:
 		t as Token = scanner.Peek()
@@ -118,7 +118,7 @@ public class Parser:
 		while la.kind == 3:
 			Proc(procs)
 		StmtSeq(statements)
-		_ast = WhileTree(statements, procs) 
+		WhileTree.SetParseResults(statements, procs) 
 
 	def Proc(procs as Dictionary[of string, Procedure]):
 		statements as StatementSequence
@@ -134,14 +134,14 @@ public class Parser:
 			if la.kind == 5:
 				Get()
 				Expect(1)
-				valArgs.Add(Variable(t.val))
+				valArgs.Add(Variable(t.val,IsValueArg:true))
 				VariableStack.DefineArgument(t.val) 
 				if la.kind == 11:
 					Args(valArgs, resultArg)
 			else:
 				Get()
 				Expect(1)
-				resultArg = Variable(t.val)
+				resultArg = Variable(t.val,IsResultArg:true)
 				VariableStack.DefineArgument(t.val)
 		Expect(7)
 		Expect(8)
@@ -171,7 +171,7 @@ public class Parser:
 			Expect(11)
 			Expect(6)
 			Expect(1)
-			resultArg = Variable(t.val)
+			resultArg = Variable(t.val,IsResultArg:true)
 			if VariableStack.IsDeclaredInCurrentScope(t.val):
 				errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 			else:
@@ -180,7 +180,7 @@ public class Parser:
 		elif la.kind == 11:
 			Get()
 			Expect(1)
-			valArgs.Add(Variable(t.val))
+			valArgs.Add(Variable(t.val,IsValueArg:true))
 			if VariableStack.IsDeclaredInCurrentScope(t.val):
 				errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 			else:
@@ -188,7 +188,7 @@ public class Parser:
 			
 			if la.kind == 11:
 				Args(valArgs, resultArg)
-		else: SynErr(49)
+		else: SynErr(50)
 
 	def Stmt(ref stmt as Statement):
 		exp as Expression
@@ -213,7 +213,10 @@ public class Parser:
 			Get()
 			Expr(exp)
 			stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
-		else: SynErr(50)
+		elif la.kind == 25:
+			CallProc(stmt)
+			stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
+		else: SynErr(51)
 
 	def AssignStmt(ref assign as Statement):
 		exp as Expression
@@ -280,6 +283,27 @@ public class Parser:
 	def Expr(ref exp as Expression):
 		LogicOr(exp)
 
+	def CallProc(ref callStmt as Statement):
+		exp as Expression
+		list = List[of Expression]()	
+		Expect(25)
+		callToken = t
+		exprToken as Token
+		Expect(1)
+		proc = t.val 
+		Expect(4)
+		if StartOf(1):
+			exprToken = la 
+			Expr(exp)
+			list.Add(exp); ExpectIntArg(exp, exprToken) 
+			while la.kind == 11:
+				Get()
+				exprToken = la 
+				Expr(exp)
+				list.Add(exp); ExpectIntArg(exp, exprToken) 
+			Expect(7)
+		callStmt = Call(proc, list, callToken, exprToken) 
+
 	def VarDecStmt(ref vars as VariableDeclarationSequence):
 		list = List[of VariableDeclaration]() 
 		VarDec(list)
@@ -306,7 +330,7 @@ public class Parser:
 	def LogicOr(ref exp as Expression):
 		second as Expression 
 		LogicAnd(exp)
-		while la.kind == 25:
+		while la.kind == 26:
 			Get()
 			tok = t 
 			LogicAnd(second)
@@ -317,7 +341,7 @@ public class Parser:
 	def LogicAnd(ref exp as Expression):
 		second as Expression 
 		LogicXor(exp)
-		while la.kind == 26:
+		while la.kind == 27:
 			Get()
 			tok = t 
 			LogicXor(second)
@@ -328,7 +352,7 @@ public class Parser:
 	def LogicXor(ref exp as Expression):
 		second as Expression 
 		Comparison(exp)
-		while la.kind == 27:
+		while la.kind == 28:
 			Get()
 			tok = t 
 			Comparison(second)
@@ -340,20 +364,20 @@ public class Parser:
 		second as Expression
 		op as string 
 		BitOr(exp)
-		if StartOf(1):
-			if la.kind == 28:
+		if StartOf(2):
+			if la.kind == 29:
 				Get()
 				op = ComparisonBinaryOp.LessThan 
-			elif la.kind == 29:
-				Get()
-				op = ComparisonBinaryOp.GreaterThan 
 			elif la.kind == 30:
 				Get()
-				op = ComparisonBinaryOp.LessThanOrEqual 
+				op = ComparisonBinaryOp.GreaterThan 
 			elif la.kind == 31:
 				Get()
-				op = ComparisonBinaryOp.GreaterThanOrEqual 
+				op = ComparisonBinaryOp.LessThanOrEqual 
 			elif la.kind == 32:
+				Get()
+				op = ComparisonBinaryOp.GreaterThanOrEqual 
+			elif la.kind == 33:
 				Get()
 				op = ComparisonBinaryOp.Equal
 			else:
@@ -368,7 +392,7 @@ public class Parser:
 	def BitOr(ref exp as Expression):
 		second as Expression 
 		BitXor(exp)
-		while la.kind == 34:
+		while la.kind == 35:
 			Get()
 			tok = t 
 			BitXor(second)
@@ -379,7 +403,7 @@ public class Parser:
 	def BitXor(ref exp as Expression):
 		second as Expression 
 		BitAnd(exp)
-		while la.kind == 35:
+		while la.kind == 36:
 			Get()
 			tok = t 
 			BitAnd(second)
@@ -390,7 +414,7 @@ public class Parser:
 	def BitAnd(ref exp as Expression):
 		second as Expression 
 		BitShift(exp)
-		while la.kind == 36:
+		while la.kind == 37:
 			Get()
 			tok = t 
 			BitShift(second)
@@ -402,8 +426,8 @@ public class Parser:
 		second as Expression
 		op as string 
 		PlusMinus(exp)
-		while la.kind == 37 or la.kind == 38:
-			if la.kind == 37:
+		while la.kind == 38 or la.kind == 39:
+			if la.kind == 38:
 				Get()
 				op = BitBinaryOp.ShiftLeft 
 			else:
@@ -419,8 +443,8 @@ public class Parser:
 		second as Expression
 		op as string
 		MulDivMod(exp)
-		while la.kind == 39 or la.kind == 40:
-			if la.kind == 39:
+		while la.kind == 40 or la.kind == 41:
+			if la.kind == 40:
 				Get()
 				op = ArithmeticBinaryOp.Plus 
 			else:
@@ -435,11 +459,11 @@ public class Parser:
 	def MulDivMod(ref exp as Expression):
 		second as Expression 
 		UnaryOperator(exp)
-		while la.kind == 41 or la.kind == 42 or la.kind == 43:
-			if la.kind == 41:
+		while la.kind == 42 or la.kind == 43 or la.kind == 44:
+			if la.kind == 42:
 				Get()
 				op = ArithmeticBinaryOp.Multiplication 
-			elif la.kind == 42:
+			elif la.kind == 43:
 				Get()
 				op = ArithmeticBinaryOp.Division 
 			else:
@@ -453,11 +477,11 @@ public class Parser:
 
 	def UnaryOperator(ref exp as Expression):
 		op as string = null 
-		if la.kind == 40 or la.kind == 44 or la.kind == 45:
-			if la.kind == 40:
+		if la.kind == 41 or la.kind == 45 or la.kind == 46:
+			if la.kind == 41:
 				Get()
 				op = t.val 
-			elif la.kind == 44:
+			elif la.kind == 45:
 				Get()
 				op = t.val 
 			else:
@@ -481,17 +505,17 @@ public class Parser:
 		elif la.kind == 2:
 			Get()
 			exp = Number(int.Parse(t.val)) 
-		elif la.kind == 46:
+		elif la.kind == 47:
 			Get()
 			exp = Bool(true) 
-		elif la.kind == 47:
+		elif la.kind == 48:
 			Get()
 			exp = Bool(false) 
 		elif la.kind == 4:
 			Get()
 			Expr(exp)
 			Expect(7)
-		else: SynErr(51)
+		else: SynErr(52)
 
 
 	
@@ -507,8 +531,9 @@ public class Parser:
 	private bitset = List[of (bool)]()
 
 	private def InitBitset():
-		bitset.Add((true ,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false))
-		bitset.Add((false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, true ,true ,true ,true , true ,true ,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false))
+		bitset.Add((true ,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
+		bitset.Add((false,true ,true ,false, true ,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,true ,false,false, false,true ,true ,true , true ,false,false))
+		bitset.Add((false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,true ,true ,true , true ,true ,true ,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
 
 
 // end Parser
@@ -551,33 +576,34 @@ public class Errors:
 		elif n == 22: s = '"while" expected'
 		elif n == 23: s = '"do" expected'
 		elif n == 24: s = '"od" expected'
-		elif n == 25: s = '"or" expected'
-		elif n == 26: s = '"and" expected'
-		elif n == 27: s = '"xor" expected'
-		elif n == 28: s = '"<" expected'
-		elif n == 29: s = '">" expected'
-		elif n == 30: s = '"<=" expected'
-		elif n == 31: s = '">=" expected'
-		elif n == 32: s = '"==" expected'
-		elif n == 33: s = '"!=" expected'
-		elif n == 34: s = '"|" expected'
-		elif n == 35: s = '"^" expected'
-		elif n == 36: s = '"&" expected'
-		elif n == 37: s = '"<<" expected'
-		elif n == 38: s = '">>" expected'
-		elif n == 39: s = '"+" expected'
-		elif n == 40: s = '"-" expected'
-		elif n == 41: s = '"*" expected'
-		elif n == 42: s = '"/" expected'
-		elif n == 43: s = '"%" expected'
-		elif n == 44: s = '"~" expected'
-		elif n == 45: s = '"not" expected'
-		elif n == 46: s = '"true" expected'
-		elif n == 47: s = '"false" expected'
-		elif n == 48: s = '??? expected'
-		elif n == 49: s = 'invalid Args'
-		elif n == 50: s = 'invalid Stmt'
-		elif n == 51: s = 'invalid Terminal'
+		elif n == 25: s = '"call" expected'
+		elif n == 26: s = '"or" expected'
+		elif n == 27: s = '"and" expected'
+		elif n == 28: s = '"xor" expected'
+		elif n == 29: s = '"<" expected'
+		elif n == 30: s = '">" expected'
+		elif n == 31: s = '"<=" expected'
+		elif n == 32: s = '">=" expected'
+		elif n == 33: s = '"==" expected'
+		elif n == 34: s = '"!=" expected'
+		elif n == 35: s = '"|" expected'
+		elif n == 36: s = '"^" expected'
+		elif n == 37: s = '"&" expected'
+		elif n == 38: s = '"<<" expected'
+		elif n == 39: s = '">>" expected'
+		elif n == 40: s = '"+" expected'
+		elif n == 41: s = '"-" expected'
+		elif n == 42: s = '"*" expected'
+		elif n == 43: s = '"/" expected'
+		elif n == 44: s = '"%" expected'
+		elif n == 45: s = '"~" expected'
+		elif n == 46: s = '"not" expected'
+		elif n == 47: s = '"true" expected'
+		elif n == 48: s = '"false" expected'
+		elif n == 49: s = '??? expected'
+		elif n == 50: s = 'invalid Args'
+		elif n == 51: s = 'invalid Stmt'
+		elif n == 52: s = 'invalid Terminal'
 
 		else: s = ('error ' + n)
 		errorStream.WriteLine(errMsgFormat, line, col, "ERROR", s)

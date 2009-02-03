@@ -256,8 +256,8 @@ public class Scanner:
 	private static final eofSym = 0
 
 	/* pdt */
-	static final maxT as int = 48
-	static final noSym as int = 48
+	static final maxT as int = 49
+	static final noSym as int = 49
 
 	
 	public buffer as Buffer
@@ -485,12 +485,13 @@ public class Scanner:
 		elif tokString == "while": t.kind = 22
 		elif tokString == "do": t.kind = 23
 		elif tokString == "od": t.kind = 24
-		elif tokString == "or": t.kind = 25
-		elif tokString == "and": t.kind = 26
-		elif tokString == "xor": t.kind = 27
-		elif tokString == "not": t.kind = 45
-		elif tokString == "true": t.kind = 46
-		elif tokString == "false": t.kind = 47
+		elif tokString == "call": t.kind = 25
+		elif tokString == "or": t.kind = 26
+		elif tokString == "and": t.kind = 27
+		elif tokString == "xor": t.kind = 28
+		elif tokString == "not": t.kind = 46
+		elif tokString == "true": t.kind = 47
+		elif tokString == "false": t.kind = 48
 
 
 	
@@ -553,9 +554,9 @@ public class Scanner:
 			elif state == 8:
 				t.kind = 17 
 			elif state == 9:
-				t.kind = 30 
-			elif state == 10:
 				t.kind = 31 
+			elif state == 10:
+				t.kind = 32 
 			elif state == 11:
 				if ch == char('='):
 					AddCh()
@@ -564,7 +565,7 @@ public class Scanner:
 				else:
 					t.kind = noSym
 			elif state == 12:
-				t.kind = 32 
+				t.kind = 33 
 			elif state == 13:
 				if ch == char('='):
 					AddCh()
@@ -573,29 +574,29 @@ public class Scanner:
 				else:
 					t.kind = noSym
 			elif state == 14:
-				t.kind = 33 
-			elif state == 15:
 				t.kind = 34 
-			elif state == 16:
+			elif state == 15:
 				t.kind = 35 
-			elif state == 17:
+			elif state == 16:
 				t.kind = 36 
-			elif state == 18:
+			elif state == 17:
 				t.kind = 37 
-			elif state == 19:
+			elif state == 18:
 				t.kind = 38 
-			elif state == 20:
+			elif state == 19:
 				t.kind = 39 
-			elif state == 21:
+			elif state == 20:
 				t.kind = 40 
-			elif state == 22:
+			elif state == 21:
 				t.kind = 41 
-			elif state == 23:
+			elif state == 22:
 				t.kind = 42 
-			elif state == 24:
+			elif state == 23:
 				t.kind = 43 
-			elif state == 25:
+			elif state == 24:
 				t.kind = 44 
+			elif state == 25:
+				t.kind = 45 
 			elif state == 26:
 				if ch == char('='):
 					AddCh()
@@ -606,7 +607,7 @@ public class Scanner:
 					state = 18
 					continue
 				else:
-					t.kind = 28 
+					t.kind = 29 
 			elif state == 27:
 				if ch == char('='):
 					AddCh()
@@ -617,7 +618,7 @@ public class Scanner:
 					state = 19
 					continue
 				else:
-					t.kind = 29 
+					t.kind = 30 
 
 			break unless false
 			

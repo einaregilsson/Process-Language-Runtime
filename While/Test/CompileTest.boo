@@ -1,6 +1,7 @@
 namespace While.Test
 
 import While
+import While.AST
 import NUnit.Framework
 import System.IO
 
@@ -22,4 +23,4 @@ class CompileTest:
 		result = StringWriter()
 		p.errors.errorStream = result
 		p.Parse()
-		p.AbstractSyntaxTree.Compile("test.exe")
+		WhileTree.Compile("test.exe")
