@@ -121,7 +121,6 @@ public class Parser:
 		_ast = WhileTree(statements, procs) 
 
 	def Proc(procs as Dictionary[of string, Procedure]):
-		VariableStack.PushScope()
 		statements as StatementSequence
 		name as string 
 		valArgs = List[of Variable]()
@@ -136,14 +135,14 @@ public class Parser:
 				Get()
 				Expect(1)
 				valArgs.Add(Variable(t.val))
-				VariableStack.DefineVariable(t.val) 
+				VariableStack.DefineArgument(t.val) 
 				if la.kind == 11:
 					Args(valArgs, resultArg)
 			else:
 				Get()
 				Expect(1)
 				resultArg = Variable(t.val)
-				VariableStack.DefineVariable(t.val)
+				VariableStack.DefineArgument(t.val)
 		Expect(7)
 		Expect(8)
 		StmtSeq(statements)
@@ -174,18 +173,18 @@ public class Parser:
 			Expect(1)
 			resultArg = Variable(t.val)
 			if VariableStack.IsDeclaredInCurrentScope(t.val):
-				errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
+				errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 			else:
-				VariableStack.DefineVariable(t.val)
+				VariableStack.DefineArgument(t.val)
 			
 		elif la.kind == 11:
 			Get()
 			Expect(1)
 			valArgs.Add(Variable(t.val))
 			if VariableStack.IsDeclaredInCurrentScope(t.val):
-				errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
+				errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 			else:
-				VariableStack.DefineVariable(t.val)
+				VariableStack.DefineArgument(t.val)
 			
 			if la.kind == 11:
 				Args(valArgs, resultArg)

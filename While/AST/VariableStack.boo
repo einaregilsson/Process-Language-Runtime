@@ -7,6 +7,7 @@ static class VariableStack:
 
 	private _stack = List[of Dictionary[of string, int]]()
 	private _nr = 0
+	private _args = List[of string]()
 
 	def PushScope():
 		_stack.Add(Dictionary[of string, int]())
@@ -16,6 +17,7 @@ static class VariableStack:
 
 	def Clear():
 		_stack.Clear()
+		_args.Clear()
 		_nr = 0
 		
 	def DefineVariable(name as string):
@@ -26,18 +28,29 @@ static class VariableStack:
 		_stack[_stack.Count-1].Add(name, _nr)
 		_nr++
 			
-
+	def DefineArgument(name as string):
+		_args.Add(name)
+		
+	def IsArgument(name as string):
+		return FindScopeForVariable(name) == null and _args.Contains(name)
+		
 	def GetValue(name as string) as int:
 		scope = FindScopeForVariable(name)
 		if not scope:
-			raise WhileException("Variable ${name} is not in scope!")
+			nr = _args.IndexOf(name)
+			if nr == -1:
+				raise WhileException("Variable ${name} is not in scope!")
+			return nr
 		return scope[name]
 	
 	def IsInScope(name as string) as bool:
-		return FindScopeForVariable(name) != null
+		scope = FindScopeForVariable(name)
+		if scope == null:
+			return _args.Contains(name)
+		return true
 		
 	def IsDeclaredInCurrentScope(name as string) as bool:
-		return _stack.Count > 0 and _stack[_stack.Count-1].ContainsKey(name)
+		return _stack.Count > 0 and _stack[_stack.Count-1].ContainsKey(name) or _args.Contains(name)
 
 	def FindScopeForVariable(name as string) as Dictionary[of string, int]:
 		for i in range(_stack.Count-1, -1, -1):

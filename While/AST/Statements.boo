@@ -63,8 +63,11 @@ class Assign(Statement):
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0, false)
 		_exp.Compile(il)
-		il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
-		
+		if VariableStack.IsArgument(_var.Name):
+			il.Emit(OpCodes.Starg, VariableStack.GetValue(_var.Name))
+		else:
+			il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
+			
 class Skip(Statement):
 	def ToString():
 		return "skip"

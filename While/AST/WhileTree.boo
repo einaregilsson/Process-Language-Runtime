@@ -20,7 +20,6 @@ class WhileTree:
 	def constructor(stmts as StatementSequence, procs as Dictionary[of string, Procedure]):
 		_stmts = stmts
 		_procs = procs
-		System.Console.Write(ToString())
 		
 	def ToString():
 		return join(_procs.Values, ";\n") + "\n\n" + _stmts.ToString()

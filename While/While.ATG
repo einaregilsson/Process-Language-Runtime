@@ -54,8 +54,7 @@ Program<>
 .
 
 Proc<procs as Dictionary[of string, Procedure]>
-=														(.	VariableStack.PushScope()
-															statements as StatementSequence
+=														(.	statements as StatementSequence
 															name as string 
 															valArgs = List[of Variable]()
 															resultArg as Variable .)
@@ -66,12 +65,12 @@ Proc<procs as Dictionary[of string, Procedure]>
 		(
 			"val"
 			ident										(.	valArgs.Add(Variable(t.val))
-															VariableStack.DefineVariable(t.val) .)
+															VariableStack.DefineArgument(t.val) .)
 			[Args<valArgs, resultArg>]
 		|
 			"res"
 			ident										(.	resultArg = Variable(t.val)
-															VariableStack.DefineVariable(t.val).)
+															VariableStack.DefineArgument(t.val).)
 		)
 	]
 	")"
@@ -94,17 +93,17 @@ Args<valArgs as List[of Variable], ref resultArg as Variable>
 	"res" 
 	ident									(.	resultArg = Variable(t.val)
 												if VariableStack.IsDeclaredInCurrentScope(t.val):
-													errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
+													errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 												else:
-													VariableStack.DefineVariable(t.val)
+													VariableStack.DefineArgument(t.val)
 											.)
 	|
 	","
 	ident									(.	valArgs.Add(Variable(t.val)) 
 												if VariableStack.IsDeclaredInCurrentScope(t.val):
-													errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
+													errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 												else:
-													VariableStack.DefineVariable(t.val)
+													VariableStack.DefineArgument(t.val)
 											.)
 	[Args<valArgs, resultArg>] 
 	)

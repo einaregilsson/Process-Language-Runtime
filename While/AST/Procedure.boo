@@ -38,7 +38,18 @@ class Procedure(Node):
 			
 		method = module.DefineGlobalMethod(_name, MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), argtypes)
 		il = method.GetILGenerator()
+		
+		pos = 1
+		for arg in _valArgs:
+			VariableStack.DefineArgument(arg.Name)
+			method.DefineParameter(pos, ParameterAttributes.In, arg.Name)
+			pos += 1
+			
+		if _resultArg:
+			VariableStack.DefineArgument(_resultArg.Name)
+			method.DefineParameter(pos, ParameterAttributes.Out, _resultArg.Name)
 		_stmts.Compile(il)
+		VariableStack.Clear()
 		
 		
 		

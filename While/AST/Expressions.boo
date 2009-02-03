@@ -74,7 +74,10 @@ class Variable(IntExpression):
 		return _name.ToString()
 		
 	def Compile(il as ILGenerator):
-		il.Emit(OpCodes.Ldloc, VariableStack.GetValue(_name))
+		code = OpCodes.Ldloc
+		if VariableStack.IsArgument(_name):
+			code = OpCodes.Starg	
+		il.Emit(code, VariableStack.GetValue(_name))
 		
 
 abstract class IntBinaryOp[of ChildType](IntExpression):
