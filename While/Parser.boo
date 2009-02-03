@@ -125,12 +125,13 @@ public class Parser:
 
 	def Stmt(ref stmt as Statement):
 		exp as Expression
-		start = la 
+		sl,sc = la.line, la.col 
 		if la.kind == 1:
 			AssignStmt(stmt)
+			stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
 		elif la.kind == 4:
 			Get()
-			stmt = Skip() 
+			stmt = Skip();stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
 		elif la.kind == 8:
 			BlockStmt(stmt)
 		elif la.kind == 11:
@@ -140,15 +141,12 @@ public class Parser:
 		elif la.kind == 5:
 			Get()
 			Expect(1)
-			stmt = Read(Variable(t.val))
+			stmt = Read(Variable(t.val)); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length)
 		elif la.kind == 6:
 			Get()
 			Expr(exp)
-			stmt = Write(exp) 
+			stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
 		else: SynErr(44)
-		stmt.SetStartDebugInfo(start.line, start.col)
-		if stmt.GetType() in (Write, Read, Skip, Assign):
-			stmt.SetEndDebugInfo(t.line, t.col+t.val.Length) 
 
 	def AssignStmt(ref assign as Statement):
 		exp as Expression
@@ -166,13 +164,16 @@ public class Parser:
 	def BlockStmt(ref block as Statement):
 		Expect(8)
 		vars as VariableDeclarationSequence
-		VariableStack.PushScope() 
+		VariableStack.PushScope()
+		sl,sc,el,ec = t.line,t.col,t.line,t.col+t.val.Length 
 		if la.kind == 7:
 			VarDecStmt(vars)
 		statements as StatementSequence 
 		StmtSeq(statements)
 		Expect(9)
 		block = Block(vars, statements)
+		block.AddSequencePoint(sl,sc,el,ec)
+		block.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
 		VariableStack.PopScope() 
 
 	def IfStmt(ref ifStmt as Statement):
@@ -180,32 +181,34 @@ public class Parser:
 		elseBranch as StatementSequence
 		exp as Expression 
 		Expect(11)
-		tok = t 
+		sl,sc,tok = t.line, t.col, t 
 		Expr(exp)
 		return unless ExpectBool(exp, tok, true) 
 		Expect(12)
-		endDbgTok = t 
+		el,ec = t.line, t.col+t.val.Length 
 		StmtSeq(ifBranch)
 		if la.kind == 13:
 			Get()
 			StmtSeq(elseBranch)
 		Expect(14)
 		ifStmt = If(exp, ifBranch, elseBranch)
-		ifStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) 
+		ifStmt.AddSequencePoint(sl,sc,el,ec)
+		ifStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
 
 	def WhileStmt(ref whileStmt as Statement):
 		exp as Expression
 		whileBranch as StatementSequence 
 		Expect(15)
-		tok = t 
+		sl,sc,tok = t.line, t.col,t 
 		Expr(exp)
 		return unless ExpectBool(exp, tok, true) 
 		Expect(16)
-		endDbgTok = t 
+		el,ec = t.line, t.col+t.val.Length 
 		StmtSeq(whileBranch)
 		Expect(17)
 		whileStmt = While(exp, whileBranch)
-		whileStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) 
+		whileStmt.AddSequencePoint(sl,sc,el,ec)
+		whileStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
 
 	def Expr(ref exp as Expression):
 		LogicOr(exp)
@@ -219,7 +222,7 @@ public class Parser:
 
 	def VarDec(list as List[of VariableDeclaration]):
 		Expect(7)
-		start = t; end = la 
+		sl,sc,el,ec = t.line,t.col,la.line,la.col+la.val.Length 
 		Expect(1)
 		if VariableStack.IsDeclaredInCurrentScope(t.val):
 			errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope") 
@@ -229,8 +232,7 @@ public class Parser:
 		else:
 			VariableStack.DefineVariable(t.val, true) 
 		vd = VariableDeclaration(Variable(t.val))
-		vd.SetStartDebugInfo(start.line, start.col)
-		vd.SetEndDebugInfo(end.line, end.col+end.val.Length)
+		vd.AddSequencePoint(sl,sc,el,ec)
 		list.Add(vd) 
 		Expect(3)
 

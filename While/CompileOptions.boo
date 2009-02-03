@@ -13,7 +13,7 @@ static class CompileOptions:
 	_inputFile = ""
 	
 	[Property(Empty)]
-	_empty = true
+	_empty = false
 
 	[Property(Help)]
 	_help = false

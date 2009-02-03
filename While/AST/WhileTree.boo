@@ -1,9 +1,11 @@
 namespace While.AST
 
+import While
 import While.AST.Statements
 import System
 import System.Reflection
 import System.Reflection.Emit
+import System.Diagnostics.SymbolStore
 import System.Threading
 
 class WhileTree:
@@ -23,16 +25,18 @@ class WhileTree:
 	def Compile(filename):
 		name = AssemblyName(Name:filename)
 		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
-		module = assembly.DefineDynamicModule(filename, true)
+		module = assembly.DefineDynamicModule(filename, CompileOptions.Debug)
 
-		#Create the type that holds our main method
-		type = module.DefineType("WhileType", TypeAttributes.Public | TypeAttributes.Class)
-		method = type.DefineMethod("Main", MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), array(Type,0))
+		method = module.DefineGlobalMethod("WhileMain",MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), array(Type,0))
 		il = method.GetILGenerator()		
+		if CompileOptions.Debug:
+			Node.DebugWriter = module.DefineDocument(CompileOptions.InputFilename, Guid.Empty, Guid.Empty, SymDocumentType.Text)
 		_stmts.Compile(il)
 		il.Emit(OpCodes.Ret)
-		type.CreateType()
-
+		module.CreateGlobalFunctions()
 		assembly.SetEntryPoint(method, PEFileKinds.ConsoleApplication)
+		if CompileOptions.Debug:
+	       module.SetUserEntryPoint(method)
+		
 		assembly.Save(filename)
 	

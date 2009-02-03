@@ -7,25 +7,20 @@ import System.Reflection.Emit
 
 abstract class Statement(Node):
 	
-	_startLine as int
-	_startCol as int
-	_endLine as int
-	_endCol as int
+	_seqPoints = [] #List of 4-tuples with startline, startcol, endline, endcol for debug
 
 	protected def Indent(str):
 		return "\t" + str.ToString().Replace("\n", "\n\t")
 	
-	def SetStartDebugInfo(startLine, startCol):
-		_startLine = startLine		
-		_startCol = startCol
-		
-	def SetEndDebugInfo(endLine, endCol):
-		_endLine = endLine
-		_endCol = endCol
-
-	def EmitDebugInfo(il as ILGenerator):
+	def EmitDebugInfo(il as ILGenerator, index as int, addNOP):
 		if CompileOptions.Debug:
-			il.MarkSequencePoint(null, _startLine, _startCol, _endLine, _endCol)
+			sl,sc,el,ec = _seqPoints[index]
+			il.MarkSequencePoint(DebugWriter, sl,sc,el,ec)
+			if addNOP:
+				il.Emit(OpCodes.Nop)
+		
+	def AddSequencePoint(startline as int, startcol as int, endline as int, endcol as int):
+		_seqPoints.Add((startline,startcol, endline, endcol))
 		
 	abstract def Execute():
 		pass
@@ -81,7 +76,7 @@ class Assign(Statement):
 		VariableStack.AssignValue(_var.Name, _exp.IntValue)
 
 	def Compile(il as ILGenerator):
-		EmitDebugInfo(il)
+		EmitDebugInfo(il,0, false)
 		_exp.Compile(il)
 		il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
 		
@@ -93,7 +88,8 @@ class Skip(Statement):
 		pass
 
 	def Compile(il as ILGenerator):
-		il.Emit(OpCodes.Nop)
+		EmitDebugInfo(il,0,true)
+		#Nop only emitted in debug build, otherwise nothing is emitted
 		
 class VariableDeclaration(Statement):
 	[Getter(Variable)]
@@ -109,6 +105,7 @@ class VariableDeclaration(Statement):
 		VariableStack.DefineVariable(_var.Name, false)
 
 	def Compile(il as ILGenerator):
+		EmitDebugInfo(il,0, true)
 		VariableStack.DefineVariable(_var.Name, true);
 		lb = il.DeclareLocal(typeof(int))
 		if CompileOptions.Debug:
@@ -132,6 +129,7 @@ class Write(Statement):
 		_writer.WriteLine(_exp.Value)
 
 	def Compile(il as ILGenerator):
+		EmitDebugInfo(il,0,false)
 		_exp.Compile(il)
 		if _exp isa BoolExpression:
 			mi = typeof(System.Console).GetMethod("WriteLine", (typeof(bool),))
@@ -157,6 +155,7 @@ class Read(Statement):
 		VariableStack.AssignValue(_var.Name, val)
 
 	def Compile(il as ILGenerator):
+		EmitDebugInfo(il,0,false)
 		startLabel = il.DefineLabel()
 		il.MarkLabel(startLabel)
 		il.Emit(OpCodes.Ldstr, "${_var.Name}: ");
@@ -189,10 +188,15 @@ class Block(Statement):
 	def Compile(il as ILGenerator):
 		VariableStack.PushScope()
 		il.BeginScope()
-		_vars.Compile(il)
+		EmitDebugInfo(il,0,true)
+		if CompileOptions.Debug:
+			il.Emit(OpCodes.Nop) #To step correctly
+		_vars.Compile(il) if _vars
 		_stmts.Compile(il)
 		il.EndScope()
 		VariableStack.PopScope()
+		EmitDebugInfo(il, 1, true)
+
 
 class If(Statement):
 
@@ -221,6 +225,7 @@ class If(Statement):
 			_elseBranch.Execute()
 
 	def Compile(il as ILGenerator):
+		EmitDebugInfo(il,0,false)
 		_exp.Compile(il)
 		ifFalseLabel = il.DefineLabel()
 		endLabel = il.DefineLabel()
@@ -230,6 +235,7 @@ class If(Statement):
 		il.MarkLabel(ifFalseLabel)
 		_elseBranch.Compile(il) if _elseBranch
 		il.MarkLabel(endLabel)
+		EmitDebugInfo(il,1,true)
 
 class While(Statement):
 
@@ -250,6 +256,8 @@ class While(Statement):
 			_statements.Execute()
 
 	def Compile(il as ILGenerator):
+		EmitDebugInfo(il,0,false)
+	
 		evalConditionLabel = il.DefineLabel()
 		afterTheLoopLabel = il.DefineLabel()
 		il.MarkLabel(evalConditionLabel)
@@ -258,3 +266,4 @@ class While(Statement):
 		_statements.Compile(il)
 		il.Emit(OpCodes.Br, evalConditionLabel)		
 		il.MarkLabel(afterTheLoopLabel)
+		EmitDebugInfo(il,1,true)

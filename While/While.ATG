@@ -57,19 +57,16 @@ StmtSeq<ref statements as StatementSequence>
 
 Stmt<ref stmt as Statement>                   
 =													(. 	exp as Expression 
-														start = la .)
+														sl,sc = la.line, la.col .)
 
-	( AssignStmt<stmt>
-	| "skip"                               			(. stmt = Skip() .)
+	( AssignStmt<stmt>								(. stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
+	| "skip"                               			(. stmt = Skip();stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
 	| BlockStmt<stmt>                       
 	| IfStmt<stmt>
 	| WhileStmt<stmt>
-	| "read" ident                         			(. 	stmt = Read(Variable(t.val)).)
-	| "write" Expr<exp>                				(. 	stmt = Write(exp) .)
+	| "read" ident                         			(. 	stmt = Read(Variable(t.val)); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length).)
+	| "write" Expr<exp>                				(. 	stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
 	)
-													(. 	stmt.SetStartDebugInfo(start.line, start.col) 
-														if stmt.GetType() in (Write, Read, Skip, Assign):
-															stmt.SetEndDebugInfo(t.line, t.col+t.val.Length) .)
 .
 
 VarDecStmt<ref vars as VariableDeclarationSequence>
@@ -82,7 +79,7 @@ VarDecStmt<ref vars as VariableDeclarationSequence>
 
 VarDec<list as List[of VariableDeclaration]>
 =
-	"var" 											(. start = t; end = la .)
+	"var" 											(. sl,sc,el,ec = t.line,t.col,la.line,la.col+la.val.Length .)
 	ident                             				(. 	if VariableStack.IsDeclaredInCurrentScope(t.val):
 															errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope") 
 														elif VariableStack.IsInScope(t.val):
@@ -91,8 +88,7 @@ VarDec<list as List[of VariableDeclaration]>
 														else:
 															VariableStack.DefineVariable(t.val, true) 
 														vd = VariableDeclaration(Variable(t.val))
-														vd.SetStartDebugInfo(start.line, start.col)
-														vd.SetEndDebugInfo(end.line, end.col+end.val.Length)
+														vd.AddSequencePoint(sl,sc,el,ec)
 														list.Add(vd) .)
 	';'
 .
@@ -100,10 +96,13 @@ VarDec<list as List[of VariableDeclaration]>
 BlockStmt<ref block as Statement>                 
 =
 	"begin"                                 		(. 	vars as VariableDeclarationSequence
-														VariableStack.PushScope() .)
+														VariableStack.PushScope()
+														sl,sc,el,ec = t.line,t.col,t.line,t.col+t.val.Length .)
 	[ VarDecStmt<vars> ]							(. statements as StatementSequence .)
 	StmtSeq<statements>                
 	"end"                       					(. 	block = Block(vars, statements) 
+														block.AddSequencePoint(sl,sc,el,ec)
+														block.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
 														VariableStack.PopScope() .)
 .
 
@@ -121,27 +120,29 @@ IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence;
 														elseBranch as StatementSequence
 														exp as Expression .)
 =
-	"if"											(.  tok = t .)
+	"if"											(.  sl,sc,tok = t.line, t.col, t .)
 	Expr<exp>										(.	return unless ExpectBool(exp, tok, true) .)
-	"then"											(. 	endDbgTok = t .)
+	"then"											(. 	el,ec = t.line, t.col+t.val.Length .)
 	StmtSeq<ifBranch>
 	[
 	    "else"
 	    StmtSeq<elseBranch>
 	]
 	"fi"                                  			(. 	ifStmt = If(exp, ifBranch, elseBranch) 
-														ifStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) .)
+														ifStmt.AddSequencePoint(sl,sc,el,ec)
+														ifStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
 .
 
 WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 														whileBranch as StatementSequence .)
 =
-	"while"											(. 	tok = t .)
+	"while"											(. 	sl,sc,tok = t.line, t.col,t .)
 	Expr<exp>										(. 	return unless ExpectBool(exp, tok, true) .)
-	"do"											(.	endDbgTok = t .)
+	"do"											(.	el,ec = t.line, t.col+t.val.Length .)
 	StmtSeq<whileBranch>
 	"od"                                   			(. 	whileStmt = While(exp, whileBranch) 
-														whileStmt.SetEndDebugInfo(endDbgTok.line, endDbgTok.col+endDbgTok.val.Length) .)
+														whileStmt.AddSequencePoint(sl,sc,el,ec)
+														whileStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
 .
 
 Expr<ref exp as Expression>
