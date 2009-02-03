@@ -21,6 +21,11 @@ def ExpectInt(exp as Expression, t as Token, isRightHandSide as bool):
 			errors.SemErr(t.line, t.col, "'${t.val}' expects a integer expression on its left side")
 		return false
 	return true
+	
+def IsStartOfResultArg() as bool:
+	t as Token = scanner.Peek()
+	scanner.ResetPeek()
+	return t.val == "res"
 
 CHARACTERS
   letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
@@ -42,8 +47,67 @@ IGNORE cr + lf + tab
 PRODUCTIONS
 
 Program<>
-=                                          			(.	statements as StatementSequence.)
-    StmtSeq<statements>								(.	_ast = WhileTree(statements) .)
+=                                          				(.	statements as StatementSequence
+															procs = Dictionary[of string, Procedure]() .)
+   	{Proc<procs>}
+    StmtSeq<statements>						     		(.	_ast = WhileTree(statements, procs) .)
+.
+
+Proc<procs as Dictionary[of string, Procedure]>
+=														(.	VariableStack.PushScope()
+															statements as StatementSequence
+															name as string 
+															valArgs = List[of Variable]()
+															resultArg as Variable .)
+	"proc"												(.	ptok = t .)
+	ident												(.	name = t.val .)
+	"("
+	[
+		(
+			"val"
+			ident										(.	valArgs.Add(Variable(t.val))
+															VariableStack.DefineVariable(t.val,true) .)
+			[Args<valArgs, resultArg>]
+		|
+			"res"
+			ident										(.	resultArg = Variable(t.val)
+															VariableStack.DefineVariable(t.val,true).)
+		)
+	]
+	")"
+	"is"
+	StmtSeq<statements>
+	"end"
+	";"													(.	if procs.ContainsKey(name):
+																errors.SemErr(ptok.line, ptok.col, "Procedure '${name}' is already declared")
+															else:
+																procs.Add(name, Procedure(name, valArgs, resultArg, statements))
+															VariableStack.Clear()
+														.)
+.
+
+Args<valArgs as List[of Variable], ref resultArg as Variable> 
+=
+	(
+	IF(IsStartOfResultArg()) 
+	","
+	"res" 
+	ident									(.	resultArg = Variable(t.val)
+												if VariableStack.IsDeclaredInCurrentScope(t.val):
+													errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
+												else:
+													VariableStack.DefineVariable(t.val, true)
+											.)
+	|
+	","
+	ident									(.	valArgs.Add(Variable(t.val)) 
+												if VariableStack.IsDeclaredInCurrentScope(t.val):
+													errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
+												else:
+													VariableStack.DefineVariable(t.val, true)
+											.)
+	[Args<valArgs, resultArg>] 
+	)
 .
 
 StmtSeq<ref statements as StatementSequence>  

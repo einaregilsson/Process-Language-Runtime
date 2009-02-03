@@ -256,8 +256,8 @@ public class Scanner:
 	private static final eofSym = 0
 
 	/* pdt */
-	static final maxT as int = 43
-	static final noSym as int = 43
+	static final maxT as int = 48
+	static final noSym as int = 48
 
 	
 	public buffer as Buffer
@@ -332,23 +332,24 @@ public class Scanner:
 		for i in range(95, 96): start[i] = 1
 		for i in range(97, 123): start[i] = 1
 		for i in range(48, 58): start[i] = 2
-		start[59] = 3; 
-		start[58] = 4; 
-		start[60] = 25; 
-		start[62] = 26; 
-		start[61] = 8; 
-		start[33] = 10; 
-		start[124] = 12; 
-		start[94] = 13; 
-		start[38] = 14; 
-		start[43] = 17; 
-		start[45] = 18; 
-		start[42] = 19; 
-		start[47] = 20; 
-		start[37] = 21; 
-		start[126] = 22; 
-		start[40] = 23; 
-		start[41] = 24; 
+		start[40] = 3; 
+		start[41] = 4; 
+		start[59] = 5; 
+		start[44] = 6; 
+		start[58] = 7; 
+		start[60] = 26; 
+		start[62] = 27; 
+		start[61] = 11; 
+		start[33] = 13; 
+		start[124] = 15; 
+		start[94] = 16; 
+		start[38] = 17; 
+		start[43] = 20; 
+		start[45] = 21; 
+		start[42] = 22; 
+		start[47] = 23; 
+		start[37] = 24; 
+		start[126] = 25; 
 		start[Buffer.EOF] = -1;
 
 		pt = (tokens = Token())
@@ -467,25 +468,29 @@ public class Scanner:
 	
 	private def CheckLiteral():
 		tokString as string =  t.val
-		if tokString == "skip": t.kind = 4
-		elif tokString == "read": t.kind = 5
-		elif tokString == "write": t.kind = 6
-		elif tokString == "var": t.kind = 7
-		elif tokString == "begin": t.kind = 8
+		if tokString == "proc": t.kind = 3
+		elif tokString == "val": t.kind = 5
+		elif tokString == "res": t.kind = 6
+		elif tokString == "is": t.kind = 8
 		elif tokString == "end": t.kind = 9
-		elif tokString == "if": t.kind = 11
-		elif tokString == "then": t.kind = 12
-		elif tokString == "else": t.kind = 13
-		elif tokString == "fi": t.kind = 14
-		elif tokString == "while": t.kind = 15
-		elif tokString == "do": t.kind = 16
-		elif tokString == "od": t.kind = 17
-		elif tokString == "or": t.kind = 18
-		elif tokString == "and": t.kind = 19
-		elif tokString == "xor": t.kind = 20
-		elif tokString == "not": t.kind = 38
-		elif tokString == "true": t.kind = 39
-		elif tokString == "false": t.kind = 40
+		elif tokString == "skip": t.kind = 12
+		elif tokString == "read": t.kind = 13
+		elif tokString == "write": t.kind = 14
+		elif tokString == "var": t.kind = 15
+		elif tokString == "begin": t.kind = 16
+		elif tokString == "if": t.kind = 18
+		elif tokString == "then": t.kind = 19
+		elif tokString == "else": t.kind = 20
+		elif tokString == "fi": t.kind = 21
+		elif tokString == "while": t.kind = 22
+		elif tokString == "do": t.kind = 23
+		elif tokString == "od": t.kind = 24
+		elif tokString == "or": t.kind = 25
+		elif tokString == "and": t.kind = 26
+		elif tokString == "xor": t.kind = 27
+		elif tokString == "not": t.kind = 45
+		elif tokString == "true": t.kind = 46
+		elif tokString == "false": t.kind = 47
 
 
 	
@@ -531,86 +536,88 @@ public class Scanner:
 				else:
 					t.kind = 2 
 			elif state == 3:
-				t.kind = 3 
+				t.kind = 4 
 			elif state == 4:
-				if ch == char('='):
-					AddCh()
-					state = 5
-					continue
-				else:
-					t.kind = noSym
+				t.kind = 7 
 			elif state == 5:
 				t.kind = 10 
 			elif state == 6:
-				t.kind = 23 
+				t.kind = 11 
 			elif state == 7:
-				t.kind = 24 
+				if ch == char('='):
+					AddCh()
+					state = 8
+					continue
+				else:
+					t.kind = noSym
 			elif state == 8:
+				t.kind = 17 
+			elif state == 9:
+				t.kind = 30 
+			elif state == 10:
+				t.kind = 31 
+			elif state == 11:
+				if ch == char('='):
+					AddCh()
+					state = 12
+					continue
+				else:
+					t.kind = noSym
+			elif state == 12:
+				t.kind = 32 
+			elif state == 13:
+				if ch == char('='):
+					AddCh()
+					state = 14
+					continue
+				else:
+					t.kind = noSym
+			elif state == 14:
+				t.kind = 33 
+			elif state == 15:
+				t.kind = 34 
+			elif state == 16:
+				t.kind = 35 
+			elif state == 17:
+				t.kind = 36 
+			elif state == 18:
+				t.kind = 37 
+			elif state == 19:
+				t.kind = 38 
+			elif state == 20:
+				t.kind = 39 
+			elif state == 21:
+				t.kind = 40 
+			elif state == 22:
+				t.kind = 41 
+			elif state == 23:
+				t.kind = 42 
+			elif state == 24:
+				t.kind = 43 
+			elif state == 25:
+				t.kind = 44 
+			elif state == 26:
 				if ch == char('='):
 					AddCh()
 					state = 9
 					continue
-				else:
-					t.kind = noSym
-			elif state == 9:
-				t.kind = 25 
-			elif state == 10:
-				if ch == char('='):
-					AddCh()
-					state = 11
-					continue
-				else:
-					t.kind = noSym
-			elif state == 11:
-				t.kind = 26 
-			elif state == 12:
-				t.kind = 27 
-			elif state == 13:
-				t.kind = 28 
-			elif state == 14:
-				t.kind = 29 
-			elif state == 15:
-				t.kind = 30 
-			elif state == 16:
-				t.kind = 31 
-			elif state == 17:
-				t.kind = 32 
-			elif state == 18:
-				t.kind = 33 
-			elif state == 19:
-				t.kind = 34 
-			elif state == 20:
-				t.kind = 35 
-			elif state == 21:
-				t.kind = 36 
-			elif state == 22:
-				t.kind = 37 
-			elif state == 23:
-				t.kind = 41 
-			elif state == 24:
-				t.kind = 42 
-			elif state == 25:
-				if ch == char('='):
-					AddCh()
-					state = 6
-					continue
 				elif ch == char('<'):
 					AddCh()
-					state = 15
+					state = 18
 					continue
 				else:
-					t.kind = 21 
-			elif state == 26:
+					t.kind = 28 
+			elif state == 27:
 				if ch == char('='):
 					AddCh()
-					state = 7
+					state = 10
 					continue
 				elif ch == char('>'):
 					AddCh()
-					state = 16
+					state = 19
 					continue
 				else:
-					t.kind = 22 
+					t.kind = 29 
 
 			break unless false
 			

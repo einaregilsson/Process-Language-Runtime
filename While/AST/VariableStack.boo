@@ -5,9 +5,10 @@ import While
 
 static class VariableStack:
 
+	
 	private _stack = List[of Dictionary[of string, int]]()
 	private _nr = 0
-	
+
 	def PushScope():
 		_stack.Add(Dictionary[of string, int]())
 		

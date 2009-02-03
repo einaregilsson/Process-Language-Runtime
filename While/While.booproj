@@ -37,6 +37,7 @@
     <Compile Include="AssemblyInfo.boo" />
     <Compile Include="AST\Expressions.boo" />
     <Compile Include="AST\Node.boo" />
+    <Compile Include="AST\Procedure.boo" />
     <Compile Include="AST\VariableStack.boo" />
     <Compile Include="AST\WhileTree.boo" />
     <Compile Include="AST\Statements.boo" />
@@ -46,7 +47,6 @@
     <Compile Include="Scanner.boo" />
     <Compile Include="Test\ASTTest.boo" />
     <Compile Include="Test\CompileTest.boo" />
-    <Compile Include="Test\InterpretTest.boo" />
     <Compile Include="Test\ParseTest.boo" />
     <Compile Include="WhileException.boo" />
     <None Include="Parser.frame" />

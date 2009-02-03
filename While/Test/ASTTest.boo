@@ -98,7 +98,6 @@ while true do
 od
 		""")
 		
-
 	private def Parse(src as string, expAst as string):
 		writer = StreamWriter(MemoryStream())
 		writer.Write(src)

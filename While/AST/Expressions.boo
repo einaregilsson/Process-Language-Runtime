@@ -57,6 +57,12 @@ class Variable(IntExpression):
 	[Getter(Name)]
 	_name as string
 
+	[property(IsValueArg)]
+	_isValArg = false
+	
+	[property(IsResultArg)]
+	_isResultArg = false
+	
 	IntValue as int:
 		get:
 			return VariableStack.GetValue(_name)
@@ -68,7 +74,7 @@ class Variable(IntExpression):
 		return _name.ToString()
 		
 	def Compile(il as ILGenerator):
-		il.Emit(OpCodes.Ldloc, 0)
+		il.Emit(OpCodes.Ldloc, VariableStack.GetValue(_name))
 		
 
 abstract class IntBinaryOp[of ChildType](IntExpression):
