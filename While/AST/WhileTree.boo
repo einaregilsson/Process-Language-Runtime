@@ -25,9 +25,6 @@ class WhileTree:
 	def ToString():
 		return join(_procs.Values, ";\n") + "\n\n" + _stmts.ToString()
 
-	def Execute():
-		_stmts.Execute()
-
 	def Compile(filename):
 		name = AssemblyName(Name:filename)
 		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)

@@ -136,14 +136,14 @@ public class Parser:
 				Get()
 				Expect(1)
 				valArgs.Add(Variable(t.val))
-				VariableStack.DefineVariable(t.val,true) 
+				VariableStack.DefineVariable(t.val) 
 				if la.kind == 11:
 					Args(valArgs, resultArg)
 			else:
 				Get()
 				Expect(1)
 				resultArg = Variable(t.val)
-				VariableStack.DefineVariable(t.val,true)
+				VariableStack.DefineVariable(t.val)
 		Expect(7)
 		Expect(8)
 		StmtSeq(statements)
@@ -176,7 +176,7 @@ public class Parser:
 			if VariableStack.IsDeclaredInCurrentScope(t.val):
 				errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
 			else:
-				VariableStack.DefineVariable(t.val, true)
+				VariableStack.DefineVariable(t.val)
 			
 		elif la.kind == 11:
 			Get()
@@ -185,7 +185,7 @@ public class Parser:
 			if VariableStack.IsDeclaredInCurrentScope(t.val):
 				errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope")
 			else:
-				VariableStack.DefineVariable(t.val, true)
+				VariableStack.DefineVariable(t.val)
 			
 			if la.kind == 11:
 				Args(valArgs, resultArg)
@@ -296,9 +296,9 @@ public class Parser:
 			errors.SemErr(t.line, t.col, "Variable '${t.val}' is already declared in this scope") 
 		elif VariableStack.IsInScope(t.val):
 			errors.Warning(t.line, t.col, "Variable '${t.val}' hides variable with same name in outer block")
-			VariableStack.DefineVariable(t.val, true)
+			VariableStack.DefineVariable(t.val)
 		else:
-			VariableStack.DefineVariable(t.val, true) 
+			VariableStack.DefineVariable(t.val) 
 		vd = VariableDeclaration(Variable(t.val))
 		vd.AddSequencePoint(sl,sc,el,ec)
 		list.Add(vd) 

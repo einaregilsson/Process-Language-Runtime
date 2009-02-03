@@ -21,10 +21,6 @@ abstract class Statement(Node):
 		
 	def AddSequencePoint(startline as int, startcol as int, endline as int, endcol as int):
 		_seqPoints.Add((startline,startcol, endline, endcol))
-		
-	abstract def Execute():
-		pass
-	
 
 class StatementSequence(Node):
 	_statements as Statement*
@@ -33,10 +29,6 @@ class StatementSequence(Node):
 	
 	def ToString():
 		return join(_statements, ";\n")
-	
-	def Execute():
-		for s in _statements:
-			s.Execute()
 	
 	def Compile(il as ILGenerator):
 		for s in _statements:
@@ -51,10 +43,6 @@ class VariableDeclarationSequence(Node):
 	def ToString():
 		return join(_vars, ";\n") + ";\n"
 	
-	def Execute():
-		for vd in _vars:
-			vd.Execute()
-
 	def Compile(il as ILGenerator):
 		for v in _vars:
 			v.Compile(il)
@@ -72,9 +60,6 @@ class Assign(Statement):
 	def ToString():
 		return "${_var} := ${_exp}"
 	
-	def Execute():
-		VariableStack.AssignValue(_var.Name, _exp.IntValue)
-
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0, false)
 		_exp.Compile(il)
@@ -83,9 +68,6 @@ class Assign(Statement):
 class Skip(Statement):
 	def ToString():
 		return "skip"
-
-	def Execute():
-		pass
 
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0,true)
@@ -101,12 +83,9 @@ class VariableDeclaration(Statement):
 	def ToString():
 		return "var ${_var}"
 
-	def Execute():
-		VariableStack.DefineVariable(_var.Name, false)
-
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0, true)
-		VariableStack.DefineVariable(_var.Name, true);
+		VariableStack.DefineVariable(_var.Name);
 		lb = il.DeclareLocal(typeof(int))
 		if CompileOptions.Debug:
 			lb.SetLocalSymInfo(_var.Name)
@@ -124,9 +103,6 @@ class Write(Statement):
 
 	def ToString():
 		return "write ${_exp}"
-
-	def Execute():
-		_writer.WriteLine(_exp.Value)
 
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0,false)
@@ -146,13 +122,6 @@ class Read(Statement):
 	
 	def ToString():
 		return "read ${_var}"
-
-	def Execute():
-		val as int
-		System.Console.Write(_var.Name + ": ")
-		while not int.TryParse(System.Console.ReadLine(), val):
-			System.Console.Write(_var.Name + ": ")	
-		VariableStack.AssignValue(_var.Name, val)
 
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0,false)
@@ -179,12 +148,6 @@ class Block(Statement):
 	def ToString():
 		return "begin\n${Indent(_vars)}\n${Indent(_stmts)}\nend"
 		
-	def Execute():
-		VariableStack.PushScope()
-		_vars.Execute()
-		_stmts.Execute()
-		VariableStack.PopScope()
-
 	def Compile(il as ILGenerator):
 		VariableStack.PushScope()
 		il.BeginScope()
@@ -218,12 +181,6 @@ class If(Statement):
 		else:
 			return "if ${_exp} then\n${Indent(_ifBranch)}\nfi"
 	
-	def Execute():
-		if _exp.BoolValue:
-			_ifBranch.Execute()
-		elif _elseBranch:
-			_elseBranch.Execute()
-
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0,false)
 		_exp.Compile(il)
@@ -251,10 +208,6 @@ class While(Statement):
 	def ToString():
 		return "while ${_exp} do\n${Indent(_statements)}\nod"
 		
-	def Execute():
-		while _exp.BoolValue:
-			_statements.Execute()
-
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0,false)
 	

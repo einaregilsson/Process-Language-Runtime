@@ -65,7 +65,7 @@ class Variable(IntExpression):
 	
 	IntValue as int:
 		get:
-			return VariableStack.GetValue(_name)
+			raise WhileException("Variable cannot be evaluated at compile time")
 		
 	def constructor(name as string):
 		_name = name
