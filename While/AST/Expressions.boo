@@ -76,7 +76,7 @@ class Variable(IntExpression):
 	def Compile(il as ILGenerator):
 		code = OpCodes.Ldloc
 		if VariableStack.IsArgument(_name):
-			code = OpCodes.Starg	
+			code = OpCodes.Ldarg	
 		il.Emit(code, VariableStack.GetValue(_name))
 		
 

@@ -29,7 +29,7 @@ static class WhileTree:
 
 	def Compile(filename):
 		name = AssemblyName(Name:filename)
-		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save)
+		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave)
 		module = assembly.DefineDynamicModule(filename, CompileOptions.Debug)
 
 		_typeBuilder = module.DefineType("WhileProgram", TypeAttributes.Class | TypeAttributes.Public)

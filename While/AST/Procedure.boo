@@ -18,6 +18,10 @@ class Procedure(Node):
 	[getter(Name)]
 	_name as string
 	
+	#Dict of the methods that are already compiled
+	[getter(Compiled)]
+	static _compiled = Dictionary[of string, MethodBuilder]()
+	
 	def constructor(name as string, valArgs as List[of Variable], resultArg as Variable, statements as StatementSequence):
 		_valArgs = valArgs
 		_resultArg = resultArg
@@ -57,6 +61,8 @@ class Procedure(Node):
 			VariableStack.DefineArgument(_resultArg.Name)
 			method.DefineParameter(pos, ParameterAttributes.Out, _resultArg.Name)
 		_stmts.Compile(il)
+		il.Emit(OpCodes.Ret)
+		_compiled.Add(_name, method)
 		VariableStack.Clear()
 		
 		

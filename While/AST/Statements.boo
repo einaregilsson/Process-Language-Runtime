@@ -110,15 +110,14 @@ class Call(Statement):
 			System.Console.Error.WriteLine("(${l},${c}) ERROR: Procedure '${_name}' does not take ${_expr.Count} arguments")
 			System.Environment.Exit(1)
 
-		if proc.ResultArg and not _expr[-1] isa Variable:
+		if proc.ResultArg and not _expr[_expr.Count-1] isa Variable:
 			System.Console.Error.WriteLine("(${_lastArgToken.line},${_lastArgToken.col}) ERROR: Only variables are allowed for result arguments")
 			System.Environment.Exit(1)
 		
 		for exp in _expr:
 			exp.Compile(il)
 			
-		method = WhileTree.TypeBuilder.GetMethod(ProcedureName)
-		il.Emit(OpCodes.Call, method)
+		il.Emit(OpCodes.Call, Procedure.Compiled[_name])
 		
 
 class VariableDeclaration(Statement):
