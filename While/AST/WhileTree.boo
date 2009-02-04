@@ -9,25 +9,31 @@ import System.Diagnostics.SymbolStore
 import System.Threading
 import System.Collections.Generic
 
-static class WhileTree:
+class WhileTree(Node):
 	
 	[getter(Statements)]
 	_stmts as StatementSequence
+	
 	
 	[getter(Procedures)]
 	_procs as Dictionary[of string, Procedure]
 	
 	[getter(CompiledProcedures)]
 	_compiledProcs = Dictionary[of string, MethodBuilder]()
+	
+	[property(Instance)]
+	static _tree as WhileTree
 
-
-	def SetParseResults(stmts as StatementSequence, procs as Dictionary[of string, Procedure]):
+	def constructor(stmts as StatementSequence, procs as Dictionary[of string, Procedure]):
 		_stmts = stmts
 		_procs = procs
 		
 	def ToString():
 		return join(_procs.Values, ";\n") + "\n\n" + _stmts.ToString()
 
+	def Compile(il as ILGenerator):
+		pass
+		
 	def Compile(filename):
 		name = AssemblyName(Name:filename)
 		assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave)
@@ -37,6 +43,7 @@ static class WhileTree:
 		
 		if CompileOptions.Debug:
 			Node.DebugWriter = module.DefineDocument(CompileOptions.InputFilename, Guid.Empty, Guid.Empty, SymDocumentType.Text)
+						
 		
 		#First compile the signatures
 		for proc as Procedure in _procs.Values:
@@ -50,8 +57,16 @@ static class WhileTree:
 		il = mainMethod.GetILGenerator()		
 		if CompileOptions.BookVersion:
 			VariableStack.PushScope()
+
+		if _seqPoints.Count > 0: #Make possible to start on "begin" statement
+			EmitDebugInfo(il, 0, true)
+			
 		_stmts.Compile(il)
+		if _seqPoints.Count > 0: #Make possible to end on "end" statement
+			EmitDebugInfo(il, 1, true)
 		il.Emit(OpCodes.Ret)
+		
+
 		module.CreateGlobalFunctions()
 		assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication)
 		if CompileOptions.Debug:

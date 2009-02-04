@@ -110,4 +110,4 @@ od
 		p.errors.errorStream = result
 		p.Parse()
 		Assert.AreEqual("", result.ToString())
-		Assert.AreEqual(expAst.Trim().Replace("\r",""), WhileTree.ToString())
+		Assert.AreEqual(expAst.Trim().Replace("\r",""), WhileTree.Instance.ToString())

@@ -23,4 +23,4 @@ class CompileTest:
 		result = StringWriter()
 		p.errors.errorStream = result
 		p.Parse()
-		WhileTree.Compile("test.exe")
+		WhileTree.Instance.Compile("test.exe")

@@ -8,20 +8,9 @@ import System.Collections.Generic
 
 abstract class Statement(Node):
 	
-	_seqPoints = [] #List of 4-tuples with startline, startcol, endline, endcol for debug
-
 	protected def Indent(str):
 		return "\t" + str.ToString().Replace("\n", "\n\t")
 	
-	def EmitDebugInfo(il as ILGenerator, index as int, addNOP):
-		if CompileOptions.Debug:
-			sl,sc,el,ec = _seqPoints[index]
-			il.MarkSequencePoint(DebugWriter, sl,sc,el,ec)
-			if addNOP:
-				il.Emit(OpCodes.Nop)
-		
-	def AddSequencePoint(startline as int, startcol as int, endline as int, endcol as int):
-		_seqPoints.Add((startline,startcol, endline, endcol))
 
 class StatementSequence(Node):
 	_statements as Statement*
@@ -108,11 +97,11 @@ class Call(Statement):
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0,false)
 		l,c = _callToken.line, _callToken.col
-		if not WhileTree.Procedures.ContainsKey(ProcedureName):
+		if not WhileTree.Instance.Procedures.ContainsKey(ProcedureName):
 			System.Console.Error.WriteLine("(${l},${c}) ERROR: Procedure '${_name}' is not defined")
 			System.Environment.Exit(1)
 			
-		proc = WhileTree.Procedures[ProcedureName]
+		proc = WhileTree.Instance.Procedures[ProcedureName]
 		if _expr.Count != proc.ArgumentCount:
 			System.Console.Error.WriteLine("(${l},${c}) ERROR: Procedure '${_name}' does not take ${_expr.Count} arguments")
 			System.Environment.Exit(1)
@@ -121,26 +110,27 @@ class Call(Statement):
 			System.Console.Error.WriteLine("(${_lastArgToken.line},${_lastArgToken.col}) ERROR: Only variables are allowed for result arguments")
 			System.Environment.Exit(1)
 		
-		for i in range(0, _expr.Count-1):
-			_expr[i].Compile(il)
+		if _expr.Count > 0:
+			for i in range(0, _expr.Count-1):
+				_expr[i].Compile(il)
 		
-		if proc.ResultArg:
-			v as Variable = cast(Variable,_expr[_expr.Count-1])
-			if CompileOptions.BookVersion and not VariableStack.IsInScope(v.Name):
-				VariableStack.DefineVariable(v.Name)
-				lb = il.DeclareLocal(typeof(int))
-				if CompileOptions.Debug:
-					lb.SetLocalSymInfo(v.Name)
-
-			if VariableStack.IsArgument(v.Name):
-				il.Emit(OpCodes.Ldarga, VariableStack.GetValue(v.Name))
+			if proc.ResultArg:
+				v as Variable = cast(Variable,_expr[_expr.Count-1])
+				if CompileOptions.BookVersion and not VariableStack.IsInScope(v.Name):
+					VariableStack.DefineVariable(v.Name)
+					lb = il.DeclareLocal(typeof(int))
+					if CompileOptions.Debug:
+						lb.SetLocalSymInfo(v.Name)
+	
+				if VariableStack.IsArgument(v.Name):
+					il.Emit(OpCodes.Ldarga, VariableStack.GetValue(v.Name))
+				else:
+					il.Emit(OpCodes.Ldloca, VariableStack.GetValue(v.Name))
+					
 			else:
-				il.Emit(OpCodes.Ldloca, VariableStack.GetValue(v.Name))
-				
-		else:
-			_expr[_expr.Count-1].Compile(il)
+				_expr[_expr.Count-1].Compile(il)
 			
-		il.Emit(OpCodes.Call, WhileTree.CompiledProcedures[_name])
+		il.Emit(OpCodes.Call, WhileTree.Instance.CompiledProcedures[_name])
 		
 
 class VariableDeclaration(Statement):

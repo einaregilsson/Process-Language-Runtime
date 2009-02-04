@@ -122,15 +122,21 @@ public class Parser:
 		procs = Dictionary[of string, Procedure]() 
 		if IsProcProgram():
 			Expect(3)
+			startTok = t 
 			Proc(procs)
 			while la.kind == 5:
 				Proc(procs)
 			StmtSeq(statements)
 			Expect(4)
+			endTok = t 
 		elif StartOf(1):
 			StmtSeq(statements)
 		else: SynErr(50)
-		WhileTree.SetParseResults(statements, procs) 
+		WhileTree.Instance = WhileTree(statements, procs)
+		if startTok and endTok:
+			WhileTree.Instance.AddSequencePoint(startTok.line, startTok.col, startTok.line, startTok.col+startTok.val.Length)
+			WhileTree.Instance.AddSequencePoint(endTok.line, endTok.col, endTok.line, endTok.col+endTok.val.Length)
+		
 
 	def Proc(procs as Dictionary[of string, Procedure]):
 		statements as StatementSequence
@@ -156,14 +162,19 @@ public class Parser:
 				resultArg = Variable(t.val,IsResultArg:true)
 				VariableStack.DefineArgument(t.val)
 		Expect(9)
+		seq1 = (ptok.line,ptok.col, t.line,t.col+t.val.Length) 
 		Expect(10)
 		StmtSeq(statements)
 		Expect(4)
+		seq2 = (t.line,t.col, t.line,t.col+t.val.Length) 
 		Expect(11)
 		if procs.ContainsKey(name):
 			errors.SemErr(ptok.line, ptok.col, "Procedure '${name}' is already declared")
 		else:
-			procs.Add(name, Procedure(name, valArgs, resultArg, statements))
+			proc = Procedure(name, valArgs, resultArg, statements)
+			proc.AddSequencePoint(seq1)
+			proc.AddSequencePoint(seq2)
+			procs.Add(name, proc)
 		VariableStack.Clear()
 		
 
@@ -331,7 +342,7 @@ public class Parser:
 				exprToken = la 
 				Expr(exp)
 				list.Add(exp); ExpectIntArg(exp, exprToken) 
-			Expect(9)
+		Expect(9)
 		callStmt = Call(proc, list, callToken, exprToken) 
 
 	def VarDecStmt(ref vars as VariableDeclarationSequence):

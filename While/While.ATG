@@ -57,19 +57,23 @@ Program<>
 															procs = Dictionary[of string, Procedure]() .)
 
    	(
-    IF(IsProcProgram()) 
-    	"begin"
+    IF(IsProcProgram())
+    	"begin"											 (.	startTok = t .)
     	Proc<procs>
     	{
     		Proc<procs>
     	}
     	StmtSeq<statements>
-    	"end"
+    	"end"											(.	endTok = t .)
     |
     	StmtSeq<statements>
     )
     
-    													(.	WhileTree.SetParseResults(statements, procs) .)
+    													(.	WhileTree.Instance = WhileTree(statements, procs)
+															if startTok and endTok:
+																WhileTree.Instance.AddSequencePoint(startTok.line, startTok.col, startTok.line, startTok.col+startTok.val.Length)
+																WhileTree.Instance.AddSequencePoint(endTok.line, endTok.col, endTok.line, endTok.col+endTok.val.Length)
+														.)
 .
 
 Proc<procs as Dictionary[of string, Procedure]>
@@ -92,14 +96,17 @@ Proc<procs as Dictionary[of string, Procedure]>
 															VariableStack.DefineArgument(t.val).)
 		)
 	]
-	")"
+	")"													(.	seq1 = (ptok.line,ptok.col, t.line,t.col+t.val.Length) .)
 	"is"
 	StmtSeq<statements>
-	"end"
+	"end"												(.	seq2 = (t.line,t.col, t.line,t.col+t.val.Length) .)
 	";"													(.	if procs.ContainsKey(name):
 																errors.SemErr(ptok.line, ptok.col, "Procedure '${name}' is already declared")
 															else:
-																procs.Add(name, Procedure(name, valArgs, resultArg, statements))
+																proc = Procedure(name, valArgs, resultArg, statements)
+																proc.AddSequencePoint(seq1)
+																proc.AddSequencePoint(seq2)
+																procs.Add(name, proc)
 															VariableStack.Clear()
 														.)
 .

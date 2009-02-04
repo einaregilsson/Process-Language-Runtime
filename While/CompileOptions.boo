@@ -19,7 +19,7 @@ static class CompileOptions:
 	_help = false
 
 	[Property(BookVersion)]
-	_bookVersion = false
+	_bookVersion = true
 
 	def Init(args as (string)):
 		if args.Length == 0:
@@ -32,7 +32,7 @@ static class CompileOptions:
 			larg = arg.ToLower()
 			_help = larg in ('/?', '/help')
 			_debug = true if larg == '/debug'
-			_bookVersion = true if larg == '/book'
+			_bookVersion = false if larg == '/coursesyntax'
 			if larg.StartsWith("/out:"):
 				_outputFile = larg.Substring(5)
 			
@@ -49,13 +49,34 @@ static class CompileOptions:
 
 /debug                 Include debug information in compiled file
 
-/book                  Use the syntax exactly as described in the
-                       book "Principles of Program Analysis". This 
-                       means that instead of the keywords "fi" and
-                       "od" we use parentheses to mark if, else and
-                       while blocks. It also means that variables
-                       don't need to be declared before use (and in
-                       fact can't be, in the book version there are
-                       no begin-end blocks).
+/coursesyntax          Use the modified syntax as I learned it in the
+                       Program Analysis course taught at DTU. This means
+                       that () are not used for if and while blocks, 
+                       instead if and while blocks end with fi and od
+                       respectively. This switch also means that all 
+                       variables must be declared before use inside of
+                       begin-end blocks. 
+                       
+                       Example:
+                       
+                       begin
+                           var x;
+                           x := 3;
+                           if x < 4 then
+                               write 1
+                           else
+                               write 2
+                           fi;
+                           begin
+                               var y;
+                               y := x;
+                               while x < 20 do
+                                   x := x +1;
+                                   skip
+                               od
+                           end;
+                           skip
+                       end
+                           
 """)
 		

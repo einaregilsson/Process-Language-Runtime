@@ -37,7 +37,9 @@ class Procedure(Node):
 			VariableStack.DefineArgument(arg.Name)
 		if _resultArg:
 			VariableStack.DefineArgument(_resultArg.Name)
+		EmitDebugInfo(il, 0, true)
 		_stmts.Compile(il)
+		EmitDebugInfo(il, 1, true)
 		il.Emit(OpCodes.Ret)
 		VariableStack.Clear()
 
