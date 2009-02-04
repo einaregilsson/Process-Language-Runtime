@@ -134,7 +134,6 @@ public class Parser:
 			while la.kind == 5:
 				Proc(procs)
 			StmtSeq(statements)
-			StmtSeq(statements)
 			Expect(4)
 			endTok = t 
 		elif StartOf(1):

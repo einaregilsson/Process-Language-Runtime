@@ -145,7 +145,9 @@ class Call(Statement):
 					if CompileOptions.Debug:
 						lb.SetLocalSymInfo(v.Name)
 	
-				if VariableStack.IsArgument(v.Name):
+				if VariableStack.IsResultArgument(v.Name):
+					il.Emit(OpCodes.Ldarg, VariableStack.GetValue(v.Name))
+				elif VariableStack.IsArgument(v.Name):
 					il.Emit(OpCodes.Ldarga, VariableStack.GetValue(v.Name))
 				else:
 					il.Emit(OpCodes.Ldloca, VariableStack.GetValue(v.Name))

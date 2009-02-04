@@ -11,23 +11,23 @@ class ASTTest:
 
 	[Test]
 	def AssignStatement():
-		Parse('x := 3', 'x := 3')
+		Parse('x := 3', 'x := 3', true)
 		
 	[Test]
 	def SkipStatement():
-		Parse('skip', 'skip')
+		Parse('skip', 'skip', true)
 
 	[Test]
 	def ReadStatement():
-		Parse('read x', 'read x')
+		Parse('read x', 'read x', true)
 		
 	[Test]
 	def WriteStatement():
-		Parse('write x', 'write x')
+		Parse('write x', 'write x', true)
 
 	[Test]
 	def WriteStatementWithExpression():
-		Parse('write 25+(32-1*3)%2', 'write (25 + ((32 - (1 * 3)) % 2))')
+		Parse('write 25+(32-1*3)%2', 'write (25 + ((32 - (1 * 3)) % 2))', true)
 
 	[Test]
 	def WhileStatement():
@@ -35,7 +35,7 @@ class ASTTest:
 while true do
 	skip
 od
-		""")
+		""", false)
 		
 	[Test]
 	def WhileStatementWithExpression():
@@ -43,7 +43,7 @@ od
 while ((1 + 2) < (4 + 2)) do
 	skip
 od
-		""")
+		""",false)
 
 	[Test]
 	def IfStatement():
@@ -51,7 +51,7 @@ od
 if true then
 	skip
 fi
-		""")
+		""",false)
 
 	[Test]
 	def IfStatementWithExpression():
@@ -59,7 +59,7 @@ fi
 if ((1 + ((3 * 4) % 2)) <= 3) then
 	skip
 fi
-		""")
+		""",false)
 
 	[Test]
 	def IfElseStatement():
@@ -69,7 +69,7 @@ if true then
 else
 	skip
 fi
-		""")
+		""",false)
 
 	[Test]
 	def BlockStatement():
@@ -81,7 +81,7 @@ begin
 	skip;
 	skip
 end
-		""")
+		""",false)
 
 	[Test]
 	def StatementSequence():
@@ -97,17 +97,17 @@ end;
 while true do
 	skip
 od
-		""")
+		""",false)
 		
-	private def Parse(src as string, expAst as string):
+	private def Parse(src as string, expAst as string, bookVersion as bool):
 		writer = StreamWriter(MemoryStream())
 		writer.Write(src)
 		writer.Flush()
 		writer.BaseStream.Seek(0, SeekOrigin.Begin)
-		
+		CompileOptions.BookVersion = bookVersion
 		p = Parser(Scanner(writer.BaseStream))
 		result = StringWriter()
 		p.errors.errorStream = result
 		p.Parse()
 		Assert.AreEqual("", result.ToString())
-		Assert.AreEqual(expAst.Trim().Replace("\r",""), WhileTree.Instance.ToString())
+		Assert.AreEqual(expAst.Trim().Replace("\r",""), WhileTree.Instance.ToString().Trim())

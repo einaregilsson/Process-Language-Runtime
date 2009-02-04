@@ -75,6 +75,5 @@ class WhileTree(Node):
 		assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication)
 		if CompileOptions.Debug:
 	       module.SetUserEntryPoint(mainMethod)
-		
 		assembly.Save(filename)
 	

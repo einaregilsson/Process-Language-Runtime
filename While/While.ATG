@@ -72,7 +72,6 @@ Program<>
     	}
 
     	StmtSeq<statements>
-    	StmtSeq<statements>
     	"end"											(.	endTok = t .)
     |
     	StmtSeq<statements>

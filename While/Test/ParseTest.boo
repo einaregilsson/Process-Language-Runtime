@@ -30,23 +30,23 @@ class ParseTest:
 
 	[Test]
 	def WhileStatement():
-		Parse('while true do skip od', '')
+		Parse('while true do skip ', '')
 		
 	[Test]
 	def WhileStatementWithExpression():
-		Parse('while 1+2 < 4+2 do skip od', '')
+		Parse('while 1+2 < 4+2 do ( skip )', '')
 
 	[Test]
 	def IfStatement():
-		Parse('if true then skip fi', '')
+		Parse('if true then skip ', '')
 
 	[Test]
 	def IfStatementWithExpression():
-		Parse('if 1+3*4%2 <= 3 then skip fi', '')
+		Parse('if 1+3*4%2 <= 3 then (skip) ', '')
 
 	[Test]
 	def IfElseStatement():
-		Parse('if true then skip else skip fi', '')
+		Parse('if true then skip else skip ', '')
 
 	[Test]
 	def BlockStatement():
