@@ -12,7 +12,7 @@ abstract class Statement(Node):
 		return "\t" + str.ToString().Replace("\n", "\n\t")
 	
 
-class StatementSequence(Node):
+class StatementSequence(Statement):
 	_statements as Statement*
 	def constructor(statements as Statement*):
 		_statements = statements

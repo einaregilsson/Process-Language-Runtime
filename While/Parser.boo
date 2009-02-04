@@ -60,6 +60,13 @@ public class Parser:
 		if not exp isa IntExpression:
 			errors.SemErr(t.line, t.col, "Arguments to procedures can only be integer expressions")
 	
+	def ToStmtSeq(s as Statement) as StatementSequence:
+		if s isa StatementSequence:
+			return cast(StatementSequence,s)
+		else:
+			return StatementSequence((s,))
+	
+	
 	def IsStartOfResultArg() as bool:
 		t as Token = scanner.Peek()
 		scanner.ResetPeek()
@@ -215,7 +222,8 @@ public class Parser:
 
 	def Stmt(ref stmt as Statement):
 		exp as Expression
-		sl,sc = la.line, la.col 
+		sl,sc = la.line, la.col
+		stmtSeq as StatementSequence
 		if la.kind == 1:
 			AssignStmt(stmt)
 			stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
@@ -238,6 +246,14 @@ public class Parser:
 		elif la.kind == 25:
 			CallProc(stmt)
 			stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
+		elif la.kind == 6:
+			Get()
+			bf = t 
+			StmtSeq(stmtSeq)
+			Expect(9)
+			stmt = stmtSeq
+			stmt.AddSequencePoint(bf.line,bf.col, bf.line,bf.col+bf.val.Length)
+			stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
 		else: SynErr(52)
 
 	def AssignStmt(ref assign as Statement):
@@ -274,6 +290,7 @@ public class Parser:
 	def IfStmt(ref ifStmt as Statement):
 		ifBranch as StatementSequence;
 		elseBranch as StatementSequence
+		tmpStmt as Statement
 		exp as Expression 
 		
 		Expect(18)
@@ -283,10 +300,12 @@ public class Parser:
 		Expect(19)
 		el,ec = t.line, t.col+t.val.Length 
 		if CompileOptions.BookVersion:
-			PossibleCompoundStatement(ifBranch)
+			Stmt(tmpStmt)
+			ifBranch = ToStmtSeq(tmpStmt) 
 			if la.kind == 20:
 				Get()
-				PossibleCompoundStatement(elseBranch)
+				Stmt(tmpStmt)
+				elseBranch = ToStmtSeq(tmpStmt) 
 		elif StartOf(1):
 			StmtSeq(ifBranch)
 			if la.kind == 20:
@@ -303,7 +322,8 @@ public class Parser:
 
 	def WhileStmt(ref whileStmt as Statement):
 		exp as Expression
-		whileBranch as StatementSequence 
+		whileBranch as StatementSequence
+		branchStmt as Statement
 		Expect(22)
 		sl,sc,tok = t.line, t.col,t 
 		Expr(exp)
@@ -311,7 +331,8 @@ public class Parser:
 		Expect(23)
 		el,ec = t.line, t.col+t.val.Length 
 		if CompileOptions.BookVersion:
-			PossibleCompoundStatement(whileBranch)
+			Stmt(branchStmt)
+			whileBranch = ToStmtSeq(branchStmt) 
 		elif StartOf(1):
 			StmtSeq(whileBranch)
 			Expect(24)
@@ -379,20 +400,6 @@ public class Parser:
 		vd.AddSequencePoint(sl,sc,el,ec)
 		list.Add(vd) 
 		Expect(11)
-
-	def PossibleCompoundStatement(ref stmtSeq as StatementSequence):
-		if StartOf(1):
-			stmt as Statement 
-			Stmt(stmt)
-			stmtSeq = StatementSequence((stmt,)) 
-		elif la.kind == 6:
-			Get()
-			before = t 
-			StmtSeq(stmtSeq)
-			Expect(9)
-			stmtSeq.AddSequencePoint(before.line,before.col, before.line,before.col+before.val.Length)
-			stmtSeq.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
-		else: SynErr(56)
 
 	def LogicOr(ref exp as Expression):
 		second as Expression 
@@ -582,7 +589,7 @@ public class Parser:
 			Get()
 			Expr(exp)
 			Expect(9)
-		else: SynErr(57)
+		else: SynErr(56)
 
 
 	
@@ -599,7 +606,7 @@ public class Parser:
 
 	private def InitBitset():
 		bitset.Add((true ,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
-		bitset.Add((false,true ,false,true , false,false,false,false, false,false,false,false, false,true ,true ,true , false,false,true ,false, false,false,true ,false, false,true ,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
+		bitset.Add((false,true ,false,true , false,false,true ,false, false,false,false,false, false,true ,true ,true , false,false,true ,false, false,false,true ,false, false,true ,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
 		bitset.Add((false,true ,true ,false, false,false,true ,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,true ,false,false, false,true ,true ,true , true ,false,false))
 		bitset.Add((false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false,false, false,true ,true ,true , true ,true ,true ,false, false,false,false,false, false,false,false,false, false,false,false,false, false,false,false))
 
@@ -675,8 +682,7 @@ public class Errors:
 		elif n == 53: s = 'invalid IfStmt'
 		elif n == 54: s = 'invalid WhileStmt'
 		elif n == 55: s = 'invalid ReadStmt'
-		elif n == 56: s = 'invalid PossibleCompoundStatement'
-		elif n == 57: s = 'invalid Terminal'
+		elif n == 56: s = 'invalid Terminal'
 
 		else: s = ('error ' + n)
 		errorStream.WriteLine(errMsgFormat, line, col, "ERROR", s)

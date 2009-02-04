@@ -23,6 +23,13 @@ def ExpectIntArg(exp as Expression, t as Token):
 	if not exp isa IntExpression:
 		errors.SemErr(t.line, t.col, "Arguments to procedures can only be integer expressions")
 
+def ToStmtSeq(s as Statement) as StatementSequence:
+	if s isa StatementSequence:
+		return cast(StatementSequence,s)
+	else:
+		return StatementSequence((s,))
+
+
 def IsStartOfResultArg() as bool:
 	t as Token = scanner.Peek()
 	scanner.ResetPeek()
@@ -146,7 +153,8 @@ StmtSeq<ref statements as StatementSequence>
 
 Stmt<ref stmt as Statement>                   
 =													(. 	exp as Expression 
-														sl,sc = la.line, la.col .)
+														sl,sc = la.line, la.col
+														stmtSeq as StatementSequence.)
 
 	( AssignStmt<stmt>								(. stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
 	| "skip"                               			(. stmt = Skip();stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
@@ -156,6 +164,13 @@ Stmt<ref stmt as Statement>
 	| ReadStmt<stmt>								(. 	stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length).)
 	| "write" Expr<exp>                				(. 	stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
 	| CallProc<stmt>								(. 	stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
+	| 
+		'(' 										(.	bf = t .)
+		StmtSeq<stmtSeq> 
+		')'											(.	stmt = stmtSeq
+														stmt.AddSequencePoint(bf.line,bf.col, bf.line,bf.col+bf.val.Length)
+														stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
+		
 	)
 .
 
@@ -223,6 +238,7 @@ AssignStmt<ref assign as Statement>            		(. 	exp as Expression
 
 IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence; 
 														elseBranch as StatementSequence
+														tmpStmt as Statement
 														exp as Expression 
 													.)
 =
@@ -232,10 +248,10 @@ IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence;
 	
 	(
 		IF(CompileOptions.BookVersion) 
-			PossibleCompoundStatement<ifBranch>
+			Stmt<tmpStmt>							(.	ifBranch = ToStmtSeq(tmpStmt) .)
 			[
 			    "else"
-			    PossibleCompoundStatement<elseBranch>
+				Stmt<tmpStmt>						(.	elseBranch = ToStmtSeq(tmpStmt) .)	
 			]
 		|
 			StmtSeq<ifBranch>
@@ -253,26 +269,16 @@ IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence;
 													.)
 .
 
-PossibleCompoundStatement<ref stmtSeq as StatementSequence>
-=													(.	stmt as Statement .)
-	Stmt<stmt>										(.	stmtSeq = StatementSequence((stmt,)) .) 
-	|
-	'('												(.	before = t .)
-	StmtSeq<stmtSeq>
-	')'												(.	stmtSeq.AddSequencePoint(before.line,before.col, before.line,before.col+before.val.Length)
-														stmtSeq.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
-.
-
-
 WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
-														whileBranch as StatementSequence .)
+														whileBranch as StatementSequence
+														branchStmt as Statement.)
 =
 	"while"											(. 	sl,sc,tok = t.line, t.col,t .)
 	Expr<exp>										(. 	return unless ExpectBool(exp, tok, true) .)
 	"do"											(.	el,ec = t.line, t.col+t.val.Length .)
 	(
 		IF(CompileOptions.BookVersion)
-		PossibleCompoundStatement<whileBranch>
+		Stmt<branchStmt>							(.	whileBranch = ToStmtSeq(branchStmt) .)
 	|
 		StmtSeq<whileBranch>
 		"od"										(.	whileBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
