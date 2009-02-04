@@ -21,8 +21,14 @@ class StatementSequence(Node):
 		return join(_statements, ";\n")
 	
 	def Compile(il as ILGenerator):
+		if _seqPoints.Count > 1:
+			EmitDebugInfo(il, 0, true)
 		for s in _statements:
 			s.Compile(il)
+		if _seqPoints.Count > 0:
+			EmitDebugInfo(il, _seqPoints.Count-1, true)
+		
+			
 
 class VariableDeclarationSequence(Node):
 	_vars as VariableDeclaration*
@@ -263,7 +269,6 @@ class If(Statement):
 		il.MarkLabel(ifFalseLabel)
 		_elseBranch.Compile(il) if _elseBranch
 		il.MarkLabel(endLabel)
-		EmitDebugInfo(il,1,true)
 
 class While(Statement):
 
@@ -290,4 +295,3 @@ class While(Statement):
 		_statements.Compile(il)
 		il.Emit(OpCodes.Br, evalConditionLabel)		
 		il.MarkLabel(afterTheLoopLabel)
-		EmitDebugInfo(il,1,true)

@@ -256,7 +256,7 @@ public class Parser:
 	def BlockStmt(ref block as Statement):
 		Expect(3)
 		if CompileOptions.BookVersion:
-			errors.SemErr(t.line, t.col, "The book version of the While syntax (/book switch) does not allow begin-end blocks (unless at the very beginning of a procedure program) or variable declarations")
+			errors.SemErr(t.line, t.col, "Variable declarations are only allowed when using the /coursesyntax switch. Type 'wc.exe /help' for more information")
 			System.Environment.Exit(1)
 		vars as VariableDeclarationSequence
 		VariableStack.PushScope()
@@ -275,6 +275,7 @@ public class Parser:
 		ifBranch as StatementSequence;
 		elseBranch as StatementSequence
 		exp as Expression 
+		
 		Expect(18)
 		sl,sc,tok = t.line, t.col, t 
 		Expr(exp)
@@ -282,13 +283,23 @@ public class Parser:
 		Expect(19)
 		el,ec = t.line, t.col+t.val.Length 
 		if CompileOptions.BookVersion:
-			IfBookBody(ifBranch, elseBranch)
+			PossibleCompoundStatement(ifBranch)
+			if la.kind == 20:
+				Get()
+				PossibleCompoundStatement(elseBranch)
 		elif StartOf(1):
-			IfCourseBody(ifBranch, elseBranch)
+			StmtSeq(ifBranch)
+			if la.kind == 20:
+				Get()
+				StmtSeq(elseBranch)
+			Expect(21)
+			ifBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length)
+			elseBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) if elseBranch
+			
 		else: SynErr(53)
 		ifStmt = If(exp, ifBranch, elseBranch)
 		ifStmt.AddSequencePoint(sl,sc,el,ec)
-		ifStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
+		
 
 	def WhileStmt(ref whileStmt as Statement):
 		exp as Expression
@@ -304,10 +315,11 @@ public class Parser:
 		elif StartOf(1):
 			StmtSeq(whileBranch)
 			Expect(24)
+			whileBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
 		else: SynErr(54)
 		whileStmt = While(exp, whileBranch)
 		whileStmt.AddSequencePoint(sl,sc,el,ec)
-		whileStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
+		
 
 	def ReadStmt(ref stmt as Statement):
 		Expect(15)
@@ -342,7 +354,7 @@ public class Parser:
 				exprToken = la 
 				Expr(exp)
 				list.Add(exp); ExpectIntArg(exp, exprToken) 
-		Expect(9)
+			Expect(9)
 		callStmt = Call(proc, list, callToken, exprToken) 
 
 	def VarDecStmt(ref vars as VariableDeclarationSequence):
@@ -368,19 +380,6 @@ public class Parser:
 		list.Add(vd) 
 		Expect(11)
 
-	def IfBookBody(ref ifBranch as StatementSequence, ref elseBranch as StatementSequence):
-		PossibleCompoundStatement(ifBranch)
-		if la.kind == 20:
-			Get()
-			PossibleCompoundStatement(elseBranch)
-
-	def IfCourseBody(ref ifBranch as StatementSequence, ref elseBranch as StatementSequence):
-		StmtSeq(ifBranch)
-		if la.kind == 20:
-			Get()
-			StmtSeq(elseBranch)
-		Expect(21)
-
 	def PossibleCompoundStatement(ref stmtSeq as StatementSequence):
 		if StartOf(1):
 			stmt as Statement 
@@ -388,8 +387,11 @@ public class Parser:
 			stmtSeq = StatementSequence((stmt,)) 
 		elif la.kind == 6:
 			Get()
+			before = t 
 			StmtSeq(stmtSeq)
 			Expect(9)
+			stmtSeq.AddSequencePoint(before.line,before.col, before.line,before.col+before.val.Length)
+			stmtSeq.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
 		else: SynErr(56)
 
 	def LogicOr(ref exp as Expression):

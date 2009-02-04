@@ -198,7 +198,7 @@ VarDec<list as List[of VariableDeclaration]>
 BlockStmt<ref block as Statement>                 
 =
 	"begin"                                 		(.	if CompileOptions.BookVersion:
-															errors.SemErr(t.line, t.col, "The book version of the While syntax (/book switch) does not allow begin-end blocks (unless at the very beginning of a procedure program) or variable declarations")
+															errors.SemErr(t.line, t.col, "Variable declarations are only allowed when using the /coursesyntax switch. Type 'wc.exe /help' for more information")
 															System.Environment.Exit(1)
 														vars as VariableDeclarationSequence
 														VariableStack.PushScope()
@@ -223,49 +223,44 @@ AssignStmt<ref assign as Statement>            		(. 	exp as Expression
 
 IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence; 
 														elseBranch as StatementSequence
-														exp as Expression .)
+														exp as Expression 
+													.)
 =
 	"if"											(.  sl,sc,tok = t.line, t.col, t .)
 	Expr<exp>										(.	return unless ExpectBool(exp, tok, true) .)
 	"then"											(. 	el,ec = t.line, t.col+t.val.Length .)
 	
 	(
-		IF(CompileOptions.BookVersion) IfBookBody<ifBranch, elseBranch>
+		IF(CompileOptions.BookVersion) 
+			PossibleCompoundStatement<ifBranch>
+			[
+			    "else"
+			    PossibleCompoundStatement<elseBranch>
+			]
 		|
-		IfCourseBody<ifBranch, elseBranch>
+			StmtSeq<ifBranch>
+			[
+			    "else"
+			    StmtSeq<elseBranch>
+			]
+			"fi"									(.	ifBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length)
+														elseBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) if elseBranch
+													.)
+
 	)
 		                                  			(. 	ifStmt = If(exp, ifBranch, elseBranch) 
 														ifStmt.AddSequencePoint(sl,sc,el,ec)
-														ifStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
-.
-
-
-IfCourseBody<ref ifBranch as StatementSequence, ref elseBranch as StatementSequence>
-=
-	StmtSeq<ifBranch>
-	[
-	    "else"
-	    StmtSeq<elseBranch>
-	]
-	"fi"
-.
-
-IfBookBody<ref ifBranch as StatementSequence, ref elseBranch as StatementSequence>
-=
-	PossibleCompoundStatement<ifBranch>
-	[
-	    "else"
-	    PossibleCompoundStatement<elseBranch>
-	]
+													.)
 .
 
 PossibleCompoundStatement<ref stmtSeq as StatementSequence>
 =													(.	stmt as Statement .)
-	Stmt<stmt>										(.	stmtSeq = StatementSequence((stmt,)) .)
+	Stmt<stmt>										(.	stmtSeq = StatementSequence((stmt,)) .) 
 	|
-	'('
+	'('												(.	before = t .)
 	StmtSeq<stmtSeq>
-	')'
+	')'												(.	stmtSeq.AddSequencePoint(before.line,before.col, before.line,before.col+before.val.Length)
+														stmtSeq.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
 .
 
 
@@ -280,11 +275,11 @@ WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 		PossibleCompoundStatement<whileBranch>
 	|
 		StmtSeq<whileBranch>
-		"od"
+		"od"										(.	whileBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
 	)
 		                                   			(. 	whileStmt = While(exp, whileBranch) 
 														whileStmt.AddSequencePoint(sl,sc,el,ec)
-														whileStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
+													.)
 .
 
 CallProc<ref callStmt as Statement>
