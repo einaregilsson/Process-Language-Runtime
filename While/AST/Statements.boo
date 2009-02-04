@@ -58,7 +58,6 @@ class Assign(Statement):
 	
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0, false)
-		_exp.Compile(il)
 
 		if CompileOptions.BookVersion and not VariableStack.IsInScope(_var.Name):
 			VariableStack.DefineVariable(_var.Name)
@@ -66,9 +65,15 @@ class Assign(Statement):
 			if CompileOptions.Debug:
 				lb.SetLocalSymInfo(_var.Name)
 
-		if VariableStack.IsArgument(_var.Name):
+		if VariableStack.IsResultArgument(_var.Name):
+			il.Emit(OpCodes.Ldarg, VariableStack.GetValue(_var.Name))
+			_exp.Compile(il)
+			il.Emit(OpCodes.Stind_I4)
+		elif VariableStack.IsArgument(_var.Name):
+			_exp.Compile(il)
 			il.Emit(OpCodes.Starg, VariableStack.GetValue(_var.Name))
 		else:
+			_exp.Compile(il)
 			il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
 			
 class Skip(Statement):
@@ -203,7 +208,9 @@ class Read(Statement):
 			if CompileOptions.Debug:
 				lb.SetLocalSymInfo(_var.Name)
 
-		if VariableStack.IsArgument(_var.Name):
+		if VariableStack.IsResultArgument(_var.Name):
+			il.Emit(OpCodes.Ldarg, VariableStack.GetValue(_var.Name))
+		elif VariableStack.IsArgument(_var.Name):
 			il.Emit(OpCodes.Ldarga_S, VariableStack.GetValue(_var.Name))
 		else:
 			il.Emit(OpCodes.Ldloca_S, VariableStack.GetValue(_var.Name))

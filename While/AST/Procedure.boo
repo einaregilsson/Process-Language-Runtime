@@ -36,7 +36,7 @@ class Procedure(Node):
 		for arg in _valArgs:
 			VariableStack.DefineArgument(arg.Name)
 		if _resultArg:
-			VariableStack.DefineArgument(_resultArg.Name)
+			VariableStack.DefineResultArgument(_resultArg.Name)
 		EmitDebugInfo(il, 0, true)
 		_stmts.Compile(il)
 		EmitDebugInfo(il, 1, true)

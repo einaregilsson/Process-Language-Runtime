@@ -160,7 +160,7 @@ public class Parser:
 				Get()
 				Expect(1)
 				resultArg = Variable(t.val,IsResultArg:true)
-				VariableStack.DefineArgument(t.val)
+				VariableStack.DefineResultArgument(t.val)
 		Expect(9)
 		seq1 = (ptok.line,ptok.col, t.line,t.col+t.val.Length) 
 		Expect(10)
@@ -198,7 +198,7 @@ public class Parser:
 			if VariableStack.IsDeclaredInCurrentScope(t.val):
 				errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 			else:
-				VariableStack.DefineArgument(t.val)
+				VariableStack.DefineResultArgument(t.val)
 			
 		elif la.kind == 12:
 			Get()

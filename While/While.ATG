@@ -93,7 +93,7 @@ Proc<procs as Dictionary[of string, Procedure]>
 		|
 			"res"
 			ident										(.	resultArg = Variable(t.val,IsResultArg:true)
-															VariableStack.DefineArgument(t.val).)
+															VariableStack.DefineResultArgument(t.val).)
 		)
 	]
 	")"													(.	seq1 = (ptok.line,ptok.col, t.line,t.col+t.val.Length) .)
@@ -121,7 +121,7 @@ Args<valArgs as List[of Variable], ref resultArg as Variable>
 												if VariableStack.IsDeclaredInCurrentScope(t.val):
 													errors.SemErr(t.line, t.col, "Argument '${t.val}' is already declared in this scope")
 												else:
-													VariableStack.DefineArgument(t.val)
+													VariableStack.DefineResultArgument(t.val)
 											.)
 	|
 	","

@@ -7,6 +7,7 @@ static class VariableStack:
 
 	private _stack = List[of Dictionary[of string, int]]()
 	private _nr = 0
+	private _resultArgIndex = -1
 	private _args = List[of string]()
 	
 	def PushScope():
@@ -19,6 +20,7 @@ static class VariableStack:
 		_stack.Clear()
 		_args.Clear()
 		_nr = 0
+		_resultArgIndex = -1
 		
 	def DefineVariable(name as string):
 		if _stack.Count == 0:
@@ -31,9 +33,16 @@ static class VariableStack:
 	def DefineArgument(name as string):
 		_args.Add(name)
 		
+	def DefineResultArgument(name as string):
+		_args.Add(name)
+		_resultArgIndex = _args.Count-1
+
 	def IsArgument(name as string):
 		return FindScopeForVariable(name) == null and _args.Contains(name)
 		
+	def IsResultArgument(name as string):
+		return IsArgument(name) and _args.IndexOf(name) == _resultArgIndex
+
 	def GetValue(name as string) as int:
 		scope = FindScopeForVariable(name)
 		if not scope:
