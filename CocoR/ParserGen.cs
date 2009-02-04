@@ -274,7 +274,7 @@ public class ParserGen {
 					}
 					gen.WriteLine(":");
 					GenCode(p2, indent + 1, s1);
-					Indent(indent-2); 
+					Indent(indent-3); 
 					break;
 				}
 				case Node.opt:
