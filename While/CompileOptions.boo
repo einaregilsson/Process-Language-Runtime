@@ -18,6 +18,9 @@ static class CompileOptions:
 	[Property(Help)]
 	_help = false
 
+	[Property(BookVersion)]
+	_bookVersion = false
+
 	def Init(args as (string)):
 		if args.Length == 0:
 			_empty = true
@@ -29,6 +32,7 @@ static class CompileOptions:
 			larg = arg.ToLower()
 			_help = larg in ('/?', '/help')
 			_debug = true if larg == '/debug'
+			_bookVersion = true if larg == '/book'
 			if larg.StartsWith("/out:"):
 				_outputFile = larg.Substring(5)
 			
@@ -40,7 +44,18 @@ static class CompileOptions:
             Compiler Options:
             	
 /? or /help            Print this help message
+
 /out:<filename>        Specify the name of the compiled executable
+
 /debug                 Include debug information in compiled file
+
+/book                  Use the syntax exactly as described in the
+                       book "Principles of Program Analysis". This 
+                       means that instead of the keywords "fi" and
+                       "od" we use parentheses to mark if, else and
+                       while blocks. It also means that variables
+                       don't need to be declared before use (and in
+                       fact can't be, in the book version there are
+                       no begin-end blocks).
 """)
 		

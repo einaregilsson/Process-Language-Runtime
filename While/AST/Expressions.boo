@@ -75,6 +75,12 @@ class Variable(IntExpression):
 		
 	def Compile(il as ILGenerator):
 		code = OpCodes.Ldloc
+		if CompileOptions.BookVersion and not VariableStack.IsInScope(_name):
+			VariableStack.DefineVariable(_name)
+			lb = il.DeclareLocal(typeof(int))
+			if CompileOptions.Debug:
+				lb.SetLocalSymInfo(_name)
+			
 		if VariableStack.IsArgument(_name):
 			code = OpCodes.Ldarg	
 		il.Emit(code, VariableStack.GetValue(_name))

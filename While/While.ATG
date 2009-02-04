@@ -28,6 +28,11 @@ def IsStartOfResultArg() as bool:
 	scanner.ResetPeek()
 	return t.val == "res"
 
+def IsProcProgram() as bool:
+	t as Token = scanner.Peek()
+	scanner.ResetPeek()
+	return t.val == "proc"
+
 CHARACTERS
   letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
   digit = "0123456789".
@@ -50,8 +55,21 @@ PRODUCTIONS
 Program<>
 =                                          				(.	statements as StatementSequence
 															procs = Dictionary[of string, Procedure]() .)
-   	{Proc<procs>}
-    StmtSeq<statements>						     		(.	WhileTree.SetParseResults(statements, procs) .)
+
+   	(
+    IF(IsProcProgram()) 
+    	"begin"
+    	Proc<procs>
+    	{
+    		Proc<procs>
+    	}
+    	StmtSeq<statements>
+    	"end"
+    |
+    	StmtSeq<statements>
+    )
+    
+    													(.	WhileTree.SetParseResults(statements, procs) .)
 .
 
 Proc<procs as Dictionary[of string, Procedure]>
@@ -128,9 +146,21 @@ Stmt<ref stmt as Statement>
 	| BlockStmt<stmt>                       
 	| IfStmt<stmt>
 	| WhileStmt<stmt>
-	| "read" ident                         			(. 	stmt = Read(Variable(t.val)); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length).)
+	| ReadStmt<stmt>								(. 	stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length).)
 	| "write" Expr<exp>                				(. 	stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
 	| CallProc<stmt>								(. 	stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
+	)
+.
+
+ReadStmt<ref stmt as Statement>
+=
+	"read" 
+	(
+		ident                         				(. 	stmt = Read(Variable(t.val)) .)
+		|
+		'(' 
+		ident										(. 	stmt = Read(Variable(t.val)) .)
+		')'
 	)
 .
 
@@ -160,7 +190,10 @@ VarDec<list as List[of VariableDeclaration]>
 
 BlockStmt<ref block as Statement>                 
 =
-	"begin"                                 		(. 	vars as VariableDeclarationSequence
+	"begin"                                 		(.	if CompileOptions.BookVersion:
+															errors.SemErr(t.line, t.col, "The book version of the While syntax (/book switch) does not allow begin-end blocks (unless at the very beginning of a procedure program) or variable declarations")
+															System.Environment.Exit(1)
+														vars as VariableDeclarationSequence
 														VariableStack.PushScope()
 														sl,sc,el,ec = t.line,t.col,t.line,t.col+t.val.Length .)
 	[ VarDecStmt<vars> ]							(. statements as StatementSequence .)
@@ -174,8 +207,8 @@ BlockStmt<ref block as Statement>
 AssignStmt<ref assign as Statement>            		(. 	exp as Expression 
 														var as Variable .)
 =	ident                                  			(. 	var = Variable(t.val) 
-														if not VariableStack.IsInScope(t.val):
-															errors.SemErr(t.line, t.col, "Assignment to undeclared variable '${t.val}'") .)
+														if not VariableStack.IsInScope(t.val) and not CompileOptions.BookVersion:
+																errors.SemErr(t.line, t.col, "Assignment to undeclared variable '${t.val}'") .)
 	":="											(. tok = t .)
 	Expr<exp>                          				(. return unless ExpectInt(exp, tok, true) .)
 													(. assign = Assign(var, exp) .)
@@ -188,15 +221,46 @@ IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence;
 	"if"											(.  sl,sc,tok = t.line, t.col, t .)
 	Expr<exp>										(.	return unless ExpectBool(exp, tok, true) .)
 	"then"											(. 	el,ec = t.line, t.col+t.val.Length .)
+	
+	(
+		IF(CompileOptions.BookVersion) IfBookBody<ifBranch, elseBranch>
+		|
+		IfCourseBody<ifBranch, elseBranch>
+	)
+		                                  			(. 	ifStmt = If(exp, ifBranch, elseBranch) 
+														ifStmt.AddSequencePoint(sl,sc,el,ec)
+														ifStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
+.
+
+
+IfCourseBody<ref ifBranch as StatementSequence, ref elseBranch as StatementSequence>
+=
 	StmtSeq<ifBranch>
 	[
 	    "else"
 	    StmtSeq<elseBranch>
 	]
-	"fi"                                  			(. 	ifStmt = If(exp, ifBranch, elseBranch) 
-														ifStmt.AddSequencePoint(sl,sc,el,ec)
-														ifStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
+	"fi"
 .
+
+IfBookBody<ref ifBranch as StatementSequence, ref elseBranch as StatementSequence>
+=
+	PossibleCompoundStatement<ifBranch>
+	[
+	    "else"
+	    PossibleCompoundStatement<elseBranch>
+	]
+.
+
+PossibleCompoundStatement<ref stmtSeq as StatementSequence>
+=													(.	stmt as Statement .)
+	Stmt<stmt>										(.	stmtSeq = StatementSequence((stmt,)) .)
+	|
+	'('
+	StmtSeq<stmtSeq>
+	')'
+.
+
 
 WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 														whileBranch as StatementSequence .)
@@ -204,8 +268,14 @@ WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 	"while"											(. 	sl,sc,tok = t.line, t.col,t .)
 	Expr<exp>										(. 	return unless ExpectBool(exp, tok, true) .)
 	"do"											(.	el,ec = t.line, t.col+t.val.Length .)
-	StmtSeq<whileBranch>
-	"od"                                   			(. 	whileStmt = While(exp, whileBranch) 
+	(
+		IF(CompileOptions.BookVersion)
+		PossibleCompoundStatement<whileBranch>
+	|
+		StmtSeq<whileBranch>
+		"od"
+	)
+		                                   			(. 	whileStmt = While(exp, whileBranch) 
 														whileStmt.AddSequencePoint(sl,sc,el,ec)
 														whileStmt.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length).)
 .
@@ -397,7 +467,7 @@ UnaryOperator<ref exp as Expression>          	(.	op as string = null .)
 Terminal<ref exp as Expression>               
 =
 	( ident                                		(. 	exp = Variable(t.val) 
-													if not VariableStack.IsInScope(t.val):
+													if not VariableStack.IsInScope(t.val) and not CompileOptions.BookVersion:
 														errors.SemErr(t.line, t.col, "Undeclared variable '${t.val}'") .)
 	| number                               		(. exp = Number(int.Parse(t.val)) .)
 	| "true"                               		(. exp = Bool(true) .)

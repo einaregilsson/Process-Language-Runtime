@@ -468,16 +468,16 @@ public class Scanner:
 	
 	private def CheckLiteral():
 		tokString as string =  t.val
-		if tokString == "proc": t.kind = 3
-		elif tokString == "val": t.kind = 5
-		elif tokString == "res": t.kind = 6
-		elif tokString == "is": t.kind = 8
-		elif tokString == "end": t.kind = 9
-		elif tokString == "skip": t.kind = 12
-		elif tokString == "read": t.kind = 13
+		if tokString == "begin": t.kind = 3
+		elif tokString == "end": t.kind = 4
+		elif tokString == "proc": t.kind = 5
+		elif tokString == "val": t.kind = 7
+		elif tokString == "res": t.kind = 8
+		elif tokString == "is": t.kind = 10
+		elif tokString == "skip": t.kind = 13
 		elif tokString == "write": t.kind = 14
-		elif tokString == "var": t.kind = 15
-		elif tokString == "begin": t.kind = 16
+		elif tokString == "read": t.kind = 15
+		elif tokString == "var": t.kind = 16
 		elif tokString == "if": t.kind = 18
 		elif tokString == "then": t.kind = 19
 		elif tokString == "else": t.kind = 20
@@ -537,13 +537,13 @@ public class Scanner:
 				else:
 					t.kind = 2 
 			elif state == 3:
-				t.kind = 4 
+				t.kind = 6 
 			elif state == 4:
-				t.kind = 7 
+				t.kind = 9 
 			elif state == 5:
-				t.kind = 10 
-			elif state == 6:
 				t.kind = 11 
+			elif state == 6:
+				t.kind = 12 
 			elif state == 7:
 				if ch == char('='):
 					AddCh()

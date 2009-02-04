@@ -8,7 +8,7 @@ static class VariableStack:
 	private _stack = List[of Dictionary[of string, int]]()
 	private _nr = 0
 	private _args = List[of string]()
-
+	
 	def PushScope():
 		_stack.Add(Dictionary[of string, int]())
 		

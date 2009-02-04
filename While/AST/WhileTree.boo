@@ -48,6 +48,8 @@ static class WhileTree:
 			proc.Compile(method.GetILGenerator())
 			
 		il = mainMethod.GetILGenerator()		
+		if CompileOptions.BookVersion:
+			VariableStack.PushScope()
 		_stmts.Compile(il)
 		il.Emit(OpCodes.Ret)
 		module.CreateGlobalFunctions()

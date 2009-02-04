@@ -64,6 +64,13 @@ class Assign(Statement):
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0, false)
 		_exp.Compile(il)
+
+		if CompileOptions.BookVersion and not VariableStack.IsInScope(_var.Name):
+			VariableStack.DefineVariable(_var.Name)
+			lb = il.DeclareLocal(typeof(int))
+			if CompileOptions.Debug:
+				lb.SetLocalSymInfo(_var.Name)
+
 		if VariableStack.IsArgument(_var.Name):
 			il.Emit(OpCodes.Starg, VariableStack.GetValue(_var.Name))
 		else:
@@ -119,6 +126,12 @@ class Call(Statement):
 		
 		if proc.ResultArg:
 			v as Variable = cast(Variable,_expr[_expr.Count-1])
+			if CompileOptions.BookVersion and not VariableStack.IsInScope(v.Name):
+				VariableStack.DefineVariable(v.Name)
+				lb = il.DeclareLocal(typeof(int))
+				if CompileOptions.Debug:
+					lb.SetLocalSymInfo(v.Name)
+
 			if VariableStack.IsArgument(v.Name):
 				il.Emit(OpCodes.Ldarga, VariableStack.GetValue(v.Name))
 			else:
@@ -187,7 +200,18 @@ class Read(Statement):
 		il.Emit(OpCodes.Ldstr, "${_var.Name}: ");
 		il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("Write", (typeof(string),)))
 		il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("ReadLine"))
-		il.Emit(OpCodes.Ldloca_S, VariableStack.GetValue(_var.Name))
+
+		if CompileOptions.BookVersion and not VariableStack.IsInScope(_var.Name):
+			VariableStack.DefineVariable(_var.Name)
+			lb = il.DeclareLocal(typeof(int))
+			if CompileOptions.Debug:
+				lb.SetLocalSymInfo(_var.Name)
+
+		if VariableStack.IsArgument(_var.Name):
+			il.Emit(OpCodes.Ldarga_S, VariableStack.GetValue(_var.Name))
+		else:
+			il.Emit(OpCodes.Ldloca_S, VariableStack.GetValue(_var.Name))
+			
 		il.Emit(OpCodes.Call, typeof(int).GetMethod("TryParse", (typeof(string),typeof(int).MakeByRefType())))
 		il.Emit(OpCodes.Brfalse, startLabel)
 
