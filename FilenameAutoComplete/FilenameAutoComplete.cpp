@@ -4,8 +4,25 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <cwctype>
 
 using namespace std;
+
+void dbg(const wchar_t* p) {
+    MessageBox(NULL, p, L"Filename AutoComplete", MB_OK);
+}
+
+bool Compare(wstring a, wstring b) {
+    if (a.length() != b.length()) {
+        return false;
+    }
+    for (UINT i = 0; i < a.length(); i++) {
+        if (tolower(a[i]) != tolower(b[i])) {
+            return false;
+        }
+    }
+    return true;
+}
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -34,20 +51,22 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 			}
 			wstring base = path.substr(0, pos+1);
 			if ((GetFileAttributes(base.c_str()) & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY) {
-				continue;
+                continue;
 			}
 
-			if (GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { //The full path is a valid file, lets use the next file we find
-				file = path.substr(pos+1);
+            bool selectNext = false;
+			if (pos != path.length()-1 && GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { //The full path is a valid file, lets use the next file we find
+                file = path.substr(pos+1);
 				path = path.substr(0, pos+1);
+                selectNext = true;
 			}
-
 			wstring query = path + L"*";
 			WIN32_FIND_DATA ffd;
 			HANDLE hFind = INVALID_HANDLE_VALUE;
-			hFind = FindFirstFile(query.c_str(), &ffd);
-			if (INVALID_HANDLE_VALUE == hFind) 
-			   continue;
+            hFind = FindFirstFile(query.c_str(),&ffd);
+            if (INVALID_HANDLE_VALUE == hFind) {
+                continue;
+            }
 			
 			vector<wstring> files;
 			do {
@@ -62,23 +81,19 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 				fullpath = base + files[0];
 				SendMessage(editbox, WM_SETTEXT, 0, (LPARAM)fullpath.c_str());
 			} else {
-				for (int i = 0; i < files.size(); i++) {
-					//MessageBox(NULL, files[i].c_str(), L"Filename AutoComplete", MB_OK);						
-					//MessageBox(NULL, file.c_str(), L"Filename AutoComplete", MB_OK);						
-					if (files[i] == file) {
-						//MessageBox(NULL, L"WAS EQ", L"Filename AutoComplete", MB_OK);						
-						int index = i+1;
-						if (index == files.size()) index--;
+				for (UINT i = 0; i < files.size(); i++) {
+                    if (Compare(files[i].substr(0, file.length()), file)) {
+                        int index = i;
+                        
+                        if (selectNext) {
+                            index = (i+1) % files.size();
+                        }
 						fullpath = base + files[index];
-						//MessageBox(NULL, fullpath.c_str(), L"Filename AutoComplete", MB_OK);						
 						SendMessage(editbox, WM_SETTEXT, 0, (LPARAM)fullpath.c_str());
+                        break;
 					}
 				}
 			}
-			//WCHAR b[300];
-			//swprintf(b, L"count is %d", files.size());
-			//MessageBox(NULL, b, L"Filename AutoComplete", MB_OK);
-
 		}
     }
     return 0;
