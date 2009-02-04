@@ -8,7 +8,11 @@ import While.AST.Expressions
 import While.AST.Statements
 
 class Procedure(Node):
-	
+"""
+Procedure class. A procedure can take 0-1 value arguments and
+0-1 result argument that must be the last one.
+"""
+
 	[getter(ValueArgs)]
 	_valArgs as List[of Variable]
 	[getter(ResultArg)]
@@ -45,6 +49,12 @@ class Procedure(Node):
 
 				
 	def CompileSignature(module as ModuleBuilder):
+	"""
+		Compiles the signature for the procedure but not the body.
+		This needs to be done first so that other methods can 
+		call this method, this way we don't have problems with
+		dependencies between methods.
+	"""
 		argCount = _valArgs.Count
 		if _resultArg: argCount += 1
 		argtypes = array(Type, argCount)

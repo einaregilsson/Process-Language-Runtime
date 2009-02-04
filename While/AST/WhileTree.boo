@@ -10,7 +10,11 @@ import System.Threading
 import System.Collections.Generic
 
 class WhileTree(Node):
-	
+"""
+	Root node in the abstract syntax tree. Has a static property, .Instance
+	that always contains the last parsed tree. This way all nodes can access
+	the tree root whenever they need.
+"""
 	[getter(Statements)]
 	_stmts as StatementSequence
 	
@@ -43,13 +47,13 @@ class WhileTree(Node):
 		
 		if CompileOptions.Debug:
 			Node.DebugWriter = module.DefineDocument(CompileOptions.InputFilename, Guid.Empty, Guid.Empty, SymDocumentType.Text)
-						
 		
-		#First compile the signatures
+		#First compile the method signatures...
 		for proc as Procedure in _procs.Values:
 			method = proc.CompileSignature(module)
 			_compiledProcs.Add(proc.Name, method)
 		
+		#...and then the method bodies
 		for proc as Procedure in _procs.Values:
 			method = _compiledProcs[proc.Name]
 			proc.Compile(method.GetILGenerator())

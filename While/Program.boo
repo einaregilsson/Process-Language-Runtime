@@ -1,5 +1,14 @@
-﻿namespace While
+﻿""" 
+	While.NET compiler
+	
+	Compiler for the programming language While, found in the
+	book Principles of Program Analysis by Nielson, Nielson and
+	Hankin.
+	
+	Program author: Einar Egilsson (einar@einaregilsson.com)
+"""
 
+namespace While
 
 import System
 import System.IO

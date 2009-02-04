@@ -70,6 +70,8 @@ Program<>
     	{
     		Proc<procs>
     	}
+
+    	StmtSeq<statements>
     	StmtSeq<statements>
     	"end"											(.	endTok = t .)
     |
@@ -78,8 +80,8 @@ Program<>
     
     													(.	WhileTree.Instance = WhileTree(statements, procs)
 															if startTok and endTok:
-																WhileTree.Instance.AddSequencePoint(startTok.line, startTok.col, startTok.line, startTok.col+startTok.val.Length)
-																WhileTree.Instance.AddSequencePoint(endTok.line, endTok.col, endTok.line, endTok.col+endTok.val.Length)
+																WhileTree.Instance.AddSequencePoint(startTok)
+																WhileTree.Instance.AddSequencePoint(endTok)
 														.)
 .
 
@@ -106,7 +108,7 @@ Proc<procs as Dictionary[of string, Procedure]>
 	")"													(.	seq1 = (ptok.line,ptok.col, t.line,t.col+t.val.Length) .)
 	"is"
 	StmtSeq<statements>
-	"end"												(.	seq2 = (t.line,t.col, t.line,t.col+t.val.Length) .)
+	"end"												(.	seq2 = t .)
 	";"													(.	if procs.ContainsKey(name):
 																errors.SemErr(ptok.line, ptok.col, "Procedure '${name}' is already declared")
 															else:
@@ -156,20 +158,20 @@ Stmt<ref stmt as Statement>
 														sl,sc = la.line, la.col
 														stmtSeq as StatementSequence.)
 
-	( AssignStmt<stmt>								(. stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
-	| "skip"                               			(. stmt = Skip();stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
+	( AssignStmt<stmt>								(. stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length)) .)
+	| "skip"                               			(. stmt = Skip();stmt.AddSequencePoint(t) .)
 	| BlockStmt<stmt>                       
 	| IfStmt<stmt>
 	| WhileStmt<stmt>
-	| ReadStmt<stmt>								(. 	stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length).)
-	| "write" Expr<exp>                				(. 	stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
-	| CallProc<stmt>								(. 	stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) .)
+	| ReadStmt<stmt>								(. 	stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length)).)
+	| "write" Expr<exp>                				(. 	stmt = Write(exp); stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length)) .)
+	| CallProc<stmt>								(. 	stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length)) .)
 	| 
 		'(' 										(.	bf = t .)
 		StmtSeq<stmtSeq> 
 		')'											(.	stmt = stmtSeq
-														stmt.AddSequencePoint(bf.line,bf.col, bf.line,bf.col+bf.val.Length)
-														stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
+														stmt.AddSequencePoint(bf)
+														stmt.AddSequencePoint(t) .)
 		
 	)
 .
@@ -205,7 +207,7 @@ VarDec<list as List[of VariableDeclaration]>
 														else:
 															VariableStack.DefineVariable(t.val) 
 														vd = VariableDeclaration(Variable(t.val))
-														vd.AddSequencePoint(sl,sc,el,ec)
+														vd.AddSequencePoint((sl,sc,el,ec))
 														list.Add(vd) .)
 	';'
 .
@@ -221,8 +223,8 @@ BlockStmt<ref block as Statement>
 	[ VarDecStmt<vars> ]							(. statements as StatementSequence .)
 	StmtSeq<statements>                
 	"end"                       					(. 	block = Block(vars, statements) 
-														block.AddSequencePoint(sl,sc,el,ec)
-														block.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
+														block.AddSequencePoint((sl,sc,el,ec))
+														block.AddSequencePoint(t)
 														VariableStack.PopScope() .)
 .
 
@@ -239,7 +241,11 @@ AssignStmt<ref assign as Statement>            		(. 	exp as Expression
 IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence; 
 														elseBranch as StatementSequence
 														tmpStmt as Statement
-														exp as Expression 
+														exp as Expression
+														sl as int
+														sc as int
+														el as int
+														ec as int
 													.)
 =
 	"if"											(.  sl,sc,tok = t.line, t.col, t .)
@@ -259,19 +265,23 @@ IfStmt<ref ifStmt as Statement>           			(. 	ifBranch as StatementSequence;
 			    "else"
 			    StmtSeq<elseBranch>
 			]
-			"fi"									(.	ifBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length)
-														elseBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) if elseBranch
+			"fi"									(.	ifBranch.AddSequencePoint(t)
+														elseBranch.AddSequencePoint(t) if elseBranch
 													.)
 
 	)
 		                                  			(. 	ifStmt = If(exp, ifBranch, elseBranch) 
-														ifStmt.AddSequencePoint(sl,sc,el,ec)
+														ifStmt.AddSequencePoint((sl,sc,el,ec))
 													.)
 .
 
 WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 														whileBranch as StatementSequence
-														branchStmt as Statement.)
+														branchStmt as Statement
+														sl as int
+														sc as int
+														el as int
+														ec as int.)
 =
 	"while"											(. 	sl,sc,tok = t.line, t.col,t .)
 	Expr<exp>										(. 	return unless ExpectBool(exp, tok, true) .)
@@ -281,10 +291,10 @@ WhileStmt<ref whileStmt as Statement>          		(.	exp as Expression
 		Stmt<branchStmt>							(.	whileBranch = ToStmtSeq(branchStmt) .)
 	|
 		StmtSeq<whileBranch>
-		"od"										(.	whileBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) .)
+		"od"										(.	whileBranch.AddSequencePoint(t) .)
 	)
 		                                   			(. 	whileStmt = While(exp, whileBranch) 
-														whileStmt.AddSequencePoint(sl,sc,el,ec)
+														whileStmt.AddSequencePoint((sl,sc,el,ec))
 													.)
 .
 

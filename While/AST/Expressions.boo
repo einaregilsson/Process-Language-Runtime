@@ -1,5 +1,13 @@
 namespace While.AST.Expressions
 
+"""
+This module contains all expression classes
+of the abstract syntax tree. The expressions
+have properties to evaluate them at compile
+time (except variables). This could be used
+to do some constant folding.
+"""
+
 import System
 import While
 import While.AST
@@ -7,10 +15,10 @@ import While.AST
 import System.Reflection.Emit
 
 abstract class Expression(Node):
+"""Base class for all expressions"""
 	abstract Value as object:
 		get: pass
 	
-		
 abstract class BoolExpression(Expression):
 	Value:
 		get: return BoolValue
@@ -22,9 +30,9 @@ abstract class IntExpression(Expression):
 		get: return IntValue
 	virtual IntValue as int:
 		get: pass
-
 	
 class Bool(BoolExpression):
+"""Boolean literal (true or false)"""
 	[Getter(BoolValue)]
 	_boolValue as bool
 	
@@ -41,6 +49,7 @@ class Bool(BoolExpression):
 			il.Emit(OpCodes.Ldc_I4_0)
 	
 class Number(IntExpression):
+"""Integer literal"""
 	[Getter(IntValue)]
 	_nr as int
 
@@ -75,7 +84,9 @@ class Variable(IntExpression):
 		
 	def Compile(il as ILGenerator):
 		code = OpCodes.Ldloc
+		
 		if CompileOptions.BookVersion and not VariableStack.IsInScope(_name):
+			#Declare at first use
 			VariableStack.DefineVariable(_name)
 			lb = il.DeclareLocal(typeof(int))
 			if CompileOptions.Debug:
@@ -87,7 +98,7 @@ class Variable(IntExpression):
 		
 
 abstract class IntBinaryOp[of ChildType](IntExpression):
-
+"""Binary operator that returns an integer"""
 	[Getter(Left)]	
 	_left as ChildType
 	[Getter(Right)]	
@@ -102,6 +113,7 @@ abstract class IntBinaryOp[of ChildType](IntExpression):
 		return "(${_left} ${_op} ${_right})"
 
 abstract class BoolBinaryOp[of ChildType](BoolExpression):
+"""Binary operator that returns an boolean"""
 
 	[Getter(Left)]	
 	_left as ChildType
@@ -150,6 +162,11 @@ class ArithmeticBinaryOp(IntBinaryOp[of IntExpression]):
 		
 
 class ComparisonBinaryOp(BoolBinaryOp[of IntExpression]):
+"""
+Relational operator, compares integer expressions
+and returns a boolean value
+"""
+
 	public static final GreaterThan = '>'
 	public static final LessThan = '<'
 	public static final GreaterThanOrEqual = '>='
@@ -197,6 +214,7 @@ class ComparisonBinaryOp(BoolBinaryOp[of IntExpression]):
 			il.Emit(OpCodes.Ceq)
 	
 class BitBinaryOp(IntBinaryOp[of IntExpression]):
+"""Bit operations on integers"""
 	public static final ShiftLeft = '<<'
 	public static final ShiftRight = '>>'
 	public static final And = '&'
@@ -231,6 +249,7 @@ class BitBinaryOp(IntBinaryOp[of IntExpression]):
 		elif _op == Xor: il.Emit(OpCodes.Xor)
 
 class LogicBinaryOp(BoolBinaryOp[of BoolExpression]):
+"""Logical operations on boolean values"""
 	public static final And = 'and'
 	public static final Or = 'or'
 	public static final Xor = 'xor'
@@ -254,6 +273,7 @@ class LogicBinaryOp(BoolBinaryOp[of BoolExpression]):
 		elif _op == Xor: il.Emit(OpCodes.Xor)
 
 class IntUnaryOp(IntExpression):
+"""Unary prefixes for integer expressions"""
 	public static final Minus = '-'
 	public static final OnesComplement = '~'
 	
@@ -284,6 +304,7 @@ class IntUnaryOp(IntExpression):
 			il.Emit(OpCodes.Not);
 		
 class NotUnaryOp(BoolExpression):
+"""Unary prefix for boolean expressions"""
 	_exp as BoolExpression
 
 	BoolValue:

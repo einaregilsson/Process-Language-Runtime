@@ -1,5 +1,8 @@
 ﻿namespace While.AST.Statements
-
+"""
+This module contains all AST nodes that are
+statements.
+"""
 import While
 import While.AST
 import While.AST.Expressions
@@ -7,12 +10,13 @@ import System.Reflection.Emit
 import System.Collections.Generic
 
 abstract class Statement(Node):
-	
+"""Base for all statements"""
 	protected def Indent(str):
 		return "\t" + str.ToString().Replace("\n", "\n\t")
 	
 
 class StatementSequence(Statement):
+"""List of statements"""
 	_statements as Statement*
 	def constructor(statements as Statement*):
 		_statements = statements
@@ -21,7 +25,7 @@ class StatementSequence(Statement):
 		return join(_statements, ";\n")
 	
 	def Compile(il as ILGenerator):
-		if _seqPoints.Count > 1:
+		if _seqPoints.Count > 1: #If there's just one then we assume it is after the sequence (for "fi" and "od")
 			EmitDebugInfo(il, 0, true)
 		for s in _statements:
 			s.Compile(il)
@@ -31,6 +35,7 @@ class StatementSequence(Statement):
 			
 
 class VariableDeclarationSequence(Node):
+"""List of variable declarations"""
 	_vars as VariableDeclaration*
 
 	def constructor(vars as VariableDeclaration*):
@@ -44,6 +49,7 @@ class VariableDeclarationSequence(Node):
 			v.Compile(il)
 		
 class Assign(Statement):
+"""Assign an integer expression to a variable"""
 	[Getter(Variable)]
 	_var as Variable
 	[Getter(Expression)]
@@ -59,6 +65,7 @@ class Assign(Statement):
 	def Compile(il as ILGenerator):
 		EmitDebugInfo(il,0, false)
 
+		#Declare at first use
 		if CompileOptions.BookVersion and not VariableStack.IsInScope(_var.Name):
 			VariableStack.DefineVariable(_var.Name)
 			lb = il.DeclareLocal(typeof(int))
@@ -77,6 +84,7 @@ class Assign(Statement):
 			il.Emit(OpCodes.Stloc, VariableStack.GetValue(_var.Name))
 			
 class Skip(Statement):
+"""No effect"""
 	def ToString():
 		return "skip"
 
@@ -85,7 +93,7 @@ class Skip(Statement):
 		#Nop only emitted in debug build, otherwise nothing is emitted
 		
 class Call(Statement):
-
+"""Procedure call"""
 	[getter(Expressions)]
 	_expr as List[of Expression]
 	[getter(ProcedureName)]
@@ -105,9 +113,9 @@ class Call(Statement):
 	def ToString():
 		return "call ${_name}(${join(_expr, ', ')})"
 
-	def Compile(il as ILGenerator):
-		EmitDebugInfo(il,0,false)
+	def SanityCheck():
 		l,c = _callToken.line, _callToken.col
+		
 		if not WhileTree.Instance.Procedures.ContainsKey(ProcedureName):
 			System.Console.Error.WriteLine("(${l},${c}) ERROR: Procedure '${_name}' is not defined")
 			System.Environment.Exit(1)
@@ -120,13 +128,17 @@ class Call(Statement):
 		if proc.ResultArg and not _expr[_expr.Count-1] isa Variable:
 			System.Console.Error.WriteLine("(${_lastArgToken.line},${_lastArgToken.col}) ERROR: Only variables are allowed for result arguments")
 			System.Environment.Exit(1)
-		
+
+	def Compile(il as ILGenerator):
+		EmitDebugInfo(il,0,false)
+		SanityCheck()		
 		if _expr.Count > 0:
 			for i in range(0, _expr.Count-1):
 				_expr[i].Compile(il)
-		
+			proc = WhileTree.Instance.Procedures[ProcedureName]
 			if proc.ResultArg:
 				v as Variable = cast(Variable,_expr[_expr.Count-1])
+				#Create at first use
 				if CompileOptions.BookVersion and not VariableStack.IsInScope(v.Name):
 					VariableStack.DefineVariable(v.Name)
 					lb = il.DeclareLocal(typeof(int))
@@ -145,6 +157,7 @@ class Call(Statement):
 		
 
 class VariableDeclaration(Statement):
+"""Declare a variable (only with /CourseSyntax switch)"""
 	[Getter(Variable)]
 	_var as Variable
 
@@ -163,6 +176,7 @@ class VariableDeclaration(Statement):
 		
 		
 class Write(Statement):
+"""Write an expression to the screen"""
 	[Getter(Expression)]
 	_exp as Expression
 	
@@ -185,6 +199,7 @@ class Write(Statement):
 		il.Emit(OpCodes.Call, mi)
 			
 class Read(Statement):
+"""Read an integer from the user"""
 	[Getter(Variable)]
 	_var as Variable
 
@@ -219,7 +234,7 @@ class Read(Statement):
 		il.Emit(OpCodes.Brfalse, startLabel)
 
 class Block(Statement):
-
+"""Block with variable declarations and statements"""
 	[Getter(Variables)]
 	_vars as VariableDeclarationSequence
 	[Getter(Statements)]
@@ -246,7 +261,7 @@ class Block(Statement):
 
 
 class If(Statement):
-
+"""If-Else branching"""
 	[Getter(Expression)]
 	_exp as BoolExpression
 	[Getter(IfBranch)]
@@ -278,7 +293,7 @@ class If(Statement):
 		il.MarkLabel(endLabel)
 
 class While(Statement):
-
+"""While loop"""
 	[Getter(Expression)]
 	_exp as BoolExpression
 	[Getter(Statements)]

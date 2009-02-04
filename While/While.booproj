@@ -52,6 +52,7 @@
     <Compile Include="Test\ParseTest.boo" />
     <Compile Include="WhileException.boo" />
     <None Include="Parser.frame" />
+    <None Include="pgen.bat" />
     <None Include="Scanner.frame" />
     <None Include="While.ATG" />
   </ItemGroup>

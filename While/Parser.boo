@@ -134,6 +134,7 @@ public class Parser:
 			while la.kind == 5:
 				Proc(procs)
 			StmtSeq(statements)
+			StmtSeq(statements)
 			Expect(4)
 			endTok = t 
 		elif StartOf(1):
@@ -141,8 +142,8 @@ public class Parser:
 		else: SynErr(50)
 		WhileTree.Instance = WhileTree(statements, procs)
 		if startTok and endTok:
-			WhileTree.Instance.AddSequencePoint(startTok.line, startTok.col, startTok.line, startTok.col+startTok.val.Length)
-			WhileTree.Instance.AddSequencePoint(endTok.line, endTok.col, endTok.line, endTok.col+endTok.val.Length)
+			WhileTree.Instance.AddSequencePoint(startTok)
+			WhileTree.Instance.AddSequencePoint(endTok)
 		
 
 	def Proc(procs as Dictionary[of string, Procedure]):
@@ -173,7 +174,7 @@ public class Parser:
 		Expect(10)
 		StmtSeq(statements)
 		Expect(4)
-		seq2 = (t.line,t.col, t.line,t.col+t.val.Length) 
+		seq2 = t 
 		Expect(11)
 		if procs.ContainsKey(name):
 			errors.SemErr(ptok.line, ptok.col, "Procedure '${name}' is already declared")
@@ -226,10 +227,10 @@ public class Parser:
 		stmtSeq as StatementSequence
 		if la.kind == 1:
 			AssignStmt(stmt)
-			stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
+			stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length)) 
 		elif la.kind == 13:
 			Get()
-			stmt = Skip();stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
+			stmt = Skip();stmt.AddSequencePoint(t) 
 		elif la.kind == 3:
 			BlockStmt(stmt)
 		elif la.kind == 18:
@@ -238,22 +239,22 @@ public class Parser:
 			WhileStmt(stmt)
 		elif la.kind == 15:
 			ReadStmt(stmt)
-			stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length)
+			stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length))
 		elif la.kind == 14:
 			Get()
 			Expr(exp)
-			stmt = Write(exp); stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
+			stmt = Write(exp); stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length)) 
 		elif la.kind == 25:
 			CallProc(stmt)
-			stmt.AddSequencePoint(sl,sc, t.line,t.col+t.val.Length) 
+			stmt.AddSequencePoint((sl,sc, t.line,t.col+t.val.Length)) 
 		elif la.kind == 6:
 			Get()
 			bf = t 
 			StmtSeq(stmtSeq)
 			Expect(9)
 			stmt = stmtSeq
-			stmt.AddSequencePoint(bf.line,bf.col, bf.line,bf.col+bf.val.Length)
-			stmt.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
+			stmt.AddSequencePoint(bf)
+			stmt.AddSequencePoint(t) 
 		else: SynErr(52)
 
 	def AssignStmt(ref assign as Statement):
@@ -283,15 +284,19 @@ public class Parser:
 		StmtSeq(statements)
 		Expect(4)
 		block = Block(vars, statements)
-		block.AddSequencePoint(sl,sc,el,ec)
-		block.AddSequencePoint(t.line,t.col, t.line, t.col+t.val.Length)
+		block.AddSequencePoint((sl,sc,el,ec))
+		block.AddSequencePoint(t)
 		VariableStack.PopScope() 
 
 	def IfStmt(ref ifStmt as Statement):
 		ifBranch as StatementSequence;
 		elseBranch as StatementSequence
 		tmpStmt as Statement
-		exp as Expression 
+		exp as Expression
+		sl as int
+		sc as int
+		el as int
+		ec as int
 		
 		Expect(18)
 		sl,sc,tok = t.line, t.col, t 
@@ -312,18 +317,22 @@ public class Parser:
 				Get()
 				StmtSeq(elseBranch)
 			Expect(21)
-			ifBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length)
-			elseBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) if elseBranch
+			ifBranch.AddSequencePoint(t)
+			elseBranch.AddSequencePoint(t) if elseBranch
 			
 		else: SynErr(53)
 		ifStmt = If(exp, ifBranch, elseBranch)
-		ifStmt.AddSequencePoint(sl,sc,el,ec)
+		ifStmt.AddSequencePoint((sl,sc,el,ec))
 		
 
 	def WhileStmt(ref whileStmt as Statement):
 		exp as Expression
 		whileBranch as StatementSequence
 		branchStmt as Statement
+		sl as int
+		sc as int
+		el as int
+		ec as int
 		Expect(22)
 		sl,sc,tok = t.line, t.col,t 
 		Expr(exp)
@@ -336,10 +345,10 @@ public class Parser:
 		elif StartOf(1):
 			StmtSeq(whileBranch)
 			Expect(24)
-			whileBranch.AddSequencePoint(t.line,t.col, t.line,t.col+t.val.Length) 
+			whileBranch.AddSequencePoint(t) 
 		else: SynErr(54)
 		whileStmt = While(exp, whileBranch)
-		whileStmt.AddSequencePoint(sl,sc,el,ec)
+		whileStmt.AddSequencePoint((sl,sc,el,ec))
 		
 
 	def ReadStmt(ref stmt as Statement):
@@ -375,7 +384,7 @@ public class Parser:
 				exprToken = la 
 				Expr(exp)
 				list.Add(exp); ExpectIntArg(exp, exprToken) 
-			Expect(9)
+		Expect(9)
 		callStmt = Call(proc, list, callToken, exprToken) 
 
 	def VarDecStmt(ref vars as VariableDeclarationSequence):
@@ -397,7 +406,7 @@ public class Parser:
 		else:
 			VariableStack.DefineVariable(t.val) 
 		vd = VariableDeclaration(Variable(t.val))
-		vd.AddSequencePoint(sl,sc,el,ec)
+		vd.AddSequencePoint((sl,sc,el,ec))
 		list.Add(vd) 
 		Expect(11)
 

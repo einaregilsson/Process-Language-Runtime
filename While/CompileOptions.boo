@@ -3,6 +3,12 @@ namespace While
 import System
 
 static class CompileOptions:
+"""
+Class for parsing command line options.
+The options are available as static properties
+so essentially they are global variables that
+anything in the assembly can access.
+"""
 	[Property(Debug)]
 	_debug = false
 

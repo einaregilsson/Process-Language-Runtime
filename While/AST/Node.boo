@@ -6,6 +6,10 @@ import System.Diagnostics.SymbolStore
 import System.Reflection.Emit
 
 public abstract class Node:
+"""
+The base for all nodes in the abstract syntax tree.
+Just contains some utility methods.
+"""
 	abstract def Compile(il as ILGenerator):
 		pass
 	
@@ -14,8 +18,9 @@ public abstract class Node:
 	
 	_seqPoints = [] #List of 4-tuples with startline, startcol, endline, endcol for debug
 		
-	def AddSequencePoint(startline as int, startcol as int, endline as int, endcol as int):
-		_seqPoints.Add((startline,startcol, endline, endcol))
+	def AddSequencePoint(t as Token):
+		_seqPoints.Add((t.line, t.col, t.line, t.col+t.val.Length))
+	
 	def AddSequencePoint(arr as (int)):
 		_seqPoints.Add(arr)
 

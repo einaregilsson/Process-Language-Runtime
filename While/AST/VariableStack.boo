@@ -4,7 +4,10 @@ import System.Collections.Generic
 import While
 
 static class VariableStack:
-
+"""
+	Symbol table to keep track of variables and their scope.
+	Used both in the parsing phase, and again in the compilation phase.
+"""
 	private _stack = List[of Dictionary[of string, int]]()
 	private _nr = 0
 	private _resultArgIndex = -1
@@ -44,6 +47,7 @@ static class VariableStack:
 		return IsArgument(name) and _args.IndexOf(name) == _resultArgIndex
 
 	def GetValue(name as string) as int:
+	"""Returns the number for the variable (since the CLR only understands numbers, not names)"""
 		scope = FindScopeForVariable(name)
 		if not scope:
 			nr = _args.IndexOf(name)
