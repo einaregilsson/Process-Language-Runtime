@@ -33,9 +33,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Analysis\Analyzer.cs" />
-    <Compile Include="CCSError.cs" />
-    <Compile Include="Compiler\CCSCompiler.cs" />
     <Compile Include="Formatters\Formatter.cs" />
     <Compile Include="Formatters\HtmlFormatter.cs" />
     <Compile Include="Formatters\LaTeXFormatter.cs" />

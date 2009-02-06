@@ -33,6 +33,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analyzer.cs" />
     <Compile Include="AST\ActionID.cs" />
     <Compile Include="AST\Actions\Action.cs">
       <SubType>Code</SubType>
@@ -92,6 +93,8 @@
     <Compile Include="AST\Subscript.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Compiler.cs" />
+    <Compile Include="PLRError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
