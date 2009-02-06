@@ -18,6 +18,9 @@ anything in the assembly can access.
 	[Property(InputFilename)]
 	_inputFile = ""
 	
+	[property(ReadStdIn)]
+	_readStdIn = false
+	
 	[Property(Empty)]
 	_empty = false
 
@@ -31,17 +34,24 @@ anything in the assembly can access.
 		if args.Length == 0:
 			_empty = true
 			return
-		
+		gotOut = false
 		_inputFile = args[-1]
-		_outputFile = /(?i)\.w(hile)?$/.Replace(_inputFile,"")
+		_outputFile = System.IO.Path.GetFileName(/(?i)\.w(hile)?$/.Replace(_inputFile,""))
 		for arg as string in args:
 			larg = arg.ToLower()
 			_help = larg in ('/?', '/help')
 			_debug = true if larg == '/debug'
 			_bookVersion = false if larg == '/coursesyntax'
 			if larg.StartsWith("/out:"):
+				gotOut = true
 				_outputFile = larg.Substring(5)
 			
+		if _inputFile.ToLower() == "stdin":
+			_readStdIn = true
+			if not gotOut:
+				System.Console.Error.WriteLine("ERROR: /out:<filename> must be specified when reading source from the standard input stream (STDIN).")
+				System.Environment.Exit(4)
+		
 		if not _outputFile.ToLower().EndsWith(".exe"):
 			_outputFile += ".exe"
 

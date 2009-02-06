@@ -3,7 +3,7 @@
 	
 	Compiler for the programming language While, found in the
 	book Principles of Program Analysis by Nielson, Nielson and
-	Hankin.
+	Hankin. Licensed under the GPL.
 	
 	Program author: Einar Egilsson (einar@einaregilsson.com)
 """
@@ -29,11 +29,16 @@ Copyright (C) Einar Egilsson 2009. All rights reserved.
 		System.Console.Error.WriteLine("Usage: wc.exe [options] filename")
 		CompileOptions.Print()
 		return 2
-	elif not File.Exists(CompileOptions.InputFilename):
+	elif not CompileOptions.ReadStdIn and not File.Exists(CompileOptions.InputFilename):
 		System.Console.Error.WriteLine("ERROR: File '${CompileOptions.InputFilename}' does not exist");
 		return 3
 
-	p = Parser(Scanner(FileStream(CompileOptions.InputFilename, FileMode.Open)))
+	p as Parser
+	if CompileOptions.ReadStdIn:
+		p = Parser(Scanner(System.Console.OpenStandardInput()))
+	else:
+		p = Parser(Scanner(FileStream(CompileOptions.InputFilename, FileMode.Open)))
+
 	p.Parse()
 	return if p.errors.count > 0
 	VariableStack.Clear()
