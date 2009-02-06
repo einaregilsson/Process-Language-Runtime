@@ -1,0 +1,105 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C2BC567A-4740-4224-9CBA-8C2B527EBF83}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PLR</RootNamespace>
+    <AssemblyName>PLR</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AST\ActionID.cs" />
+    <Compile Include="AST\Actions\Action.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Actions\InAction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Actions\OutAction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Actions\TauAction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Expressions\ArithmeticBinOpExpression.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Expressions\ArithmeticExpression.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Expressions\Constant.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Expressions\UnaryMinus.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Expressions\Variable.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Node.cs" />
+    <Compile Include="AST\ProcessDefinition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Processes\ActionPrefix.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Processes\NilProcess.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Processes\NonDeterministicChoice.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Processes\Process.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Processes\ProcessConstant.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\ProcessSystem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Relabellings.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Restrictions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Subscript.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

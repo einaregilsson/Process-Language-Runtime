@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
 
-namespace CCS.Nodes {
+namespace PLR.AST.Expressions {
 
     public enum ArithmeticBinOp {
         Plus,
@@ -19,15 +19,13 @@ namespace CCS.Nodes {
             this.Right = right;
             this.Left = left;
             this.Op = op;
+            _children.Add(left);
+            _children.Add(right);
         }
 
-        public override List<ASTNode> GetChildren() {
-            return new List<ASTNode>() { this.Left, this.Right };
-        }
-
-        public ArithmeticExpression Right { get; private set; }
-        public ArithmeticExpression Left { get; private set; }
-        public ArithmeticBinOp Op { get; private set; }
+        public ArithmeticExpression Right;// { get; private set; }
+        public ArithmeticExpression Left;// { get; private set; }
+        public ArithmeticBinOp Op;// { get; private set; }
 
         public override int Value {
             get {

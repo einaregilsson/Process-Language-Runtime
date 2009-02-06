@@ -1,5 +1,6 @@
 ﻿
-namespace CCS.Nodes {
+namespace PLR.AST.Expressions {
+
     public class Constant : ArithmeticExpression{
         private int number;
         public Constant(int number) {
