@@ -8,13 +8,13 @@ CHARACTERS
   lcaseletter = "abcdefghijklmnopqrstuvwxyz".
   letter = ucaseletter + lcaseletter.
   digit = "0123456789".
-  cr  = '\r'.
+  cr  = '\r'.   
   lf  = '\n'.
-  tab = '\t'.
-  space = ' '.
-  underscore = '_'.
-
-TOKENS
+  tab = '\t'. 
+  space = ' '.    
+  underscore = '_'.      
+     
+TOKENS 
   PROCNAME   = ucaseletter {letter|digit} {'\''} .
   PROCNAMESUB= ucaseletter {letter|digit} {'\''} '_'.
   LCASEIDENT = lcaseletter {letter|digit}.
