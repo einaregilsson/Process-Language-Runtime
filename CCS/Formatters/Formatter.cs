@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
-using CCS.Nodes;
-using Action = CCS.Nodes.Action;
+using PLR.AST;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
+using PLR.AST.Actions;
+using Action = PLR.AST.Actions.Action;
 
 namespace CCS.Formatters {
 
@@ -35,7 +38,7 @@ namespace CCS.Formatters {
 
         #region Format methods
         
-        public virtual string Format(CCSSystem sys) {
+        public virtual string Format(ProcessSystem sys) {
             return Join("\n", sys);
         }
 
@@ -119,7 +122,7 @@ namespace CCS.Formatters {
             }
         }
 
-        public virtual string Format(ASTNode node) {
+        public virtual string Format(Node node) {
             if (node is CCSSystem) {
                 return Format((CCSSystem)node);
             } else if (node is Process) {

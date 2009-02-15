@@ -1,8 +1,19 @@
-namespace CCS {
 
+using System;
+using System.IO;
+using System.Collections;
+
+namespace CCS.Parsing {
+
+//-----------------------------------------------------------------------------------
+// Scanner
+//-----------------------------------------------------------------------------------
 public partial class Scanner {
+
 	const int maxT = 25;
 	const int noSym = 25;
+
+
 	static Scanner() {
 		start = new Hashtable(128);
 		for (int i = 65; i <= 90; ++i) start[i] = 8;
@@ -26,8 +37,9 @@ public partial class Scanner {
 		start[42] = 23; 
 		start[37] = 24; 
 		start[Buffer.EOF] = -1;
-	}
 
+	}
+	
 	void NextCh() {
 		if (oldEols > 0) { ch = EOL; oldEols--; } 
 		else {
@@ -38,6 +50,7 @@ public partial class Scanner {
 			if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
 			if (ch == EOL) { line++; col = 0; }
 		}
+
 	}
 
 	void AddCh() {
@@ -53,6 +66,7 @@ public partial class Scanner {
 	}
 
 
+
 	bool Comment0() {
 		int level = 1, pos0 = pos, line0 = line, col0 = col;
 		NextCh();
@@ -66,17 +80,19 @@ public partial class Scanner {
 			}
 	}
 
-    void CheckLiteral() {
+
+	void CheckLiteral() {
 		switch (t.val) {
 			case "0": t.kind = 11; break;
 			case "t": t.kind = 17; break;
 			default: break;
 		}
-    }
+	}
 
-        Token NextToken() {
-		while (ch == ' ' || 
-			ch >= 9 && ch <= 10 || ch == 13) NextCh();
+	Token NextToken() {
+		while (ch == ' ' ||
+			ch >= 9 && ch <= 10 || ch == 13
+		) NextCh();
 		if (ch == '#' && Comment0()) return NextToken();
 		t = new Token();
 		t.pos = pos; t.col = col; t.line = line; 
@@ -88,7 +104,6 @@ public partial class Scanner {
 		switch (state) {
 			case -1: { t.kind = eofSym; break; } // NextCh already done
 			case 0: { t.kind = noSym; break; }   // NextCh already done
-
 			case 1:
 				{t.kind = 2; break;}
 			case 2:
@@ -155,5 +170,6 @@ public partial class Scanner {
 		t.val = new String(tval, 0, tlen);
 		return t;
 	}
-}
+} // end Scanner
+
 }

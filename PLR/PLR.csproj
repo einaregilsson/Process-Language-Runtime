@@ -75,6 +75,7 @@
     <Compile Include="AST\Processes\NonDeterministicChoice.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Processes\ParallelComposition.cs" />
     <Compile Include="AST\Processes\Process.cs">
       <SubType>Code</SubType>
     </Compile>

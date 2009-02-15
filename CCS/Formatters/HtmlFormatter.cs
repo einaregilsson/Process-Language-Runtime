@@ -1,4 +1,5 @@
-﻿using CCS.Nodes;
+﻿using PLR.AST;
+using PLR.AST.Actions;
 
 namespace CCS.Formatters {
 
@@ -6,7 +7,7 @@ namespace CCS.Formatters {
 
         #region Format methods
 
-        public override string Format(CCSSystem sys) {
+        public override string Format(ProcessSystem sys) {
             return "<table>\n\t<tr>" + Join("</tr>\n\t<tr>", sys) + "\n\t</tr>\n</table>";
         }
 

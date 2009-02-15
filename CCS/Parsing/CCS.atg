@@ -1,20 +1,25 @@
-﻿COMPILER CCS
+using PLR.AST;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
+using Action = PLR.AST.Actions.Action;
+
+COMPILER CCS s
     
-    private CCSSystem system = new CCSSystem();
-    public CCSSystem System {get { return this.system;}}
+    private ProcessSystem system = new ProcessSystem();
+    public ProcessSystem System {get { return this.system;}}
     
 CHARACTERS
   ucaseletter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
   lcaseletter = "abcdefghijklmnopqrstuvwxyz".
-  letter = ucaseletter + lcaseletter.
+  letter = ucaseletter + lcaseletter.   
   digit = "0123456789".
-  cr  = '\r'.   
+  cr  = '\r'.    
   lf  = '\n'.
-  tab = '\t'. 
-  space = ' '.    
+  tab = '\t'.  
+  space = ' '.      
   underscore = '_'.      
      
-TOKENS 
+TOKENS    
   PROCNAME   = ucaseletter {letter|digit} {'\''} .
   PROCNAMESUB= ucaseletter {letter|digit} {'\''} '_'.
   LCASEIDENT = lcaseletter {letter|digit}.

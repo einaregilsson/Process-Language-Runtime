@@ -1,4 +1,6 @@
-﻿using CCS.Nodes;
+﻿using PLR.AST;
+using PLR.AST.Actions;
+using PLR.AST.Processes;
 
 namespace CCS.Formatters {
 
@@ -6,7 +8,7 @@ namespace CCS.Formatters {
 
         #region Format methods
 
-        public override string Format(CCSSystem sys) {
+        public override string Format(ProcessSystem sys) {
             return
 @"\documentclass[a4paper,11pt]{article}
 \usepackage{amsmath}

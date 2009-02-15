@@ -1,7 +1,15 @@
-namespace CCS {
+using PLR.AST;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
+using Action = PLR.AST.Actions.Action;
+
+using System;
+
+namespace CCS.Parsing {
+
+
 
 public partial class Parser {
-
 	public const int _EOF = 0;
 	public const int _PROCNAME = 1;
 	public const int _PROCNAMESUB = 2;
@@ -9,11 +17,26 @@ public partial class Parser {
 	public const int _OUTACTION = 4;
 	public const int _NUMBER = 5;
 	public const int _ENTRYPROC = 6;
-
 	public const int maxT = 25;
-private CCSSystem system = new CCSSystem();
-    public CCSSystem System {get { return this.system;}}
+
+
+s
     
+    private ProcessSystem system = new ProcessSystem();
+    public ProcessSystem System {get { return this.system;}}
+    
+
+
+	void Get () {
+		for (;;) {
+			t = la;
+			la = scanner.Scan();
+			if (la.kind <= maxT) { ++errDist; break; }
+
+			la = t;
+		}
+	}
+	
 	void CCS() {
 		ProcessDefinition proc; 
 		ProcessDefinition(out proc);
@@ -263,17 +286,28 @@ private CCSSystem system = new CCSSystem();
 		if (isMinus) {aexp = new UnaryMinus(aexp); aexp.SetPos(minusToken);} 
 	}
 
-	void ParseRoot() {
-		CCS();
-	}
 
+
+	public void Parse() {
+		la = new Token();
+		la.val = "";		
+		Get();
+		CCS();
+
+    Expect(0);
+	}
+	
 	static readonly bool[,] set = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x}
-	};
 
-	private string GetErrorMessage(int n) {
-		string s = null;
-		switch (n) {
+	};
+} // end Parser
+
+
+public partial class Errors {
+    private string GetErrorMessage(int n) {
+        string s = null;
+        switch(n) {
 			case 0: s = "EOF expected"; break;
 			case 1: s = "PROCNAME expected"; break;
 			case 2: s = "PROCNAMESUB expected"; break;
@@ -307,9 +341,10 @@ private CCSSystem system = new CCSSystem();
 			case 30: s = "invalid ProcessConstantInvoke"; break;
 			case 31: s = "invalid Restriction"; break;
 			case 32: s = "invalid UnaryMinusTerm"; break;
-			default: s = null;
-		}
-		return s;
-	}
-}
+
+        }
+        return s;
+    }
+} // Errors
+
 }

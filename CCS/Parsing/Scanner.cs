@@ -28,7 +28,7 @@ using System;
 using System.IO;
 using System.Collections;
 
-namespace CCS {
+namespace CCS.Parsing {
 
     public class Token {
         public int kind;    // token kind
@@ -299,4 +299,5 @@ namespace CCS {
         public void ResetPeek() { pt = tokens; }
 
     } // end Scanner
+
 }

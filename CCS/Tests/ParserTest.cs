@@ -4,7 +4,8 @@ using System.IO;
 using System.Text;
 using NUnit.Framework;
 using CCS.Parsing;
-using CCS.Nodes;
+using PLR.AST;
+using PLR.AST.Processes;
 
 namespace CCS.Tests {
     [TestFixture]
@@ -12,7 +13,7 @@ namespace CCS.Tests {
 
         [Test]
         public void TestNilProcess() {
-            CCSSystem sys = Parse("P = 0");
+            ProcessSystem sys = Parse("P = 0");
             Assert.AreEqual(1, sys.Count);
             Process p = sys[0].Process;
             Assert.IsInstanceOfType(typeof(NilProcess), p);
@@ -81,7 +82,7 @@ namespace CCS.Tests {
         private void AssertNoRelabelling(Process p) {
             Assert.AreEqual(0, p.Relabelling.Count);
         }
-        private CCSSystem Parse(string source) {
+        private ProcessSystem Parse(string source) {
             MemoryStream ms = new MemoryStream();
             StreamWriter w = new StreamWriter(ms);
             w.Write(source);
