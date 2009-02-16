@@ -36,7 +36,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Formatters\Formatter.cs" />
+    <Compile Include="Formatters\SourceFormatter.cs" />
     <Compile Include="Formatters\HtmlFormatter.cs" />
     <Compile Include="Formatters\LaTeXFormatter.cs" />
     <Compile Include="Parsing\Parser.cs" />
@@ -49,6 +49,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\FormatterTest.cs" />
     <Compile Include="Tests\ParserTest.cs" />
   </ItemGroup>
   <ItemGroup>

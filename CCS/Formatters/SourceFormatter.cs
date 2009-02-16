@@ -10,7 +10,7 @@ using Action = PLR.AST.Actions.Action;
 
 namespace CCS.Formatters {
 
-    public class Formatter {
+    public class SourceFormatter {
 
         #region Utility methods
         
