@@ -4,11 +4,16 @@ using PLR.AST;
 namespace PLR.AST.Processes
 {
     public class ProcessConstant : Process {
-        public ProcessConstant() {
-            Subscript = new Subscript();
+        public ProcessConstant(string name) {
+            _name = name;
+            _subscript = new Subscript();
             _children.Add(Subscript);
         }
-        public string Name;// { get; set; }
-        public Subscript Subscript;// { get; private set; }
+
+        private string _name;
+        public string Name { get { return _name; } }
+
+        protected Subscript _subscript;
+        public Subscript Subscript { get { return _subscript; } }
     }
 }

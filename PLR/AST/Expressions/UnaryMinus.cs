@@ -3,10 +3,11 @@ using System.Collections.Generic;
 
 namespace PLR.AST.Expressions {
     public class UnaryMinus : ArithmeticExpression{
-        public ArithmeticExpression Expression;// { get; private set; }
+        protected ArithmeticExpression _exp;
+        public ArithmeticExpression Expression { get { return _exp; } }
 
         public UnaryMinus(ArithmeticExpression exp) {
-            this.Expression = exp;
+            _exp = exp;
             _children.Add(exp);
         }
         public override int Value {

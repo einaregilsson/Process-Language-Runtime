@@ -7,6 +7,5 @@ namespace PLR.AST {
         {
             _children.Add(action);
         }
-
     }
 }

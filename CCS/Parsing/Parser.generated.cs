@@ -28,7 +28,7 @@ private ProcessSystem system = new ProcessSystem();
 		n.SetPos(t.line, t.col, t.val.Length, t.pos);
     }
     private void CopyPos(Node from, Node to, Token end) {
-		to.SetPos(from.Line, from.Col, t.pos-from.Pos, from.Pos);
+		to.SetPos(from.Line, from.Column, t.pos-from.Position, from.Position);
     }
     
 
@@ -67,13 +67,13 @@ private ProcessSystem system = new ProcessSystem();
 	}
 
 	void ProcessConstantDef(out ProcessConstant pc) {
-		pc = new ProcessConstant(); 
+		pc = null; 
 		if (la.kind == 1) {
 			Get();
-			pc.Name = t.val; SetPos(pc, t);
+			pc = new ProcessConstant(t.val); SetPos(pc, t);
 		} else if (la.kind == 2) {
 			Get();
-			pc.Name = t.val.Replace("_","");  SetPos(pc,t); ArithmeticExpression subscript; 
+			pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc,t); ArithmeticExpression subscript; 
 			Expect(8);
 			Token startToken = t; 
 			Subscript(out subscript);
@@ -84,7 +84,7 @@ private ProcessSystem system = new ProcessSystem();
 				pc.Subscript.Add(subscript); 
 			}
 			Expect(10);
-			SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Pos; 
+			SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Position; 
 		} else SynErr(26);
 	}
 
@@ -172,13 +172,13 @@ private ProcessSystem system = new ProcessSystem();
 	}
 
 	void ProcessConstantInvoke(out ProcessConstant pc) {
-		pc = new ProcessConstant(); 
+		pc = null; 
 		if (la.kind == 1) {
 			Get();
-			pc.Name = t.val; SetPos(pc, t); 
+			pc = new ProcessConstant(t.val); SetPos(pc, t); 
 		} else if (la.kind == 2) {
 			Get();
-			pc.Name = t.val.Replace("_","");  SetPos(pc, t); ArithmeticExpression subscript; 
+			pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc, t); ArithmeticExpression subscript; 
 			Expect(8);
 			ArithmeticExpression(out subscript);
 			pc.Subscript.Add(subscript); 

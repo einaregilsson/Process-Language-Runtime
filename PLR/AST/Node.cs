@@ -4,20 +4,51 @@ namespace PLR.AST {
 
     public abstract class Node : IEnumerable<Node> {
         //Source file information
-        public int Line;// { get; set; }
-        public int Col;// { get; set; }
-        public int Pos;// { get; set; }
-        public int Length;// { get; set; }
-        public int ParenCount;// { get; set; }
+
+        protected int _line;
+        public int Line
+        {
+            get { return _line; }
+            set { _line = value; }
+        }
+
+        protected int _col;
+        public int Column
+        {
+            get { return _col; }
+            set { _col = value; }
+        }
+
+        protected int _pos;
+        public int Position
+        {
+            get { return _pos; }
+            set { _pos = value; }
+        }
+
+        protected int _length;
+        public int Length
+        {
+            get { return _length; }
+            set { _length = value; }
+        }
+
+        protected int _parenCount;
+        public int ParenCount
+        {
+            get { return _parenCount; }
+            set { _parenCount = value; }
+        }
+
         public bool HasParens { get { return ParenCount > 0; } }
 
         protected List<Node> _children = new List<Node>();
         public void SetPos(int line, int col, int length, int pos)
         {
-            this.Line = line;
-            this.Col = col;
-            this.Length = length;
-            this.Pos = pos;
+            _line = line;
+            _col = col;
+            _length = length;
+            _pos = pos;
         }
 
         //protected static Formatter formatter = new Formatter();

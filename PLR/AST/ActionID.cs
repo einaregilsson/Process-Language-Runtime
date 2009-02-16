@@ -6,10 +6,11 @@ namespace PLR.AST
 {
     public class ActionID : Node
     {
-        public string Name;
+        protected string _name;
+        public string Name { get { return _name; } }
         public ActionID(string name)
         {
-            this.Name = name;
+            _name = name;
         }
     }
 }

@@ -16,16 +16,20 @@ namespace PLR.AST.Expressions {
     public class ArithmeticBinOpExpression : ArithmeticExpression{
 
         public ArithmeticBinOpExpression(ArithmeticExpression left, ArithmeticExpression right, ArithmeticBinOp op) {
-            this.Right = right;
-            this.Left = left;
-            this.Op = op;
+            _right = right;
+            _left = left;
+            _op = op;
             _children.Add(left);
             _children.Add(right);
         }
 
-        public ArithmeticExpression Right;// { get; private set; }
-        public ArithmeticExpression Left;// { get; private set; }
-        public ArithmeticBinOp Op;// { get; private set; }
+        private ArithmeticExpression _right;
+        private ArithmeticExpression _left;
+        private ArithmeticBinOp _op;
+
+        public ArithmeticExpression Right { get {return _right;}}
+        public ArithmeticExpression Left { get {return _left;}}
+        public ArithmeticBinOp Op { get {return _op;}}
 
         public override int Value {
             get {

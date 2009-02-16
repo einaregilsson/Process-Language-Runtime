@@ -13,7 +13,7 @@ COMPILER CCS
 		n.SetPos(t.line, t.col, t.val.Length, t.pos);
     }
     private void CopyPos(Node from, Node to, Token end) {
-		to.SetPos(from.Line, from.Col, t.pos-from.Pos, from.Pos);
+		to.SetPos(from.Line, from.Column, t.pos-from.Position, from.Position);
     }
     
 CHARACTERS
@@ -58,19 +58,19 @@ ProcessDefinition<out ProcessDefinition procdef> =      (. bool entryProc = fals
     Process<out proc>                                   (. procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(pc,procdef,t); .)
 .
 
-ProcessConstantDef<out ProcessConstant pc>              (. pc = new ProcessConstant(); .)
+ProcessConstantDef<out ProcessConstant pc>				(. pc = null; .)
 =
-    PROCNAME                                            (. pc.Name = t.val; SetPos(pc, t);.)
+    PROCNAME                                            (. pc = new ProcessConstant(t.val); SetPos(pc, t);.)
     
     |
     
-    PROCNAMESUB                                         (. pc.Name = t.val.Replace("_","");  SetPos(pc,t); ArithmeticExpression subscript; .)
+    PROCNAMESUB                                         (. pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc,t); ArithmeticExpression subscript; .)
     '{'                                                 (. Token startToken = t; .)
     Subscript<out subscript>                            (. pc.Subscript.Add(subscript); .)
     {
         ',' Subscript<out subscript>                    (. pc.Subscript.Add(subscript); .)
     }
-    '}'                                                 (. SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Pos; .)
+    '}'                                                 (. SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Position; .)
 .
 
 Subscript<out ArithmeticExpression sub>                 (. sub = null; .)
@@ -118,13 +118,13 @@ ActionPrefix<out Process proc>                          (. ActionPrefix ap = nul
     [Restriction<nextProc.Restrictions>]
 .
 
-ProcessConstantInvoke<out ProcessConstant pc>           (. pc = new ProcessConstant(); .)
+ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; .)
 =
-    PROCNAME                                            (. pc.Name = t.val; SetPos(pc, t); .)
+    PROCNAME                                            (. pc = new ProcessConstant(t.val); SetPos(pc, t); .)
     
     |
     
-    PROCNAMESUB                                         (. pc.Name = t.val.Replace("_","");  SetPos(pc, t); ArithmeticExpression subscript; .)
+    PROCNAMESUB                                         (. pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc, t); ArithmeticExpression subscript; .)
     '{'
     ArithmeticExpression<out subscript>                 (. pc.Subscript.Add(subscript); .)
     {

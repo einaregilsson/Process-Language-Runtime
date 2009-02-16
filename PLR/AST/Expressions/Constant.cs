@@ -2,13 +2,13 @@
 namespace PLR.AST.Expressions {
 
     public class Constant : ArithmeticExpression{
-        private int number;
+        private int _number;
         public Constant(int number) {
-            this.number = number;
+            _number = number;
         }
 
         public override int Value {
-            get { return this.number; }
+            get { return _number; }
         }
     }
 }

@@ -6,8 +6,8 @@ namespace PLR.AST.Processes {
     public class ActionPrefix : Process{
 
         public ActionPrefix(Action action, Process proc) {
-            this.Action = action;
-            this.Process = proc;
+            _action = action;
+            _proc = proc;
             _children.Add(Action);
             _children.Add(proc);
         }
