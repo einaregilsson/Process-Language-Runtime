@@ -39,6 +39,7 @@
     <Compile Include="Formatters\SourceFormatter.cs" />
     <Compile Include="Formatters\HtmlFormatter.cs" />
     <Compile Include="Formatters\LaTeXFormatter.cs" />
+    <Compile Include="Interpreter.cs" />
     <Compile Include="Parsing\Parser.cs" />
     <Compile Include="Parsing\Parser.Generated.cs">
       <DependentUpon>Parser.cs</DependentUpon>

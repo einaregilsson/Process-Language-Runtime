@@ -19,6 +19,5 @@ namespace PLR.AST.Processes
         {
             visitor.Visit(this);
         }
-
     }
 }

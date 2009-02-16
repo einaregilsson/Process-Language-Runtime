@@ -1,5 +1,7 @@
 ﻿
 using PLR.AST;
+using PLR.AST.Actions;
+using System.Collections.Generic;
 
 namespace PLR.AST.Processes {
     public abstract class Process : Node {

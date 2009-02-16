@@ -14,27 +14,19 @@ namespace CCS {
         static void Main(string[] args) {
 
             string text =
-@"->User = User_{FOO}
+@"->User = a . b. 0
+->John = _a_ . b . 0
 ";
             MemoryStream ms = new MemoryStream();
             StreamWriter w = new StreamWriter(ms);
-            w.Write(text.Replace("FOO", args[0]));
+            w.Write(text);
             w.Flush();
             ms.Seek(0, SeekOrigin.Begin);
 
             Parser p = new Parser(new Scanner(ms));
             p.Parse();
-            //if (p.Errors.Count == 0) {
-            //    Console.WriteLine(p.System);
-            //    Analyzer analyzer = new Analyzer();
-            //    List<CCSError> e = analyzer.Analyze(p.System);
-            //    foreach (CCSError err in e) {
-            //        Console.WriteLine(err);
-            //    }
-            //}
-            //System.IO.File.WriteAllText("D:\\foo.html", "<html><body>" + new HtmlFormatter().Format(p.System) + "</body></html>");
-            //System.IO.File.WriteAllText("D:\\foo.tex", new LaTeXFormatter().Format(p.System));
-            //Console.Read();
+            Interpreter i = new Interpreter();
+            i.Interpret(p.System);
         }
     }
 }
