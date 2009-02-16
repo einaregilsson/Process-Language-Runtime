@@ -6,6 +6,8 @@ using NUnit.Framework;
 using CCS.Parsing;
 using PLR.AST;
 using PLR.AST.Processes;
+using PLR.AST.Actions;
+using PLR.AST.Expressions;
 
 namespace CCS.Tests {
     [TestFixture]
@@ -24,7 +26,7 @@ namespace CCS.Tests {
 
         [Test]
         public void TestActionPrefixSingleAction() {
-            CCSSystem sys = Parse("P = john.0");
+            ProcessSystem sys = Parse("P = john.0");
             Assert.AreEqual(1, sys.Count);
             Process p = sys[0].Process;
             Assert.IsInstanceOfType(typeof(ActionPrefix), p);
@@ -39,7 +41,7 @@ namespace CCS.Tests {
 
         [Test]
         public void TestActionPrefixMultipleActions() {
-            CCSSystem sys = Parse("P = john._jane_.(  foo .0)");
+            ProcessSystem sys = Parse("P = john._jane_.(  foo .0)");
             Assert.AreEqual(1, sys.Count);
             Process p = sys[0].Process;
             Assert.IsInstanceOfType(typeof(ActionPrefix), p);
@@ -105,7 +107,7 @@ namespace CCS.Tests {
         }
 
         private void TestAExp(string exp, int expectedValue) {
-            CCSSystem sys = Parse(@"P = X_{" + exp + "}");
+            ProcessSystem sys = Parse(@"P = X_{" + exp + "}");
             Assert.AreEqual(1, sys.Count);
             ProcessConstant p = (ProcessConstant)sys[0].Process;
             ArithmeticExpression expr = (ArithmeticExpression)p.Subscript[0];

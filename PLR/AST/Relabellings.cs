@@ -18,5 +18,16 @@ namespace PLR.AST {
                 return null;
             }
         }
+
+        public override IEnumerator<Node> GetEnumerator()
+        {
+            List<Node> keys = new List<Node>();
+            for (int i = 0; i < _children.Count; i += 2)
+            {
+                keys.Add(_children[i]);
+            }
+
+            return keys.GetEnumerator();
+        }
     }
 }

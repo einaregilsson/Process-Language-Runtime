@@ -1,12 +1,20 @@
 using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
+using PLR.AST.Actions;
 using Action = PLR.AST.Actions.Action;
 
-COMPILER CCS s
+COMPILER CCS 
     
     private ProcessSystem system = new ProcessSystem();
     public ProcessSystem System {get { return this.system;}}
+    
+    private void SetPos(Node n, Token t) {
+		n.SetPos(t.line, t.col, t.val.Length, t.pos);
+    }
+    private void CopyPos(Node from, Node to, Token end) {
+		to.SetPos(from.Line, from.Col, t.pos-from.Pos, from.Pos);
+    }
     
 CHARACTERS
   ucaseletter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
@@ -38,38 +46,38 @@ CCS
 	ProcessDefinition<out proc>                         (. this.System.Add(proc); .)
     {
         ProcessDefinition<out proc>                     (. this.System.Add(proc); .)
-    }                                                   (. this.System.CopyPos(this.System[0],t); .)
+    }                                                   (. CopyPos(this.System[0],this.System, t); .)
 .  
 
-ProcessDefinition<out ProcessDefinition procdef> =      (. procdef = new ProcessDefinition(); Process proc; ProcessConstant pc; .)
+ProcessDefinition<out ProcessDefinition procdef> =      (. bool entryProc = false; Process proc; ProcessConstant pc; .)
     [
-    ENTRYPROC                                           (. procdef.EntryProc = true; .)
+    ENTRYPROC                                           (. entryProc = true; .)
     ]
-    ProcessConstantDef<out pc>                          (. procdef.ProcessConstant = pc; .)
+    ProcessConstantDef<out pc>                          
     '='
-    Process<out proc>                                   (. procdef.Process = proc; procdef.CopyPos(pc,t); .)
+    Process<out proc>                                   (. procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(pc,procdef,t); .)
 .
 
 ProcessConstantDef<out ProcessConstant pc>              (. pc = new ProcessConstant(); .)
 =
-    PROCNAME                                            (. pc.Name = t.val; pc.SetPos(t);.)
+    PROCNAME                                            (. pc.Name = t.val; SetPos(pc, t);.)
     
     |
     
-    PROCNAMESUB                                         (. pc.Name = t.val.Replace("_","");  pc.SetPos(t); ArithmeticExpression subscript; .)
+    PROCNAMESUB                                         (. pc.Name = t.val.Replace("_","");  SetPos(pc,t); ArithmeticExpression subscript; .)
     '{'                                                 (. Token startToken = t; .)
     Subscript<out subscript>                            (. pc.Subscript.Add(subscript); .)
     {
         ',' Subscript<out subscript>                    (. pc.Subscript.Add(subscript); .)
     }
-    '}'                                                 (. pc.Subscript.SetPos(startToken); pc.Subscript.Length = t.pos - pc.Subscript.Pos; .)
+    '}'                                                 (. SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Pos; .)
 .
 
 Subscript<out ArithmeticExpression sub>                 (. sub = null; .)
 =
-    LCASEIDENT                                          (. sub = new Variable(t.val); sub.SetPos(t); .)
+    LCASEIDENT                                          (. sub = new Variable(t.val); SetPos(sub, t); .)
     |
-    NUMBER|'0'                                          (. sub = new Constant(int.Parse(t.val)); sub.SetPos(t); .)
+    NUMBER|'0'                                          (. sub = new Constant(int.Parse(t.val)); SetPos(sub, t); .)
 .
 
 Process<out Process proc>                               
@@ -82,7 +90,7 @@ NonDeterministicChoice<out Process proc>                (. Process pc; NonDeterm
     ParallelComposition<out pc>                         (. ndc.Add(pc); .)
     {
         '+' ParallelComposition<out pc>                 (. ndc.Add(pc); .)
-    }                                                   (. if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; proc.CopyPos(ndc[0],t);}.)
+    }                                                   (. if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; CopyPos(ndc[0],proc, t);}.)
 .
 
 ParallelComposition<out Process proc>                   (. Process ap; ParallelComposition pc = new ParallelComposition();.)
@@ -90,18 +98,18 @@ ParallelComposition<out Process proc>                   (. Process ap; ParallelC
     ActionPrefix<out ap>                                (. pc.Add(ap); .)
     {
         '|' ActionPrefix<out ap>                        (. pc.Add(ap); .)
-    }                                                   (. if (pc.Count == 1) proc = pc[0]; else {proc = pc; proc.CopyPos(pc[0],t);}.)
+    }                                                   (. if (pc.Count == 1) proc = pc[0]; else {proc = pc; CopyPos(pc[0],proc,t);}.)
 .
 
 ActionPrefix<out Process proc>                          (. ActionPrefix ap = null; ActionPrefix prev = null; ActionPrefix first = null; Process nextProc = null; ProcessConstant pc; proc = null; Action act = null; .)
 =
     { 
-        Action<out act> '.'                             (. ap = new ActionPrefix(act); ap.CopyPos(ap.Action,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;.)
+        Action<out act> '.'                             (. ap = new ActionPrefix(act, null); CopyPos(ap.Action,ap,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;.)
     }
     (
         '(' Process<out nextProc> ')'                   (. nextProc.ParenCount++; .)
         |
-        '0'                                             (. nextProc = new NilProcess(); nextProc.SetPos(t);.)
+        '0'                                             (. nextProc = new NilProcess(); SetPos(nextProc, t);.)
         |
         ProcessConstantInvoke<out pc>                   (. nextProc = pc; .)
     )                                                   (. if (first == null) proc = nextProc; else {ap.Process = nextProc; proc = first;}; .)
@@ -112,11 +120,11 @@ ActionPrefix<out Process proc>                          (. ActionPrefix ap = nul
 
 ProcessConstantInvoke<out ProcessConstant pc>           (. pc = new ProcessConstant(); .)
 =
-    PROCNAME                                            (. pc.Name = t.val; pc.SetPos(t); .)
+    PROCNAME                                            (. pc.Name = t.val; SetPos(pc, t); .)
     
     |
     
-    PROCNAMESUB                                         (. pc.Name = t.val.Replace("_","");  pc.SetPos(t); ArithmeticExpression subscript; .)
+    PROCNAMESUB                                         (. pc.Name = t.val.Replace("_","");  SetPos(pc, t); ArithmeticExpression subscript; .)
     '{'
     ArithmeticExpression<out subscript>                 (. pc.Subscript.Add(subscript); .)
     {
@@ -127,24 +135,24 @@ ProcessConstantInvoke<out ProcessConstant pc>           (. pc = new ProcessConst
 
 Action<out Action act>                                  (. act = null; .)
 =
-    't'                                                 (. act = new TauAction(); act.SetPos(t); .)
+    't'                                                 (. act = new TauAction(); SetPos(act, t); .)
     |
-    LCASEIDENT                                          (. act = new InAction(t.val); act.SetPos(t);.)
+    LCASEIDENT                                          (. act = new InAction(t.val); SetPos(act, t);.)
     |
-    OUTACTION                                           (. if (t.val == "_t_") SemErr("Tau actions cannot be output actions!"); act = new OutAction(t.val); act.SetPos(t);.) 
+    OUTACTION                                           (. if (t.val == "_t_") SemErr("Tau actions cannot be output actions!"); act = new OutAction(t.val); SetPos(act, t);.) 
 .
 
 Relabelling<Relabellings labels>                        (. string relabelTo, relabelFrom; .)
 =
-    '['                                                 (. labels.SetPos(t); .)
+    '['                                                 (. SetPos(labels, t); .)
         LCASEIDENT                                      (. relabelTo = t.val; .)
         '/'
-        LCASEIDENT                                      (. relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); .)
+        LCASEIDENT                                      (. relabelFrom = t.val; labels.Add(new ActionID(relabelFrom), new ActionID(relabelTo)); .)
         {
             ','
             LCASEIDENT                                  (. relabelTo = t.val; .)
             '/'
-            LCASEIDENT                                  (. relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); .)
+            LCASEIDENT                                  (. relabelFrom = t.val; labels.Add(new ActionID(relabelFrom), new ActionID(relabelTo)); .)
         }
     ']'
 .
@@ -153,14 +161,14 @@ Restriction<Restrictions res>
 =
     '\\'
     (
-        LCASEIDENT                                      (. res.Add(t.val); res.SetPos(t); res.HasParens = false; .)
+        LCASEIDENT                                      (. res.Add(new ActionID(t.val)); SetPos(res, t); res.ParenCount = 0; .)
         |
         (
-            '{'                                         (. res.HasParens = true; .)
-            LCASEIDENT                                  (. res.Add(t.val); res.SetPos(t); .)
+            '{'                                         (. res.ParenCount = 1; .)
+            LCASEIDENT                                  (. res.Add(new ActionID(t.val)); SetPos(res, t); .)
             {
                 ',' 
-                LCASEIDENT                              (. res.Add(t.val); .)
+                LCASEIDENT                              (. res.Add(new ActionID(t.val)); .)
             }
             '}'
         )
@@ -176,7 +184,7 @@ ArithmeticExpression<out ArithmeticExpression aexp>     (. ArithmeticBinOp op; A
             |
             '-'                                         (. op = ArithmeticBinOp.Minus; .)
         )
-        PlusMinusTerm<out right>                        (. aexp = new ArithmeticBinOpExpression(aexp, right, op); aexp.CopyPos(((ArithmeticBinOpExpression)aexp).Left,t);.)
+        PlusMinusTerm<out right>                        (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t);.)
     }
 .
 
@@ -191,7 +199,7 @@ PlusMinusTerm<out ArithmeticExpression aexp>            (. ArithmeticBinOp op; A
             |
             '%'                                         (. op = ArithmeticBinOp.Modulo; .)
         )
-        UnaryMinusTerm<out right>                       (. aexp = new ArithmeticBinOpExpression(aexp, right, op); aexp.CopyPos(((ArithmeticBinOpExpression)aexp).Left,t); .)
+        UnaryMinusTerm<out right>                       (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t); .)
     }
 .
 
@@ -204,13 +212,13 @@ UnaryMinusTerm<out ArithmeticExpression aexp>           (. bool isMinus = false;
     (
         '(' ArithmeticExpression<out aexp> ')'          (. aexp.ParenCount += 1; .)
         |
-        NUMBER                                          (. aexp = new Constant(int.Parse(t.val)); aexp.SetPos(t); .)
+        NUMBER                                          (. aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t); .)
         |
-        '0'                                             (. aexp = new Constant(int.Parse(t.val)); aexp.SetPos(t);.)
+        '0'                                             (. aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t);.)
         |
-        LCASEIDENT                                      (. aexp = new Variable(t.val); aexp.SetPos(t); .)
+        LCASEIDENT                                      (. aexp = new Variable(t.val); SetPos(aexp, t); .)
     )
-                                                        (. if (isMinus) {aexp = new UnaryMinus(aexp); aexp.SetPos(minusToken);} .)
+                                                        (. if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} .)
 .
 
 END CCS.

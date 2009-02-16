@@ -9,8 +9,16 @@ namespace PLR.AST {
         public int Pos;// { get; set; }
         public int Length;// { get; set; }
         public int ParenCount;// { get; set; }
+        public bool HasParens { get { return ParenCount > 0; } }
 
         protected List<Node> _children = new List<Node>();
+        public void SetPos(int line, int col, int length, int pos)
+        {
+            this.Line = line;
+            this.Col = col;
+            this.Length = length;
+            this.Pos = pos;
+        }
 
         //protected static Formatter formatter = new Formatter();
 
@@ -34,14 +42,14 @@ namespace PLR.AST {
             //return formatter.Format(this);
         }
 
-        public IEnumerator<Node> GetEnumerator()
+        public virtual IEnumerator<Node> GetEnumerator()
         {
             return _children.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return _children.GetEnumerator();
+            return this.GetEnumerator();
         }
     }
 }

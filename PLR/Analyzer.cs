@@ -7,9 +7,9 @@
 //    {
 
 //        private List<CCSError> errors = new List<CCSError>();
-//        private CCSSystem system;
+//        private ProcessSystem system;
 
-//        public List<CCSError> Analyze(CCSSystem system)
+//        public List<CCSError> Analyze(ProcessSystem system)
 //        {
 //            this.system = system;
 //            AnalyzeSubscriptVariables();

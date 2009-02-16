@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Text;
 using PLR.AST;
+using StringList = System.Collections.Generic.List<string>;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
 using PLR.AST.Actions;
@@ -16,8 +17,8 @@ namespace CCS.Formatters {
         protected String Join(string sep, IEnumerable items) {
             StringBuilder builder = new StringBuilder();
             foreach (object o in items) {
-                if (o is ASTNode) {
-                    builder.Append(Format((ASTNode)o));
+                if (o is Node) {
+                    builder.Append(Format((Node)o));
                 } else {
                     builder.Append(o.ToString());
                 }
@@ -102,9 +103,9 @@ namespace CCS.Formatters {
             if (labels.Count == 0) {
                 return "";
             } else {
-                var temp = new System.Collections.Generic.List<string>();
-                foreach (string key in labels.Keys) {
-                    temp.Add(labels[key] + "/" + key);
+                StringList temp = new StringList();
+                foreach (ActionID id in labels) {
+                    temp.Add(labels[id] + "/" + id);
                 }
                 return "[" + Join(", ", temp) + "]";
             }
@@ -123,8 +124,8 @@ namespace CCS.Formatters {
         }
 
         public virtual string Format(Node node) {
-            if (node is CCSSystem) {
-                return Format((CCSSystem)node);
+            if (node is ProcessSystem) {
+                return Format((ProcessSystem)node);
             } else if (node is Process) {
                 return Format((Process)node);
             } else if (node is ProcessDefinition) {
@@ -186,7 +187,7 @@ namespace CCS.Formatters {
         }
 
         public virtual string Format(UnaryMinus um) {
-            return SurroundWithParens("-" + Format(um.Term), um.ParenCount);
+            return SurroundWithParens("-" + Format(um.Expression), um.ParenCount);
         }
 
         public virtual string Format(Constant c) {

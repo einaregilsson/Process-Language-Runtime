@@ -1,6 +1,7 @@
 using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
+using PLR.AST.Actions;
 using Action = PLR.AST.Actions.Action;
 
 using System;
@@ -20,10 +21,15 @@ public partial class Parser {
 	public const int maxT = 25;
 
 
-s
-    
-    private ProcessSystem system = new ProcessSystem();
+private ProcessSystem system = new ProcessSystem();
     public ProcessSystem System {get { return this.system;}}
+    
+    private void SetPos(Node n, Token t) {
+		n.SetPos(t.line, t.col, t.val.Length, t.pos);
+    }
+    private void CopyPos(Node from, Node to, Token end) {
+		to.SetPos(from.Line, from.Col, t.pos-from.Pos, from.Pos);
+    }
     
 
 
@@ -45,30 +51,29 @@ s
 			ProcessDefinition(out proc);
 			this.System.Add(proc); 
 		}
-		this.System.CopyPos(this.System[0],t); 
+		CopyPos(this.System[0],this.System, t); 
 	}
 
 	void ProcessDefinition(out ProcessDefinition procdef) {
-		procdef = new ProcessDefinition(); Process proc; ProcessConstant pc; 
+		bool entryProc = false; Process proc; ProcessConstant pc; 
 		if (la.kind == 6) {
 			Get();
-			procdef.EntryProc = true; 
+			entryProc = true; 
 		}
 		ProcessConstantDef(out pc);
-		procdef.ProcessConstant = pc; 
 		Expect(7);
 		Process(out proc);
-		procdef.Process = proc; procdef.CopyPos(pc,t); 
+		procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(pc,procdef,t); 
 	}
 
 	void ProcessConstantDef(out ProcessConstant pc) {
 		pc = new ProcessConstant(); 
 		if (la.kind == 1) {
 			Get();
-			pc.Name = t.val; pc.SetPos(t);
+			pc.Name = t.val; SetPos(pc, t);
 		} else if (la.kind == 2) {
 			Get();
-			pc.Name = t.val.Replace("_","");  pc.SetPos(t); ArithmeticExpression subscript; 
+			pc.Name = t.val.Replace("_","");  SetPos(pc,t); ArithmeticExpression subscript; 
 			Expect(8);
 			Token startToken = t; 
 			Subscript(out subscript);
@@ -79,7 +84,7 @@ s
 				pc.Subscript.Add(subscript); 
 			}
 			Expect(10);
-			pc.Subscript.SetPos(startToken); pc.Subscript.Length = t.pos - pc.Subscript.Pos; 
+			SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Pos; 
 		} else SynErr(26);
 	}
 
@@ -91,12 +96,12 @@ s
 		sub = null; 
 		if (la.kind == 3) {
 			Get();
-			sub = new Variable(t.val); sub.SetPos(t); 
+			sub = new Variable(t.val); SetPos(sub, t); 
 		} else if (la.kind == 5) {
 			Get();
 		} else if (la.kind == 11) {
 			Get();
-			sub = new Constant(int.Parse(t.val)); sub.SetPos(t); 
+			sub = new Constant(int.Parse(t.val)); SetPos(sub, t); 
 		} else SynErr(27);
 	}
 
@@ -109,7 +114,7 @@ s
 			ParallelComposition(out pc);
 			ndc.Add(pc); 
 		}
-		if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; proc.CopyPos(ndc[0],t);}
+		if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; CopyPos(ndc[0],proc, t);}
 	}
 
 	void ParallelComposition(out Process proc) {
@@ -121,7 +126,7 @@ s
 			ActionPrefix(out ap);
 			pc.Add(ap); 
 		}
-		if (pc.Count == 1) proc = pc[0]; else {proc = pc; proc.CopyPos(pc[0],t);}
+		if (pc.Count == 1) proc = pc[0]; else {proc = pc; CopyPos(pc[0],proc,t);}
 	}
 
 	void ActionPrefix(out Process proc) {
@@ -129,7 +134,7 @@ s
 		while (la.kind == 3 || la.kind == 4 || la.kind == 17) {
 			Action(out act);
 			Expect(14);
-			ap = new ActionPrefix(act); ap.CopyPos(ap.Action,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;
+			ap = new ActionPrefix(act, null); CopyPos(ap.Action,ap,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;
 		}
 		if (la.kind == 15) {
 			Get();
@@ -138,7 +143,7 @@ s
 			nextProc.ParenCount++; 
 		} else if (la.kind == 11) {
 			Get();
-			nextProc = new NilProcess(); nextProc.SetPos(t);
+			nextProc = new NilProcess(); SetPos(nextProc, t);
 		} else if (la.kind == 1 || la.kind == 2) {
 			ProcessConstantInvoke(out pc);
 			nextProc = pc; 
@@ -156,13 +161,13 @@ s
 		act = null; 
 		if (la.kind == 17) {
 			Get();
-			act = new TauAction(); act.SetPos(t); 
+			act = new TauAction(); SetPos(act, t); 
 		} else if (la.kind == 3) {
 			Get();
-			act = new InAction(t.val); act.SetPos(t);
+			act = new InAction(t.val); SetPos(act, t);
 		} else if (la.kind == 4) {
 			Get();
-			if (t.val == "_t_") SemErr("Tau actions cannot be output actions!"); act = new OutAction(t.val); act.SetPos(t);
+			if (t.val == "_t_") SemErr("Tau actions cannot be output actions!"); act = new OutAction(t.val); SetPos(act, t);
 		} else SynErr(29);
 	}
 
@@ -170,10 +175,10 @@ s
 		pc = new ProcessConstant(); 
 		if (la.kind == 1) {
 			Get();
-			pc.Name = t.val; pc.SetPos(t); 
+			pc.Name = t.val; SetPos(pc, t); 
 		} else if (la.kind == 2) {
 			Get();
-			pc.Name = t.val.Replace("_","");  pc.SetPos(t); ArithmeticExpression subscript; 
+			pc.Name = t.val.Replace("_","");  SetPos(pc, t); ArithmeticExpression subscript; 
 			Expect(8);
 			ArithmeticExpression(out subscript);
 			pc.Subscript.Add(subscript); 
@@ -189,19 +194,19 @@ s
 	void Relabelling(Relabellings labels) {
 		string relabelTo, relabelFrom; 
 		Expect(18);
-		labels.SetPos(t); 
+		SetPos(labels, t); 
 		Expect(3);
 		relabelTo = t.val; 
 		Expect(19);
 		Expect(3);
-		relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); 
+		relabelFrom = t.val; labels.Add(new ActionID(relabelFrom), new ActionID(relabelTo)); 
 		while (la.kind == 9) {
 			Get();
 			Expect(3);
 			relabelTo = t.val; 
 			Expect(19);
 			Expect(3);
-			relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); 
+			relabelFrom = t.val; labels.Add(new ActionID(relabelFrom), new ActionID(relabelTo)); 
 		}
 		Expect(20);
 	}
@@ -210,16 +215,16 @@ s
 		Expect(21);
 		if (la.kind == 3) {
 			Get();
-			res.Add(t.val); res.SetPos(t); res.HasParens = false; 
+			res.Add(new ActionID(t.val)); SetPos(res, t); res.ParenCount = 0; 
 		} else if (la.kind == 8) {
 			Get();
-			res.HasParens = true; 
+			res.ParenCount = 1; 
 			Expect(3);
-			res.Add(t.val); res.SetPos(t); 
+			res.Add(new ActionID(t.val)); SetPos(res, t); 
 			while (la.kind == 9) {
 				Get();
 				Expect(3);
-				res.Add(t.val); 
+				res.Add(new ActionID(t.val)); 
 			}
 			Expect(10);
 		} else SynErr(31);
@@ -238,7 +243,7 @@ s
 				op = ArithmeticBinOp.Minus; 
 			}
 			PlusMinusTerm(out right);
-			aexp = new ArithmeticBinOpExpression(aexp, right, op); aexp.CopyPos(((ArithmeticBinOpExpression)aexp).Left,t);
+			aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t);
 		}
 	}
 
@@ -258,7 +263,7 @@ s
 				op = ArithmeticBinOp.Modulo; 
 			}
 			UnaryMinusTerm(out right);
-			aexp = new ArithmeticBinOpExpression(aexp, right, op); aexp.CopyPos(((ArithmeticBinOpExpression)aexp).Left,t); 
+			aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t); 
 		}
 	}
 
@@ -275,15 +280,15 @@ s
 			aexp.ParenCount += 1; 
 		} else if (la.kind == 5) {
 			Get();
-			aexp = new Constant(int.Parse(t.val)); aexp.SetPos(t); 
+			aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t); 
 		} else if (la.kind == 11) {
 			Get();
-			aexp = new Constant(int.Parse(t.val)); aexp.SetPos(t);
+			aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t);
 		} else if (la.kind == 3) {
 			Get();
-			aexp = new Variable(t.val); aexp.SetPos(t); 
+			aexp = new Variable(t.val); SetPos(aexp, t); 
 		} else SynErr(32);
-		if (isMinus) {aexp = new UnaryMinus(aexp); aexp.SetPos(minusToken);} 
+		if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} 
 	}
 
 

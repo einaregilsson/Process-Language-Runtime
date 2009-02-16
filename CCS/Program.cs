@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using CCS.Parsing;
 using PLR.AST;
+using PLR.AST.Processes;
 using CCS.Formatters;
 
 namespace CCS {
@@ -34,9 +35,6 @@ namespace CCS {
             //System.IO.File.WriteAllText("D:\\foo.html", "<html><body>" + new HtmlFormatter().Format(p.System) + "</body></html>");
             //System.IO.File.WriteAllText("D:\\foo.tex", new LaTeXFormatter().Format(p.System));
             //Console.Read();
-            ProcessConstant pp = (ProcessConstant) p.System[0].Process;
-            new CCS.Compiler.CCSCompiler().Compile(pp.Subscript[0]);
-
         }
     }
 }

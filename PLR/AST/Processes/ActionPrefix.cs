@@ -12,7 +12,17 @@ namespace PLR.AST.Processes {
             _children.Add(proc);
         }
 
-        public Action Action;// { get; private set; }
-        public Process Process;// { get; set; }
+        private Action _action;
+        public Action Action
+        {
+            get { return _action; }
+            set { _action = value; _children[0] = _action; }
+        }
+
+        private Process _proc;
+        public Process Process {
+            get { return _proc; }
+            set { _proc = value; _children[1] = _proc; }
+        }
     }
 }

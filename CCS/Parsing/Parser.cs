@@ -95,7 +95,7 @@ namespace CCS.Parsing {
         public void SynErr(int line, int col, int n) {
             string s;
             s = GetErrorMessage(n);
-            if (n == null) {
+            if (s == null) {
                 s = "error " + n;
             }
             errorStream.WriteLine(errMsgFormat, line, col, s);

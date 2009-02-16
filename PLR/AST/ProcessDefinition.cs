@@ -8,10 +8,11 @@ namespace PLR.AST {
         public Process Process;// { get; set; }
         public bool EntryProc;// { get; set; }
 
-        public ProcessDefinition(ProcessConstant pconst, Process proc)
+        public ProcessDefinition(ProcessConstant pconst, Process proc, bool entryProc)
         {
             Process = proc;
             ProcessConstant = pconst;
+            this.EntryProc = entryProc;
             _children.Add(pconst);
             _children.Add(proc);
         }
