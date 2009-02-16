@@ -29,5 +29,10 @@ namespace PLR.AST {
 
             return keys.GetEnumerator();
         }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

@@ -12,5 +12,11 @@ namespace PLR.AST
         {
             _name = name;
         }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
+
     }
 }

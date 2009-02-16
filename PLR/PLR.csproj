@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
-    <Compile Include="AST\ActionID.cs" />
+    <Compile Include="AST\Actions\ActionID.cs" />
     <Compile Include="AST\Actions\Action.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -62,6 +62,7 @@
     <Compile Include="AST\Expressions\Variable.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\AbstractVisitor.cs" />
     <Compile Include="AST\Node.cs" />
     <Compile Include="AST\ProcessDefinition.cs">
       <SubType>Code</SubType>

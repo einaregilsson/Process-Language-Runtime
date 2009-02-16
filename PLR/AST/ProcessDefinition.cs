@@ -35,5 +35,10 @@ namespace PLR.AST {
             _children.Add(pconst);
             _children.Add(proc);
         }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

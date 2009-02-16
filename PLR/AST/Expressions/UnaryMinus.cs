@@ -13,5 +13,10 @@ namespace PLR.AST.Expressions {
         public override int Value {
             get { return -this.Expression.Value; }
         }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

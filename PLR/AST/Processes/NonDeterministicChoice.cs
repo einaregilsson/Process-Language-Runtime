@@ -11,5 +11,10 @@ namespace PLR.AST.Processes {
         public void Add(Process p) {
             _children.Add(p);
         }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

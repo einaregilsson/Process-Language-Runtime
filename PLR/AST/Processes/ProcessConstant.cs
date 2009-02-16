@@ -15,5 +15,10 @@ namespace PLR.AST.Processes
 
         protected Subscript _subscript;
         public Subscript Subscript { get { return _subscript; } }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

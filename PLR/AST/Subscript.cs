@@ -15,5 +15,9 @@ namespace PLR.AST {
             get { return (ArithmeticExpression)_children[index]; }
         }
 
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

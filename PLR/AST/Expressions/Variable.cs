@@ -11,5 +11,10 @@ namespace PLR.AST.Expressions {
         public override int Value {
             get { throw new NotSupportedException("Variable value not available at compile time!"); }
         }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

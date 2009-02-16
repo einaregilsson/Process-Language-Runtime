@@ -24,5 +24,10 @@ namespace PLR.AST.Processes {
             get { return _proc; }
             set { _proc = value; _children[1] = _proc; }
         }
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

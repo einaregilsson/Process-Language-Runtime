@@ -3,6 +3,8 @@
 namespace PLR.AST {
 
     public abstract class Node : IEnumerable<Node> {
+
+        public abstract void Accept(AbstractVisitor visitor);
         //Source file information
 
         protected int _line;

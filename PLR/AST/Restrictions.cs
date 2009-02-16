@@ -7,5 +7,10 @@ namespace PLR.AST {
         {
             _children.Add(action);
         }
+
+        public override void Accept(AbstractVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }
