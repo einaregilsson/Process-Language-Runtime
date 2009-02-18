@@ -148,6 +148,9 @@ namespace CCS
                     }
                 }
             }
+            else if (p is ParallelComposition)
+            {
+            }
             return false;
         }
 
