@@ -19,5 +19,15 @@ namespace PLR.AST.Processes
         {
             visitor.Visit(this);
         }
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ProcessConstant))
+            {
+                return false;
+            }
+            ProcessConstant other = (ProcessConstant)obj;
+            return other.Name == this.Name && other.Subscript.Count == this.Subscript.Count;
+        }
+
     }
 }

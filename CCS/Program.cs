@@ -14,8 +14,9 @@ namespace CCS {
         static void Main(string[] args) {
 
             string text =
-@"->User = a . b. 0
-->John = _a_ . b . 0
+@"->User = a . b . User
+->John = _a_ . _b_ . _a_ .0
+->Siggi = _a_.b.0+_a_.0
 ";
             MemoryStream ms = new MemoryStream();
             StreamWriter w = new StreamWriter(ms);

@@ -13,7 +13,12 @@ namespace CCS.Formatters {
     public class SourceFormatter {
 
         #region Utility methods
-        
+        private int _highlightID = -1;
+        public int HighlightID
+        {
+            get { return _highlightID; }
+            set { _highlightID = value; }
+        }
         protected String Join(string sep, IEnumerable items) {
             StringBuilder builder = new StringBuilder();
             foreach (object o in items) {
@@ -76,14 +81,26 @@ namespace CCS.Formatters {
         }
 
         public virtual string Format(Action act) {
+            string result = null;
             if (act is InAction) {
-                return Format((InAction)act);
+                result = Format((InAction)act);
             } else if (act is OutAction) {
-                return Format((OutAction)act);
-            } else if (act is TauAction) {
-                return Format((TauAction)act);
+                result = Format((OutAction)act);
             }
-            return "ERROR: UNKNOWN ACTION";
+            else if (act is TauAction)
+            {
+                result = Format((TauAction)act);
+            }
+            else
+            {
+                return "ERROR: UNKNOWN ACTION";
+            }
+            if (act.ID == _highlightID)
+            {
+                return "<sel>" + result + "<sel>";
+            }
+            return result;
+            
         }
 
         public virtual string Format(InAction act) {
@@ -142,7 +159,16 @@ namespace CCS.Formatters {
             return "ERROR: UNKNOWN NODE";
         }
 
-        public virtual string Format(Process p) {
+        public virtual string Format(Process p)
+        {
+            return Format(p, -1);
+        }
+
+        public virtual string Format(Process p, int highlightActionID) {
+            if (highlightActionID != -1)
+            {
+                _highlightID = highlightActionID;
+            }
             if (p is ActionPrefix) {
                 return Format((ActionPrefix)p);
             } else if (p is NilProcess) {
