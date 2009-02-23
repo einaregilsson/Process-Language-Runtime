@@ -297,10 +297,6 @@ private ProcessSystem system = new ProcessSystem();
     Expect(0);
 	}
 	
-	static readonly bool[,] set = {
-		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x}
-
-	};
 } // end Parser
 
 

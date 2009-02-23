@@ -29,5 +29,9 @@ namespace PLR.AST.Processes
             return other.Name == this.Name && other.Subscript.Count == this.Subscript.Count;
         }
 
+        public override int GetHashCode() {
+            return (this.Name + this.Subscript.Count).GetHashCode();
+        }
+
     }
 }
