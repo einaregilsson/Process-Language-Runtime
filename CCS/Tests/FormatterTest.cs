@@ -38,7 +38,7 @@ John = 0";
             SourceFormatter f = new SourceFormatter();
 
             string result = f.Format(sys);
-            Assert.AreEqual(src, src);
+            Assert.AreEqual(src, result);
         }
 
     }

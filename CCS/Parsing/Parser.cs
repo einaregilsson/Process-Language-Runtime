@@ -60,9 +60,6 @@ namespace CCS.Parsing {
             if (la.kind == n) Get(); else { SynErr(n); }
         }
 
-        bool StartOf(int s) {
-            return set[s, la.kind];
-        }
     } // end Parser
 
 

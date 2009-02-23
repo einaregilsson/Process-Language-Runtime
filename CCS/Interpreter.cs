@@ -185,17 +185,17 @@ namespace CCS
             return _matches.Count;
         }
 
-        private Process GetProcess(ProcessConstant pconst)
-        {
-            foreach (ProcessDefinition def in _system)
-            {
-                if (def.ProcessConstant.Equals(pconst))
-                {
-                    return def.Process;
-                }
-            }
-            return null;
-        }
+        //private Process GetProcess(ProcessConstant pconst)
+        //{
+        //    foreach (ProcessDefinition def in _system)
+        //    {
+        //        if (def.ProcessConstant.Equals(pconst))
+        //        {
+        //            return def.Process;
+        //        }
+        //    }
+        //    return null;
+        //}
         private bool AddProcessToActiveSet(Process p, Action actionTaken)
         {
             if (p is ActionPrefix && actionTaken.ID == ((ActionPrefix)p).Action.ID)
@@ -259,7 +259,7 @@ namespace CCS
         private void ResolveProcessConstants()
         {
             List<Process> delete = new List<Process>();
-            List<Process> add = new List<Process>();
+            //List<Process> add = new List<Process>();
             foreach (Process p in _activeProcs)
             {
                 if (p is ProcessConstant)
