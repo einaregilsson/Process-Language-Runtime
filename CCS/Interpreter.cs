@@ -92,6 +92,7 @@ namespace CCS
                 Console.ForegroundColor = original;
                 
                 if (options == 0) {
+                    Console.ReadKey();
                     return 3;
                 }
                 if (_interactive) {
