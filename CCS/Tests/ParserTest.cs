@@ -18,7 +18,7 @@ namespace CCS.Tests {
             ProcessSystem sys = Parse("P = 0");
             Assert.AreEqual(1, sys.Count);
             Process p = sys[0].Process;
-            Assert.IsInstanceOfType(typeof(NilProcess), p);
+            Assert.IsTrue(p is NilProcess);
             AssertNoRelabelling(p);
             AssertNoRestrictions(p);
             AssertParenCount(p, 0);
@@ -29,11 +29,11 @@ namespace CCS.Tests {
             ProcessSystem sys = Parse("P = john.0");
             Assert.AreEqual(1, sys.Count);
             Process p = sys[0].Process;
-            Assert.IsInstanceOfType(typeof(ActionPrefix), p);
+            Assert.IsTrue(p is ActionPrefix);
             ActionPrefix ap = (ActionPrefix)p;
-            Assert.IsInstanceOfType(typeof(NilProcess), ap.Process);
+            Assert.IsTrue(ap.Process is NilProcess);
             Assert.AreEqual("john", ap.Action.Name);
-            Assert.IsInstanceOfType(typeof(InAction), ap.Action);
+            Assert.IsTrue(ap.Action is InAction);
             AssertNoRelabelling(ap);
             AssertNoRestrictions(ap);
             AssertParenCount(ap, 0);
@@ -44,31 +44,31 @@ namespace CCS.Tests {
             ProcessSystem sys = Parse("P = john._jane_.(  foo .0)");
             Assert.AreEqual(1, sys.Count);
             Process p = sys[0].Process;
-            Assert.IsInstanceOfType(typeof(ActionPrefix), p);
+            Assert.IsTrue(p is ActionPrefix);
             ActionPrefix ap = (ActionPrefix)p;
 
             //First action
-            Assert.IsInstanceOfType(typeof(ActionPrefix), ap.Process);
+            Assert.IsTrue(ap.Process is ActionPrefix);
             Assert.AreEqual("john", ap.Action.Name);
-            Assert.IsInstanceOfType(typeof(InAction), ap.Action);
+            Assert.IsTrue(ap.Action is InAction);
             AssertNoRelabelling(ap);
             AssertNoRestrictions(ap);
             AssertParenCount(ap, 0);
 
             //Second action
             ap = (ActionPrefix)ap.Process;
-            Assert.IsInstanceOfType(typeof(ActionPrefix), ap.Process);
+            Assert.IsTrue(ap.Process is ActionPrefix);
             Assert.AreEqual("jane", ap.Action.Name);
-            Assert.IsInstanceOfType(typeof(OutAction), ap.Action);
+            Assert.IsTrue(ap.Action is OutAction);
             AssertNoRelabelling(ap);
             AssertNoRestrictions(ap);
             AssertParenCount(ap, 0);
 
             //Third action
             ap = (ActionPrefix)ap.Process;
-            Assert.IsInstanceOfType(typeof(NilProcess), ap.Process);
+            Assert.IsTrue(ap.Process is NilProcess);
             Assert.AreEqual("foo", ap.Action.Name);
-            Assert.IsInstanceOfType(typeof(InAction), ap.Action);
+            Assert.IsTrue(ap.Action is InAction);
             AssertNoRelabelling(ap);
             AssertNoRestrictions(ap);
             AssertParenCount(ap, 1);
