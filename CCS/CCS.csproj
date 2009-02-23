@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Parsing\CCS.atg" />
+    <None Include="TestFiles\CoffeeMachine.ccs" />
     <None Include="TestFiles\Simple.ccs" />
   </ItemGroup>
   <ItemGroup>

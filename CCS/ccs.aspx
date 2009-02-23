@@ -11,21 +11,42 @@
     <title>CCS Interpreter</title>
     <style type="text/css">
         a, a:visited { text-decoration:none; color:white;}
+        td a, td a:visited { text-decoration:none; color:blue;}
         body { background-color:black; color:white; font-weight:bold; font-size:12pt;}
     </style>
 </head>
 <body>
     <%
         string code = "";
-        if (Request.Form["code"] != null) {
+        if (Request.QueryString["loadfile"] != null) {
+            code = File.ReadAllText(Path.Combine(Path.Combine(Server.MapPath("."),"TestFiles"),Request.QueryString["loadfile"]));
+            Session["interpreter"] = null;
+            Session["history"] = null;
+        } else if (Request.Form["code"] != null) {
             code = (string)Request.Form["code"];
         } else if (Session["code"] != null) {
             code = (string)Session["code"];
         }
          %>
     <form method="POST" action="ccs.aspx?iter=1#end">
-    <textarea name="code" rows="18" cols="80"><%=code %></textarea><br />
-    <input type="submit" value="Start system" />
+    <table>
+        <tr>
+            <td>
+            <h4>Example files</h4>
+            <%
+                string folder = Path.Combine(Server.MapPath("."), "TestFiles");
+
+                foreach (string file in Directory.GetFiles(folder)) {
+                    string shortname = Path.GetFileName(file);
+                    Response.Write("<a href=\"ccs.aspx?loadfile=" + shortname + "\">" +shortname + "</a><br>");
+                }
+            %>
+            </td>
+            <td><textarea name="code" rows="18" cols="80"><%=code %></textarea><br /><input type="submit" value="Start system" /></td>
+        </tr>
+    </table>
+    
+    
     <script runat="server" type="text/C#">
         public void InterpretStep(int? choice) {
             Interpreter interpreter = (Interpreter)Session["interpreter"];
@@ -40,9 +61,12 @@
             iter++;
             Response.Write(@"<span style=""color:#bbb;"">" + history + Request.QueryString["choice"] + "</span>");
             string link = Regex.Replace(sw.ToString(), @"[^P]((\d+): .*?\n)", @"<a href=""?choice=$2&iter=" + iter + @"#end"">$1</a>");
+            link = Regex.Replace(link, @"(\** Iteration \d+ \**)", "<span style=\"color:blue;\">$1</span>");
             link = link.Replace("<sel>", "<span style=\"color:#00ff00;\">").Replace("</sel>", "</span>");
+            link = Regex.Replace(link, "Trace so far: <(.*?)>", "Trace so far: &lt;$1&gt;");
+            link = link.Replace("System is deadlocked", "<span style=\"color:red;\">System is deadlocked</span>");
             Response.Write(link);
-            history += Request.QueryString["choice"]+sw.ToString();
+            history += Request.QueryString["choice"]+Regex.Replace(link, "<a .*?>|</a>", "");
             Session["history"] = history;
             Response.Write("</pre>");
         }
@@ -53,6 +77,8 @@
             StreamWriter writer = new StreamWriter(ms);
             writer.Write(code);
             Session["code"] = code;
+            Session["history"] = "";
+            Session["interpreter"] = null;
             writer.Flush();
             ms.Seek(0, SeekOrigin.Begin);
             Parser p = new Parser(new Scanner(ms));
@@ -63,7 +89,7 @@
             Response.Output.Flush();
             Response.Write("</pre>");
             if (p.errors.count==0) {
-                Session.Add("interpreter", new Interpreter(p.System, true));
+                Session["interpreter"] = new Interpreter(p.System, true);
                 InterpretStep(null);
             }
         } else if (Session["interpreter"] != null && Request.QueryString["choice"] != null) {
