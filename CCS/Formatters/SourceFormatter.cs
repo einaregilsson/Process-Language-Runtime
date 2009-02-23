@@ -97,7 +97,7 @@ namespace CCS.Formatters {
             }
             if (act.ID == _highlightID)
             {
-                return "<sel>" + result + "<sel>";
+                return "<sel>" + result + "</sel>";
             }
             return result;
             

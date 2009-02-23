@@ -33,7 +33,6 @@ TOKENS
   LCASEIDENT = lcaseletter {letter|digit}.
   OUTACTION  = underscore lcaseletter {letter|digit} underscore.
   NUMBER = digit {digit}.
-  ENTRYPROC = "->".
 
 COMMENTS FROM "#" TO lf
 IGNORE cr + lf + tab
@@ -43,16 +42,13 @@ PRODUCTIONS
 CCS                                                   
 =   
     			                                        (. ProcessDefinition proc; .)						       
-	ProcessDefinition<out proc>                         (. this.System.Add(proc); .)
+	ProcessDefinition<out proc, true>                   (. this.System.Add(proc); .)
     {
-        ProcessDefinition<out proc>                     (. this.System.Add(proc); .)
+        ProcessDefinition<out proc, false>              (. this.System.Add(proc); .)
     }                                                   (. CopyPos(this.System[0],this.System, t); .)
 .  
 
-ProcessDefinition<out ProcessDefinition procdef> =      (. bool entryProc = false; Process proc; ProcessConstant pc; .)
-    [
-    ENTRYPROC                                           (. entryProc = true; .)
-    ]
+ProcessDefinition<out ProcessDefinition procdef, bool entryProc> =      (. Process proc; ProcessConstant pc; .)
     ProcessConstantDef<out pc>                          
     '='
     Process<out proc>                                   (. procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(pc,procdef,t); .)

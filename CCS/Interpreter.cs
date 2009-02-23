@@ -6,16 +6,24 @@ using PLR.AST.Processes;
 using PLR.AST.Expressions;
 using PLR.AST.Actions;
 using CCS.Formatters;
+using System.IO;
 
 namespace CCS
 {
+    public delegate int ChooseAction();
     public class Interpreter
     {
         private List<Process> _activeProcs = new List<Process>();
         private ProcessSystem _system;
-        public void Interpret(ProcessSystem system)
+        private bool _interactive;
+        private Random _rng = new Random();
+        private long _iteration;
+
+        public Interpreter(ProcessSystem system, bool interactive)
         {
+            this._interactive = interactive;
             _system = system;
+            _iteration = 0;
             foreach (ProcessDefinition procdef in system)
             {
                 if (procdef.EntryProc)
@@ -23,8 +31,6 @@ namespace CCS
                     _activeProcs.Add(procdef.Process);
                 }
             }
-
-            InterpretLoop();
 
         }
 
@@ -49,47 +55,55 @@ namespace CCS
                 || this.P1 == other.P2 && this.P2 == other.P1 && this.A1 == other.A2 && this.A2 == other.A1;
             }
         }
-        private void InterpretLoop()
+
+        private List<Match> _matches;
+        public void Iterate(TextWriter writer, int? choice)
         {
+            if (choice.HasValue) {
+                Match chosen = _matches[choice.Value-1];
+                _activeProcs.Remove(chosen.P1);
+                _activeProcs.Remove(chosen.P2);
+                AddProcessToActiveSet(chosen.P1, chosen.A1);
+                AddProcessToActiveSet(chosen.P2, chosen.A2);
+            }
+
             Dictionary<Process, List<Action>> possibleSyncs = new Dictionary<Process, List<Action>>();
             SourceFormatter formatter = new SourceFormatter();
-            List<Match> matches;
-            int choice;
-            while (true)
+            _iteration++;
+
+            possibleSyncs.Clear();
+            SplitUpParallelProcesses();
+            ResolveProcessConstants();
+            _matches = new List<Match>();
+            int i = 1;
+            writer.WriteLine("\n\n****** Iteration {0} ******", _iteration);
+            writer.WriteLine("\n\nActive Processes:\n");
+            foreach (Process p in _activeProcs)
             {
-                possibleSyncs.Clear();
-                SplitUpParallelProcesses();
-                ResolveProcessConstants();
-                matches = new List<Match>();
-                int i = 1;
-                Console.WriteLine("\n\nActive Processes:\n");
-                foreach (Process p in _activeProcs)
+                possibleSyncs.Add(p, GetAvailableActions(p));
+                writer.WriteLine("P{0}: {1}", i++, formatter.Format(p));
+            }
+
+            writer.WriteLine("\nPossible actions:\n");
+            foreach (Process first in possibleSyncs.Keys)
+            {
+                foreach (Action act1 in possibleSyncs[first])
                 {
-                    possibleSyncs.Add(p, GetAvailableActions(p));
-                    Console.WriteLine("{0}: {1}", i++, formatter.Format(p));
-                }
-                
-                Console.WriteLine("\nPossible actions:\n");
-                foreach (Process first in possibleSyncs.Keys)
-                {
-                    foreach (Action act1 in possibleSyncs[first])
+                    foreach (Process second in possibleSyncs.Keys)
                     {
-                        foreach (Process second in possibleSyncs.Keys)
+                        if (first != second)
                         {
-                            if (first != second)
+                            foreach (Action act2 in possibleSyncs[second])
                             {
-                                foreach (Action act2 in possibleSyncs[second])
+                                if (!(act2 is TauAction) && !(act1 is TauAction))
                                 {
-                                    if (!(act2 is TauAction) && !(act1 is TauAction))
+                                    if (act1.Name == act2.Name &&
+                                        (act1 is InAction && act2 is OutAction || act1 is OutAction && act2 is InAction))
                                     {
-                                        if (act1.Name == act2.Name &&
-                                            (act1 is InAction && act2 is OutAction || act1 is OutAction && act2 is InAction))
+                                        Match m = new Match(first, second, act1, act2);
+                                        if (!_matches.Contains(m))
                                         {
-                                            Match m = new Match(first, second, act1, act2);
-                                            if (!matches.Contains(m))
-                                            {
-                                                matches.Add(m);
-                                            }
+                                            _matches.Add(m);
                                         }
                                     }
                                 }
@@ -97,29 +111,23 @@ namespace CCS
                         }
                     }
                 }
-                if (matches.Count == 0) {
-                    Console.WriteLine("System is deadlocked");
-                    Console.ReadKey();
-                    System.Environment.Exit(1);
-                } else {
-                    int b = 1;
-                    foreach (Match m in matches) {
-                        if (m.A1 is OutAction) {
-                            WriteCandidateMatch(b++, m.P1, m.A1, m.P2, m.A2);
-                        } else {
-                            WriteCandidateMatch(b++, m.P2, m.A2, m.P1, m.A1);
-                        }
+            }
+            if (_matches.Count == 0) {
+                writer.WriteLine("\nSystem is deadlocked");
+                return;
+            } else {
+                int b = 1;
+                foreach (Match m in _matches) {
+                    if (m.A1 is OutAction) {
+                        WriteCandidateMatch(b++, m.P1, m.A1, m.P2, m.A2, writer);
+                    } else {
+                        WriteCandidateMatch(b++, m.P2, m.A2, m.P1, m.A1, writer);
                     }
                 }
-                Console.Write("Select the number of the action to take: ");
-                choice = int.Parse(Console.ReadLine());
-                Match chosen = matches[choice - 1];
-                _activeProcs.Remove(chosen.P1);
-                _activeProcs.Remove(chosen.P2);
-                AddProcessToActiveSet(chosen.P1, chosen.A1);
-                AddProcessToActiveSet(chosen.P2, chosen.A2);
             }
+            writer.Write("\nSelect the number of the action to take: ");
         }
+
         private Process GetProcess(ProcessConstant pconst)
         {
             foreach (ProcessDefinition def in _system)
@@ -155,10 +163,12 @@ namespace CCS
         }
 
 
-        private void WriteCandidateMatch(int number, Process P1, Action a1, Process P2, Action a2)
+        private void WriteCandidateMatch(int number, Process P1, Action a1, Process P2, Action a2, TextWriter writer)
         {
             SourceFormatter formatter = new SourceFormatter();
-            string result = String.Format("{0}: {1} -> {2}", number, formatter.Format(P1, a1.ID), formatter.Format(P2, a2.ID));
+            string result = String.Format("A{0}: {1} -> {2}", number, formatter.Format(P1, a1.ID), formatter.Format(P2, a2.ID));
+            writer.WriteLine(result);
+            return;
             string[] parts = System.Text.RegularExpressions.Regex.Split(result, "<sel>");
             ConsoleColor original = Console.ForegroundColor;
             
@@ -172,12 +182,10 @@ namespace CCS
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                 }
-                Console.Write(parts[i]);
+                writer.Write(parts[i]);
             }
             Console.ForegroundColor = original;
-            Console.WriteLine();
-            
-
+            writer.WriteLine();
         }
 
         private List<Action> GetAvailableActions(Process p)
@@ -254,8 +262,6 @@ namespace CCS
                 _activeProcs.Remove(p);
             }
             _activeProcs.AddRange(add);
-
-        
         }
     }
 }

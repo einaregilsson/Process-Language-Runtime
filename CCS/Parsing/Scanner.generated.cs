@@ -10,30 +10,30 @@ namespace CCS.Parsing {
 //-----------------------------------------------------------------------------------
 public partial class Scanner {
 
-	const int maxT = 25;
-	const int noSym = 25;
+	const int maxT = 24;
+	const int noSym = 24;
 
 
 	static Scanner() {
 		start = new Hashtable(128);
-		for (int i = 65; i <= 90; ++i) start[i] = 8;
+		for (int i = 65; i <= 90; ++i) start[i] = 7;
 		for (int i = 97; i <= 122; ++i) start[i] = 2;
 		for (int i = 95; i <= 95; ++i) start[i] = 3;
 		for (int i = 48; i <= 57; ++i) start[i] = 6;
-		start[45] = 25; 
-		start[61] = 10; 
-		start[123] = 11; 
-		start[44] = 12; 
-		start[125] = 13; 
-		start[43] = 14; 
-		start[124] = 15; 
-		start[46] = 16; 
-		start[40] = 17; 
-		start[41] = 18; 
-		start[91] = 19; 
-		start[47] = 20; 
-		start[93] = 21; 
-		start[92] = 22; 
+		start[61] = 9; 
+		start[123] = 10; 
+		start[44] = 11; 
+		start[125] = 12; 
+		start[43] = 13; 
+		start[124] = 14; 
+		start[46] = 15; 
+		start[40] = 16; 
+		start[41] = 17; 
+		start[91] = 18; 
+		start[47] = 19; 
+		start[93] = 20; 
+		start[92] = 21; 
+		start[45] = 22; 
 		start[42] = 23; 
 		start[37] = 24; 
 		start[Buffer.EOF] = -1;
@@ -83,8 +83,8 @@ public partial class Scanner {
 
 	void CheckLiteral() {
 		switch (t.val) {
-			case "0": t.kind = 11; break;
-			case "t": t.kind = 17; break;
+			case "0": t.kind = 10; break;
+			case "t": t.kind = 16; break;
 			default: break;
 		}
 	}
@@ -122,16 +122,16 @@ public partial class Scanner {
 				if (ch >= '0' && ch <= '9') {AddCh(); goto case 6;}
 				else {t.kind = 5; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 7:
-				{t.kind = 6; break;}
+				if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 7;}
+				else if (ch == 39) {AddCh(); goto case 8;}
+				else if (ch == '_') {AddCh(); goto case 1;}
+				else {t.kind = 1; break;}
 			case 8:
-				if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 8;}
-				else if (ch == 39) {AddCh(); goto case 9;}
+				if (ch == 39) {AddCh(); goto case 8;}
 				else if (ch == '_') {AddCh(); goto case 1;}
 				else {t.kind = 1; break;}
 			case 9:
-				if (ch == 39) {AddCh(); goto case 9;}
-				else if (ch == '_') {AddCh(); goto case 1;}
-				else {t.kind = 1; break;}
+				{t.kind = 6; break;}
 			case 10:
 				{t.kind = 7; break;}
 			case 11:
@@ -139,7 +139,7 @@ public partial class Scanner {
 			case 12:
 				{t.kind = 9; break;}
 			case 13:
-				{t.kind = 10; break;}
+				{t.kind = 11; break;}
 			case 14:
 				{t.kind = 12; break;}
 			case 15:
@@ -149,7 +149,7 @@ public partial class Scanner {
 			case 17:
 				{t.kind = 15; break;}
 			case 18:
-				{t.kind = 16; break;}
+				{t.kind = 17; break;}
 			case 19:
 				{t.kind = 18; break;}
 			case 20:
@@ -159,12 +159,9 @@ public partial class Scanner {
 			case 22:
 				{t.kind = 21; break;}
 			case 23:
-				{t.kind = 23; break;}
+				{t.kind = 22; break;}
 			case 24:
-				{t.kind = 24; break;}
-			case 25:
-				if (ch == '>') {AddCh(); goto case 7;}
-				else {t.kind = 22; break;}
+				{t.kind = 23; break;}
 
 		}
 		t.val = new String(tval, 0, tlen);

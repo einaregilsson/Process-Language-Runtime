@@ -13,21 +13,26 @@ namespace CCS {
 
         static void Main(string[] args) {
 
-            string text =
-@"->User = a . b . User
-->John = _a_ . _b_ . _a_ .0
-->Siggi = _a_.b.0+_a_.0
-";
-            MemoryStream ms = new MemoryStream();
-            StreamWriter w = new StreamWriter(ms);
-            w.Write(text);
-            w.Flush();
-            ms.Seek(0, SeekOrigin.Begin);
-
-            Parser p = new Parser(new Scanner(ms));
+            if (args.Length == 0) {
+                Console.WriteLine("CCS Interpreter\nUsage: CCS [-interactive] <filename>");
+                return;
+            }
+            Parser p = new Parser(new Scanner(new FileStream(args[args.Length-1], FileMode.Open)));
             p.Parse();
-            Interpreter i = new Interpreter();
-            i.Interpret(p.System);
+            if (p.errors.count > 0) {
+                return;
+            }
+            Interpreter i = new Interpreter(p.System, args.Length == 2 && args[0].ToLower() == "-interactive");
+            long counter = 0;
+            //while (true) {
+            //    counter++;
+            //    i.Iterate(System.Console.Out, delegate() { return int.Parse(Console.ReadLine()); });
+            //    if (counter % 50 == 0) {
+            //        Console.WriteLine("{0} iterations finished, press Ctrl-C to exit or any other key to continue", counter);
+            //        Console.ReadKey();
+            //    }
+            //}
+           
         }
     }
 }
