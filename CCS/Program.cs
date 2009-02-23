@@ -11,28 +11,19 @@ using CCS.Formatters;
 namespace CCS {
     class Program {
 
-        static void Main(string[] args) {
+        static int Main(string[] args) {
 
             if (args.Length == 0) {
-                Console.WriteLine("CCS Interpreter\nUsage: CCS [-interactive] <filename>");
-                return;
+                Console.Error.WriteLine("CCS Interpreter\nUsage: CCS [-interactive] <filename>");
+                return 1;
             }
             Parser p = new Parser(new Scanner(new FileStream(args[args.Length-1], FileMode.Open)));
             p.Parse();
             if (p.errors.count > 0) {
-                return;
+                return 2;
             }
             Interpreter i = new Interpreter(p.System, args.Length == 2 && args[0].ToLower() == "-interactive");
-            long counter = 0;
-            //while (true) {
-            //    counter++;
-            //    i.Iterate(System.Console.Out, delegate() { return int.Parse(Console.ReadLine()); });
-            //    if (counter % 50 == 0) {
-            //        Console.WriteLine("{0} iterations finished, press Ctrl-C to exit or any other key to continue", counter);
-            //        Console.ReadKey();
-            //    }
-            //}
-           
+            return i.RunConsole();
         }
     }
 }

@@ -18,6 +18,7 @@ namespace CCS
         private bool _interactive;
         private Random _rng = new Random();
         private long _iteration;
+        private List<string> _trace = new List<string>();
 
         public Interpreter(ProcessSystem system, bool interactive)
         {
@@ -54,13 +55,67 @@ namespace CCS
                 return this.P1 == other.P1 && this.P2 == other.P2 && this.A1 == other.A1 && this.A2 == other.A2
                 || this.P1 == other.P2 && this.P2 == other.P1 && this.A1 == other.A2 && this.A2 == other.A1;
             }
+
+            public override int GetHashCode() {
+                string[] temp = new string[] { P1.ToString(), P2.ToString(), A1.ToString(), A2.ToString() };
+                List<string> list = new List<string>(temp);
+                list.Sort();
+                return string.Join(",", list.ToArray()).GetHashCode();
+            }
         }
 
         private List<Match> _matches;
-        public void Iterate(TextWriter writer, int? choice)
+
+        public int RunConsole() {
+            int? choice = null;
+            StringWriter tempBuffer;
+            while (true) {
+                ConsoleColor original = Console.ForegroundColor;
+                tempBuffer = new StringWriter();
+                int options = Iterate(tempBuffer, choice);
+                int pos = tempBuffer.ToString().IndexOf('\n', 4);
+                string header = tempBuffer.ToString().Substring(0, pos);
+                string body = tempBuffer.ToString().Substring(pos+1);
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(header);
+                Console.ForegroundColor = original;
+                string[] parts = System.Text.RegularExpressions.Regex.Split(body, "</?sel>");
+
+                for (int i = 0; i < parts.Length; i++) {
+                    if (i % 2 == 0) {
+                        Console.ForegroundColor = original;
+                    } else {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                    }
+                    Console.Write(parts[i]);
+                }
+                Console.ForegroundColor = original;
+                
+                if (options == 0) {
+                    return 3;
+                }
+                if (_interactive) {
+                    int ch = -1;
+                    while (!int.TryParse(Console.ReadLine(), out ch) || ch < 1 || ch > options) {
+                        Console.Write("Please enter a number between 1 and {0}: ", options);
+                    }
+                    choice = ch;
+                } else {
+                    choice = _rng.Next(options)+1;
+                    Console.WriteLine("Randomly chose option {0}", choice);
+                    if (_iteration % 50 == 0) {
+                        Console.WriteLine("\n{0} iterations are finished, press Ctrl+C to quit, or any other key to run the next 50 iterations...", _iteration);
+                        Console.ReadKey();
+                    }
+                }
+            }
+        }
+
+        public int Iterate(TextWriter writer, int? choice)
         {
             if (choice.HasValue) {
                 Match chosen = _matches[choice.Value-1];
+                _trace.Add(chosen.A1.Name);
                 _activeProcs.Remove(chosen.P1);
                 _activeProcs.Remove(chosen.P2);
                 AddProcessToActiveSet(chosen.P1, chosen.A1);
@@ -77,11 +132,12 @@ namespace CCS
             _matches = new List<Match>();
             int i = 1;
             writer.WriteLine("\n\n****** Iteration {0} ******", _iteration);
-            writer.WriteLine("\n\nActive Processes:\n");
+            writer.WriteLine("\nTrace so far: <" + string.Join(", ", _trace.ToArray()) + ">");
+            writer.WriteLine("\nActive Processes:\n");
             foreach (Process p in _activeProcs)
             {
                 possibleSyncs.Add(p, GetAvailableActions(p));
-                writer.WriteLine("P{0}: {1}", i++, formatter.Format(p));
+                writer.WriteLine("  P{0}: {1}", i++, formatter.Format(p));
             }
 
             writer.WriteLine("\nPossible actions:\n");
@@ -114,7 +170,7 @@ namespace CCS
             }
             if (_matches.Count == 0) {
                 writer.WriteLine("\nSystem is deadlocked");
-                return;
+                return 0;
             } else {
                 int b = 1;
                 foreach (Match m in _matches) {
@@ -126,6 +182,7 @@ namespace CCS
                 }
             }
             writer.Write("\nSelect the number of the action to take: ");
+            return _matches.Count;
         }
 
         private Process GetProcess(ProcessConstant pconst)
@@ -166,26 +223,8 @@ namespace CCS
         private void WriteCandidateMatch(int number, Process P1, Action a1, Process P2, Action a2, TextWriter writer)
         {
             SourceFormatter formatter = new SourceFormatter();
-            string result = String.Format("A{0}: {1} -> {2}", number, formatter.Format(P1, a1.ID), formatter.Format(P2, a2.ID));
+            string result = String.Format("  {0}: {1} -> {2}", number, formatter.Format(P1, a1.ID), formatter.Format(P2, a2.ID));
             writer.WriteLine(result);
-            return;
-            string[] parts = System.Text.RegularExpressions.Regex.Split(result, "<sel>");
-            ConsoleColor original = Console.ForegroundColor;
-            
-            for (int i = 0; i < parts.Length; i++)
-            {
-                if (i % 2 == 0)
-                {
-                    Console.ForegroundColor = original;
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                }
-                writer.Write(parts[i]);
-            }
-            Console.ForegroundColor = original;
-            writer.WriteLine();
         }
 
         private List<Action> GetAvailableActions(Process p)

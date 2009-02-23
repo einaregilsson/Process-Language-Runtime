@@ -39,7 +39,7 @@
             }
             iter++;
             Response.Write(@"<span style=""color:#bbb;"">" + history + Request.QueryString["choice"] + "</span>");
-            string link = Regex.Replace(sw.ToString(), @"(A(\d+): .*?\n)", @"<a href=""?choice=$2&iter=" + iter + @"#end"">$1</a>");
+            string link = Regex.Replace(sw.ToString(), @"[^P]((\d+): .*?\n)", @"<a href=""?choice=$2&iter=" + iter + @"#end"">$1</a>");
             link = link.Replace("<sel>", "<span style=\"color:#00ff00;\">").Replace("</sel>", "</span>");
             Response.Write(link);
             history += Request.QueryString["choice"]+sw.ToString();

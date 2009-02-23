@@ -63,27 +63,6 @@ namespace CCS.Parsing {
         bool StartOf(int s) {
             return set[s, la.kind];
         }
-
-        void ExpectWeak(int n, int follow) {
-            if (la.kind == n) Get();
-            else {
-                SynErr(n);
-                while (!StartOf(follow)) Get();
-            }
-        }
-
-
-        bool WeakSeparator(int n, int syFol, int repFol) {
-            int kind = la.kind;
-            if (kind == n) { Get(); return true; } else if (StartOf(repFol)) { return false; } else {
-                SynErr(n);
-                while (!(set[syFol, kind] || set[repFol, kind] || set[0, kind])) {
-                    Get();
-                    kind = la.kind;
-                }
-                return StartOf(syFol);
-            }
-        }
     } // end Parser
 
 
