@@ -61,6 +61,7 @@
             iter++;
             Response.Write(@"<span style=""color:#bbb;"">" + history + Request.QueryString["choice"] + "</span>");
             string link = Regex.Replace(sw.ToString(), @"[^P]((\d+): .*?\n)", @"<a href=""?choice=$2&iter=" + iter + @"#end"">$1</a>");
+            link = link.Replace("\\", "&92");
             link = Regex.Replace(link, @"(\** Iteration \d+ \**)", "<span style=\"color:blue;\">$1</span>");
             link = link.Replace("<sel>", "<span style=\"color:#00ff00;\">").Replace("</sel>", "</span>");
             link = Regex.Replace(link, "Trace so far: <(.*?)>", "Trace so far: &lt;$1&gt;");

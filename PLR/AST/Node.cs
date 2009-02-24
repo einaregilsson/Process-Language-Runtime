@@ -7,6 +7,12 @@ namespace PLR.AST {
         public abstract void Accept(AbstractVisitor visitor);
         //Source file information
 
+        protected object _extraData;
+        public object ExtraData {
+            get { return _extraData; }
+            set { _extraData = value; }
+        }
+
         protected int _line;
         public int Line
         {
