@@ -68,9 +68,9 @@ namespace CCS {
                 int pos = tempBuffer.ToString().IndexOf('\n', 4);
                 string header = tempBuffer.ToString().Substring(0, pos);
                 string body = tempBuffer.ToString().Substring(pos + 1);
-                //Console.ForegroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(header);
-                //Console.ForegroundColor = original;
+                Console.ForegroundColor = original;
                 string[] parts = System.Text.RegularExpressions.Regex.Split(body, "</?sel>");
 
                 for (int i = 0; i < parts.Length; i++) {
@@ -133,9 +133,17 @@ namespace CCS {
             writer.WriteLine("\n\n****** Iteration {0} ******", _iteration);
             writer.WriteLine("\nTrace so far: <" + string.Join(", ", _trace.ToArray()) + ">");
             writer.WriteLine("\nActive Processes:\n");
-            _activeProcs.Sort(delegate(Process p1, Process p2) {
-                return p1.ExtraData.ToString().CompareTo(p2.ExtraData.ToString());
-            });
+            //TODO: Big hack for Mono, fix later...
+            SortedList<string, Process> temp = new SortedList<string, Process>();
+            foreach (Process p in _activeProcs)
+            {
+                temp.Add(p.ExtraData.ToString(), p);
+            }
+            _activeProcs.Clear();
+            foreach (Process p in temp.Values)
+            {
+                _activeProcs.Add(p);
+            }
             foreach (Process p in _activeProcs) {
                 possibleSyncs.Add(p, GetAvailableActions(p));
                 writer.WriteLine("  [{0}] : {1}", p.ExtraData, formatter.Format(p));
