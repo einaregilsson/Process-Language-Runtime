@@ -1,0 +1,4 @@
+System = CS | CM | Academia
+CS = _coin_ . coffee . _pub_ . CS
+CM = coin . _coffee_ . CM + coin . 0
+Academia = pub . Academia
