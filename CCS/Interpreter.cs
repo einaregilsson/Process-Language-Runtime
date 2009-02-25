@@ -68,9 +68,9 @@ namespace CCS {
                 int pos = tempBuffer.ToString().IndexOf('\n', 4);
                 string header = tempBuffer.ToString().Substring(0, pos);
                 string body = tempBuffer.ToString().Substring(pos + 1);
-                Console.ForegroundColor = ConsoleColor.Blue;
+                //Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(header);
-                Console.ForegroundColor = original;
+                //Console.ForegroundColor = original;
                 string[] parts = System.Text.RegularExpressions.Regex.Split(body, "</?sel>");
 
                 for (int i = 0; i < parts.Length; i++) {
@@ -130,7 +130,6 @@ namespace CCS {
             SplitUpTopLevelParallelProcesses();
             ResolveProcessConstants();
             _matches = new List<Match>();
-            int i = 1;
             writer.WriteLine("\n\n****** Iteration {0} ******", _iteration);
             writer.WriteLine("\nTrace so far: <" + string.Join(", ", _trace.ToArray()) + ">");
             writer.WriteLine("\nActive Processes:\n");
