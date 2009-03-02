@@ -20,6 +20,5 @@ namespace PLR.AST
             visitor.Visit(this);
         }
 
-
     }
 }
