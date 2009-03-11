@@ -6,22 +6,22 @@ using System.Threading;
 using PLR.AST.Actions;
 
 namespace PLR {
-    
+
     public class Scheduler {
 
-        private List<ProcessBase> _activeProcs = new List<ProcessBase>();
-        private List<IAction> _actions = new List<IAction>();
+        //Active processes and their possible actions
+        private Dictionary<ProcessBase, IAction[]> _activeProcs = new Dictionary<ProcessBase, IAction[]>();
         private List<Match> _matches = new List<Match>();
 
-        public void SyncActions(params IAction[] possibleActions) {
+        public void SyncActions(ProcessBase proc, params IAction[] possibleActions) {
             lock (this) {
-                _actions.AddRange(possibleActions);
+                _activeProcs[proc] = possibleActions;
             }
         }
 
         public void AddProcess(ProcessBase p) {
             lock (this) {
-                _activeProcs.Add(p);
+                _activeProcs.Add(p, new IAction[] { });
             }
         }
 
@@ -36,11 +36,43 @@ namespace PLR {
             public Match(IAction a1, IAction a2) { this.a1 = a1; this.a2 = a2; }
         }
 
+        public void Run() {
+            while (true) {
+                Console.WriteLine("Procs: " + _activeProcs.Keys.Count);
+                bool allWaiting = true;
+                Console.WriteLine(_activeProcs.Keys.Count);
+                foreach (ProcessBase p in _activeProcs.Keys) {
+                    allWaiting &= p.Waiting;
+                }
+                
+                if (allWaiting) {
+                    FindMatches();
+                }
+                System.Threading.Thread.Sleep(100);
+            }
+        }
+
+        private Guid ProcessIdToSetId(int processID) {
+            foreach (ProcessBase p in _activeProcs.Keys) {
+                if (p.ID == processID) {
+                    return p.SetID;
+                }
+            }
+            return Guid.Empty;
+        }
         public void FindMatches() {
-            for (int i = 0; i < _actions.Count; i++) {
-                for (int j = i+1; j < _actions.Count; j++) {
-                    if (_actions[i].CanSyncWith(_actions[j])) {
-                        _matches.Add(new Match(_actions[i], _actions[j]));
+            List<IAction> allActions = new List<IAction>();
+            foreach (IAction[] actions in _activeProcs.Values) {
+                allActions.AddRange(actions);
+            }
+            _matches.Clear();
+            for (int i = 0; i < allActions.Count; i++) {
+                for (int j = i + 1; j < allActions.Count; j++) {
+                    if (allActions[i].CanSyncWith(allActions[j]) 
+                        && allActions[i].ProcessID != allActions[j].ProcessID
+                        && ProcessIdToSetId(allActions[i].ProcessID) != ProcessIdToSetId(allActions[j].ProcessID)) {
+
+                        _matches.Add(new Match(allActions[i], allActions[j]));
                     }
                 }
             }
@@ -49,14 +81,36 @@ namespace PLR {
                 Console.ReadKey();
                 Environment.Exit(1);
             }
-            Match m = _matches[0];
-            foreach (ProcessBase p in _activeProcs) {
+
+            Match m = _matches[new Random().Next(_matches.Count)];
+            List<ProcessBase> wakeUp = new List<ProcessBase>();
+            List<Guid> wakeUpGuids = new List<Guid>();
+            foreach (ProcessBase p in _activeProcs.Keys) {
                 if (p.ID == m.a1.ProcessID || p.ID == m.a2.ProcessID) {
-                    p.Continue();
+                    IAction[] procActions = _activeProcs[p];
+                    for (int i = 0; i < procActions.Length; i++) {
+                        if (procActions[i] == m.a1 || procActions[i] == m.a2) {
+                            p.ChosenAction = i;
+                            wakeUp.Add(p);
+                            wakeUpGuids.Add(p.SetID);
+                        }
+                    }
                 }
             }
+
+            Console.WriteLine("Chose match " + m.a1.ToString() + ", procs " + m.a1.ProcessID + " and " + m.a2.ProcessID);
+            foreach (ProcessBase p in _activeProcs.Keys) {
+                if (!wakeUp.Contains(p) && wakeUpGuids.Contains(p.SetID)) {
+                    p.ChosenAction = ProcessBase.KILL_YOURSELF;
+                    wakeUp.Add(p);
+                }
+            }
+
+            //Finally, wake everyone up that needs to do something
+            foreach (ProcessBase p in wakeUp) {
+                Console.WriteLine("Waking up " + p);
+                p.Continue();
+            }
         }
-
-
     }
 }

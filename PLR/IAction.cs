@@ -21,6 +21,9 @@ namespace PLR {
         public bool CanSyncWith(IAction other) {
             return ((StringAction)other)._name == this._name;
         }
+        public override string ToString() {
+            return _name;
+        }
 
         public int ProcessID {
             get { return _proc.ID;  }
@@ -31,7 +34,7 @@ namespace PLR {
         }
 
         public void Execute() {
-            throw new Exception("The method or operation is not implemented.");
+            //throw new Exception("The method or operation is not implemented.");
         }
 
     }

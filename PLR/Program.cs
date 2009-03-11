@@ -9,13 +9,7 @@ namespace PLR {
             ProcB pb = new ProcB();
             pa.Run();
             pb.Run();
-            while (true) {
-                if (pa.Waiting && pb.Waiting) {
-                    ProcessBase._scheduler.FindMatches();
-                }
-                System.Threading.Thread.Sleep(100);
-            }
-            Console.ReadKey();
+            ProcessBase._scheduler.Run();
         }
     }
 }
