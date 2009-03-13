@@ -14,12 +14,18 @@ namespace PLR {
 
         private ProcessBase _proc;
         private string _name;
-        public StringAction(string name, ProcessBase p) {
+        private bool _input;
+        public StringAction(string name, ProcessBase p, bool input) {
             _proc = p;
             _name = name;
+            _input = input;
         }
         public bool CanSyncWith(IAction other) {
-            return ((StringAction)other)._name == this._name;
+            if (!(other is StringAction)) {
+                return false;
+            }
+            StringAction otherAction = (StringAction) other;
+            return otherAction._name == this._name && otherAction._input != this._input;
         }
         public override string ToString() {
             return _name;

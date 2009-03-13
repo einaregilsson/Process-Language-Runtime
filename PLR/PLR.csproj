@@ -5,7 +5,7 @@
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{C2BC567A-4740-4224-9CBA-8C2B527EBF83}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PLR</RootNamespace>
     <AssemblyName>PLR</AssemblyName>
@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="out, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -97,8 +98,8 @@
     <Compile Include="AST\Subscript.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Compiler.cs" />
     <Compile Include="IAction.cs" />
+    <Compile Include="MethodResolver.cs" />
     <Compile Include="PLRError.cs" />
     <Compile Include="ProcessBase.cs" />
     <Compile Include="Program.cs" />

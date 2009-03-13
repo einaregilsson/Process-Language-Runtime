@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace PLR.AST.Processes {
 
@@ -14,6 +15,9 @@ namespace PLR.AST.Processes {
         public override void Accept(AbstractVisitor visitor)
         {
             visitor.Visit(this);
+        }
+
+        public override void Compile(ILGenerator il) {
         }
 
     }

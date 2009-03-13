@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PLR.AST.Actions;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace PLR.AST.Processes {
 
@@ -28,5 +31,15 @@ namespace PLR.AST.Processes {
         {
             visitor.Visit(this);
         }
+        public override void Compile(ILGenerator il) {
+            Type baseType = typeof(ProcessBase);
+            il.Emit(OpCodes.Ldstr, _action.Name);
+            il.Emit(OpCodes.Ldarg_0); //Push the "this" onto the stack
+            il.Emit(_action is InAction ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+            il.Emit(OpCodes.Newobj, MethodResolver.GetConstructor(typeof(StringAction)));
+            il.EmitCall(OpCodes.Call, MethodResolver.GetMethod(baseType, "Sync"), new Type[] {typeof(StringAction)});
+            il.Emit(OpCodes.Pop);
+        }
     }
 }
+

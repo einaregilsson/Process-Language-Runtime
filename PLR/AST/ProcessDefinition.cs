@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using PLR.AST.Processes;
+using System;
+using System.Reflection.Emit;
+using System.Reflection;
 
 namespace PLR.AST {
 
@@ -41,5 +44,36 @@ namespace PLR.AST {
         }
 
 
+        public void Compile(ModuleBuilder module, string nameSpace) {
+            Type baseType = typeof(ProcessBase);
+            TypeBuilder type = module.DefineType("EINAR." + this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit,  baseType);
+            MethodBuilder methodStart = type.DefineMethod("Start", MethodAttributes.Public | MethodAttributes.Virtual);
+            type.DefineMethodOverride(methodStart, baseType.GetMethod("Start"));
+            ILGenerator il = methodStart.GetILGenerator();
+            this.Process.Compile(il);
+            il.Emit(OpCodes.Ret);
+            type.CreateType();
+            
+    //public class ProcA : ProcessBase {
+    //    public override void Start() {
+    //        try {
+    //            _scheduler.AddProcess(this);
+
+    //            this.Sync(new StringAction("a", this));
+    //            this.Sync(new StringAction("b", this));
+    //            this.Sync(new StringAction("a", this));
+
+    //        } catch (ThreadAbortException ex) {
+    //            Debug("Am being killed");
+    //            Debug(ex.Message);
+    //            _scheduler.KillProcess(this);
+    //            return;
+    //        }
+    //        Debug("End of life for me, have turned into 0");
+    //        _scheduler.KillProcess(this);
+    //    }
+    //}
+
+        }
     }
 }

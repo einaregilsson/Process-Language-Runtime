@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection.Emit;
 using PLR.AST;
 
 namespace PLR.AST.Processes
@@ -32,6 +33,8 @@ namespace PLR.AST.Processes
         public override int GetHashCode() {
             return (this.Name + this.Subscript.Count).GetHashCode();
         }
+
+        public override void Compile(ILGenerator il) { }
 
     }
 }

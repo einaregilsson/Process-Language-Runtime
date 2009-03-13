@@ -79,15 +79,34 @@ namespace PLR {
         }
         public abstract void Start();
     }
-
     public class ProcA : ProcessBase {
         public override void Start() {
             try {
                 _scheduler.AddProcess(this);
 
-                this.Sync(new StringAction("a", this));
-                this.Sync(new StringAction("b", this));
-                this.Sync(new StringAction("a", this));
+                this.Sync(new StringAction("a", this, true));
+                this.Sync(new StringAction("b", this, false));
+                //this.Sync(new StringAction("a", this));
+
+            } catch (ThreadAbortException ex) {
+                Debug("Am being killed");
+                Debug(ex.Message);
+                _scheduler.KillProcess(this);
+                return;
+            }
+            Debug("End of life for me, have turned into 0");
+            _scheduler.KillProcess(this);
+        }
+    }
+
+    public class ProcView : ProcessBase {
+        public override void Start() {
+            try {
+                _scheduler.AddProcess(this);
+
+                this.Sync(new StringAction("a", this,true));
+                this.Sync(new StringAction("b", this,false));
+                //this.Sync(new StringAction("a", this));
 
             } catch (ThreadAbortException ex) {
                 Debug("Am being killed");
@@ -112,10 +131,10 @@ namespace PLR {
                 // a.b.(a.0+b.0+B)
 
                 //Step 1
-                this.Sync(new StringAction("a", this));
+                //this.Sync(new StringAction("a", this));
 
                 //Step 2
-                this.Sync(new StringAction("b", this));
+                //this.Sync(new StringAction("b", this));
 
                 //Create candidate proc
                 ProcB newb = new ProcB();
@@ -123,8 +142,8 @@ namespace PLR {
                 newb.Run();
 
                 //Non-deterministic Choice
-                IAction[] choices = new IAction[] { new StringAction("a", this), new StringAction("b", this) };
-                int chosen = this.NonDeterministicChoiceSync(choices);
+                //IAction[] choices = new IAction[] { new StringAction("a", this), new StringAction("b", this) };
+                int chosen =1;// = this.NonDeterministicChoiceSync(choices);
                 Debug("Chose " + chosen);
                 if (chosen == 0) {
                     //...continue after "a"
