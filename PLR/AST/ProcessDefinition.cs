@@ -46,9 +46,9 @@ namespace PLR.AST {
 
         public void Compile(ModuleBuilder module, string nameSpace) {
             Type baseType = typeof(ProcessBase);
-            TypeBuilder type = module.DefineType("EINAR." + this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit,  baseType);
-            MethodBuilder methodStart = type.DefineMethod("Start", MethodAttributes.Public | MethodAttributes.Virtual);
-            type.DefineMethodOverride(methodStart, baseType.GetMethod("Start"));
+            TypeBuilder type = module.DefineType(this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit,  baseType);
+            MethodBuilder methodStart = type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
+            type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
             ILGenerator il = methodStart.GetILGenerator();
             this.Process.Compile(il);
             il.Emit(OpCodes.Ret);

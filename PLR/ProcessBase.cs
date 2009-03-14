@@ -23,8 +23,6 @@ namespace PLR {
             set { _chosenAction = value; }
         }
 
-        public static Scheduler _scheduler = new Scheduler();
-        
         private Thread _procThread;
         public void Run() {
             Thread t = new Thread(new ThreadStart(this.StartProcess));
@@ -41,11 +39,11 @@ namespace PLR {
             Console.WriteLine(this.GetType().Name + "_" + this.ID + ": " + string.Format(msg, args));
         }
         public ThreadState state { get { return _procThread.ThreadState; } }
-        protected int Sync(params IAction[] actions) {
+        protected int Sync(List<IAction> actions) {
 
             try {
                  Debug("Synced actions, going to sleep");
-                 _scheduler.SyncActions(this, actions);
+                 Scheduler.Instance.SyncActions(this, actions);
                  _procThread.Suspend();
             } catch (ThreadInterruptedException) {
                 Debug("Got ex");
@@ -60,7 +58,7 @@ namespace PLR {
 
         }
 
-        protected int NonDeterministicChoiceSync(params IAction[] actions) {
+        protected int NonDeterministicChoiceSync(List<IAction> actions) {
             return Sync(actions);
         }
 
@@ -75,93 +73,28 @@ namespace PLR {
         private void StartProcess() {
             _procThread = Thread.CurrentThread;
             _id = Thread.CurrentThread.ManagedThreadId;
-            Start();
+            RunProcess();
         }
-        public abstract void Start();
+        public abstract void RunProcess();
     }
     public class ProcA : ProcessBase {
-        public override void Start() {
+        public override void RunProcess() {
             try {
-                _scheduler.AddProcess(this);
-
-                this.Sync(new StringAction("a", this, true));
-                this.Sync(new StringAction("b", this, false));
+                Scheduler.Instance.AddProcess(this);
+                List<IAction> tmp = new List<IAction>();
+                tmp.Add(new StringAction("a", this, true));
+                this.Sync(tmp);
+                //this.Sync(new StringAction("b", this, false));
                 //this.Sync(new StringAction("a", this));
 
             } catch (ThreadAbortException ex) {
                 Debug("Am being killed");
                 Debug(ex.Message);
-                _scheduler.KillProcess(this);
+                Scheduler.Instance.KillProcess(this);
                 return;
             }
             Debug("End of life for me, have turned into 0");
-            _scheduler.KillProcess(this);
-        }
-    }
-
-    public class ProcView : ProcessBase {
-        public override void Start() {
-            try {
-                _scheduler.AddProcess(this);
-
-                this.Sync(new StringAction("a", this,true));
-                this.Sync(new StringAction("b", this,false));
-                //this.Sync(new StringAction("a", this));
-
-            } catch (ThreadAbortException ex) {
-                Debug("Am being killed");
-                Debug(ex.Message);
-                _scheduler.KillProcess(this);
-                return;
-            }
-            Debug("End of life for me, have turned into 0");
-            _scheduler.KillProcess(this);
-        }
-    }
-
-    public class ProcB : ProcessBase {
-        public override void Start() {
-            try {
-                if (SetID == Guid.Empty) {
-                    SetID = Guid.NewGuid();
-                }
-                Debug("I'M ALIVE!!!");
-                _scheduler.AddProcess(this);
-
-                // a.b.(a.0+b.0+B)
-
-                //Step 1
-                //this.Sync(new StringAction("a", this));
-
-                //Step 2
-                //this.Sync(new StringAction("b", this));
-
-                //Create candidate proc
-                ProcB newb = new ProcB();
-                newb.SetID = this.SetID;
-                newb.Run();
-
-                //Non-deterministic Choice
-                //IAction[] choices = new IAction[] { new StringAction("a", this), new StringAction("b", this) };
-                int chosen =1;// = this.NonDeterministicChoiceSync(choices);
-                Debug("Chose " + chosen);
-                if (chosen == 0) {
-                    //...continue after "a"
-                } else if (chosen == 1) {
-                    ProcB morph = new ProcB();
-                    morph.SetID = this.SetID;
-                    Debug("Morphed into new ProcB");
-                    morph.Run();
-                    _scheduler.KillProcess(this);
-                    return;
-                }
-            } catch (ThreadAbortException ex) {
-                Debug("Am being killed");
-                _scheduler.KillProcess(this);
-                return;
-            }
-            _scheduler.KillProcess(this);
-            Debug("End of life for me, have turned into 0");
+            Scheduler.Instance.KillProcess(this);
         }
     }
 

@@ -11,12 +11,13 @@ namespace CCS {
     class Program {
 
         static int Main(string[] args) {
-            EINAR.NewProc s = new EINAR.NewProc();
-            s.Start();
-            Parser parser = new Parser(new Scanner(new FileStream(args[0], FileMode.Open)));
-            parser.Parse();
-            parser.System.Compile("test.dll", "CCS");
-            return 0;
+            Compiler compiler = new Compiler();
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+            return compiler.Compile(args[0]);
+        }
+
+        static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+            return null;
         }
     }
 }

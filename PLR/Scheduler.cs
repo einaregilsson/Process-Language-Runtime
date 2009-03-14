@@ -9,19 +9,25 @@ namespace PLR {
 
     public class Scheduler {
 
+        private Scheduler() { }
+        private static Scheduler _instance = new Scheduler();
+        public static Scheduler Instance {
+            get { return _instance; }
+        }
         //Active processes and their possible actions
-        private Dictionary<ProcessBase, IAction[]> _activeProcs = new Dictionary<ProcessBase, IAction[]>();
+        private Dictionary<ProcessBase, List<IAction>> _activeProcs = new Dictionary<ProcessBase, List<IAction>>();
         private List<Match> _matches = new List<Match>();
 
-        public void SyncActions(ProcessBase proc, params IAction[] possibleActions) {
+        public void SyncActions(ProcessBase proc, List<IAction> possibleActions) {
             lock (this) {
                 _activeProcs[proc] = possibleActions;
+                Console.WriteLine("Synced actions for " + proc);
             }
         }
 
         public void AddProcess(ProcessBase p) {
             lock (this) {
-                _activeProcs.Add(p, new IAction[] { });
+                _activeProcs.Add(p, new List<IAction>());
             }
         }
 
@@ -37,6 +43,7 @@ namespace PLR {
         }
 
         public void Run() {
+            Console.WriteLine("Running Scheduler");
             while (true) {
                 Console.WriteLine("Procs: " + _activeProcs.Keys.Count);
                 bool allWaiting = true;
@@ -62,7 +69,7 @@ namespace PLR {
         }
         public void FindMatches() {
             List<IAction> allActions = new List<IAction>();
-            foreach (IAction[] actions in _activeProcs.Values) {
+            foreach (List<IAction> actions in _activeProcs.Values) {
                 allActions.AddRange(actions);
             }
             _matches.Clear();
@@ -87,8 +94,8 @@ namespace PLR {
             List<Guid> wakeUpGuids = new List<Guid>();
             foreach (ProcessBase p in _activeProcs.Keys) {
                 if (p.ID == m.a1.ProcessID || p.ID == m.a2.ProcessID) {
-                    IAction[] procActions = _activeProcs[p];
-                    for (int i = 0; i < procActions.Length; i++) {
+                    List<IAction> procActions = _activeProcs[p];
+                    for (int i = 0; i < procActions.Count; i++) {
                         if (procActions[i] == m.a1 || procActions[i] == m.a2) {
                             p.ChosenAction = i;
                             wakeUp.Add(p);
