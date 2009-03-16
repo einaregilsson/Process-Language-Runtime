@@ -114,6 +114,13 @@ namespace PLR.AST {
             return mc;
         }
 
+        protected MethodCall Call(Type type, string methodName, bool popReturn, params object[] args) {
+            MethodCall mc = new MethodCall(type, methodName, args);
+            mc.PopReturnValue = popReturn;
+            return mc;
+        }
+
+
         public NewObject New(Type type, params object[] args) {
             return new NewObject(type, args);
         }

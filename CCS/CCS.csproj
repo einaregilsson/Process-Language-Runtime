@@ -64,7 +64,11 @@
     <ProjectReference Include="..\PLR\PLR.csproj">
       <Project>{C2BC567A-4740-4224-9CBA-8C2B527EBF83}</Project>
       <Name>PLR</Name>
+      <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PLR.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

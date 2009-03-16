@@ -38,6 +38,10 @@ namespace PLR {
         protected void Debug(string msg, params object[] args) {
             Console.WriteLine(this.GetType().Name + "_" + this.ID + ": " + string.Format(msg, args));
         }
+        protected void Debug(string msg) {
+            Console.WriteLine(this.GetType().Name + "_" + this.ID + ": " + msg);
+        }
+
         public ThreadState state { get { return _procThread.ThreadState; } }
         protected int Sync(List<IAction> actions) {
 

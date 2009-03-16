@@ -6,6 +6,8 @@ using CCS.Parsing;
 using PLR.AST;
 using PLR.AST.Processes;
 using CCS.Formatters;
+using System.Reflection;
+using System.Security.Cryptography;
 
 namespace CCS {
     class Program {
@@ -17,7 +19,12 @@ namespace CCS {
         }
 
         static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            return null;
+            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("CCS.PLR.dll");
+            byte[] buf = new byte[s.Length];
+            s.Read(buf, 0, buf.Length);
+            Console.WriteLine(Convert.ToBase64String(new MD5CryptoServiceProvider().ComputeHash(buf)));
+            Console.WriteLine("Loaded from self");
+            return Assembly.Load(buf);
         }
     }
 }

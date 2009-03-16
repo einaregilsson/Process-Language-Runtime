@@ -29,30 +29,49 @@ namespace PLR.AST
             AssemblyName name = new AssemblyName(exeName);
             AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save);
             ModuleBuilder module = assembly.DefineDynamicModule(exeName, "test.exe");
-            module.DefineManifestResource("PLR", new FileStream("PLR.dll.bak", FileMode.Open), ResourceAttributes.Public);
+
+            GenerateAssemblyLookup(module);
+
+            MethodBuilder mainMethod = module.DefineGlobalMethod("Main", MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] { });
+            ILGenerator ilMain = mainMethod.GetILGenerator();
+
             foreach (ProcessDefinition procdef in this) {
-                procdef.Compile(module, nameSpace);
+                procdef.Compile(module, "");
             }
-            TypeBuilder programType = module.DefineType("Program");
-            ConstructorBuilder staticCons = programType.DefineConstructor(MethodAttributes.Static, CallingConventions.Standard, new Type[] { });
-            MethodBuilder resolveAssemblyMethod = module.DefineGlobalMethod("ResolveAssembly", MethodAttributes.Public | MethodAttributes.Static, typeof(Assembly), new Type[] { typeof(object), typeof(System.ResolveEventArgs)});
+            foreach (ProcessDefinition procdef in this) {
+                if (procdef.EntryProc || true) {
+                    Type startProc = module.GetType(procdef.ProcessConstant.Name);
+                    Call(New(startProc), "Run",true).Compile(ilMain);
+                }
+            }
+            Call(Call(typeof(Scheduler), "get_Instance",false), "Run", true);
+
+            //return 0;
+            ilMain.Emit(OpCodes.Ldc_I4_0);
+            ilMain.Emit(OpCodes.Ret);
+            module.CreateGlobalFunctions();
+            assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication);
+            assembly.Save(exeName);
+        }
+
+
+        private void GenerateAssemblyLookup(ModuleBuilder module) {
+
+
+            File.Copy("plr.dll", "plr.dll.embed", true);
+            module.DefineManifestResource("PLR", new FileStream(@"plr.dll.embed", FileMode.Open), ResourceAttributes.Public);
+
+            MethodBuilder resolveAssemblyMethod = module.DefineGlobalMethod("ResolveAssembly", MethodAttributes.Public | MethodAttributes.Static, typeof(Assembly), new Type[] { typeof(object), typeof(System.ResolveEventArgs) });
             ILGenerator ilResolve = resolveAssemblyMethod.GetILGenerator();
 
-            MethodBuilder init = module.DefineGlobalMethod(".cctor", MethodAttributes.Private | MethodAttributes.RTSpecialName | MethodAttributes.Static, null, new Type[] { });
-            ILGenerator ilInit = init.GetILGenerator();
-            ilInit.EmitWriteLine("INITING");
-            ilInit.Emit(OpCodes.Ret);
-            LocalBuilder localBuf = ilResolve.DeclareLocal(typeof(byte[]));
             LocalBuilder localStream = ilResolve.DeclareLocal(typeof(Stream));
-            ilResolve.EmitWriteLine("RESOLVING");
-            ilResolve.Emit(OpCodes.Call, typeof(Assembly).GetMethod("GetExecutingAssembly"));
-            ilResolve.Emit(OpCodes.Ldstr, "PLR");
-            ilResolve.Emit(OpCodes.Callvirt, typeof(Assembly).GetMethod("GetManifestResourceStream", new Type[] {typeof(string)}));
-            ilResolve.Emit(OpCodes.Stloc, localStream);
-            ilResolve.Emit(OpCodes.Ldloc, localStream);
-            ilResolve.Emit(OpCodes.Callvirt, typeof(Stream).GetMethod("get_Length"));
+            LocalBuilder localBuf = ilResolve.DeclareLocal(typeof(byte[]));
+            ilResolve.EmitWriteLine("PLR Not found, loading embedded PLR");
+            Assign(localStream, Call(Call(typeof(Assembly), "GetExecutingAssembly", false), "GetManifestResourceStream", false, "PLR"),ilResolve);
+
+            Call(localStream, "get_Length", false).Compile(ilResolve);
             ilResolve.Emit(OpCodes.Conv_Ovf_I);
-            ilResolve.Emit(OpCodes.Newarr, typeof(byte[]));
+            ilResolve.Emit(OpCodes.Newarr, typeof(System.Byte));
             ilResolve.Emit(OpCodes.Stloc, localBuf);
 
             ilResolve.Emit(OpCodes.Ldloc, localStream);
@@ -61,46 +80,20 @@ namespace PLR.AST
             ilResolve.Emit(OpCodes.Ldloc, localBuf);
             ilResolve.Emit(OpCodes.Ldlen);
             ilResolve.Emit(OpCodes.Conv_I4);
-            ilResolve.Emit(OpCodes.Callvirt, typeof(Stream).GetMethod("Read", new Type[] {typeof(byte[]), typeof(int), typeof(int)}));
+            ilResolve.Emit(OpCodes.Callvirt, typeof(Stream).GetMethod("Read", new Type[] { typeof(byte[]), typeof(int), typeof(int) }));
             ilResolve.Emit(OpCodes.Pop);
-            ilResolve.Emit(OpCodes.Ldloc, localBuf);
-            ilResolve.Emit(OpCodes.Call, typeof(Assembly).GetMethod("Load", new Type[] {typeof(byte[])}));
+
+            Call(typeof(Assembly), "Load", false, localBuf).Compile(ilResolve);
             ilResolve.Emit(OpCodes.Ret);
-
-            module.CreateGlobalFunctions();
-
-            MethodBuilder mainMethod = programType.DefineMethod("Main", MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] { });
-            ILGenerator ilMain = mainMethod.GetILGenerator();
-
-            //Put in the hook to load the PLR
-            ILGenerator ilStartup = staticCons.GetILGenerator();
+            MethodBuilder moduleInitializer = module.DefineGlobalMethod(".cctor", MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.RTSpecialName, null, new Type[] { });
+            ILGenerator ilStartup = moduleInitializer.GetILGenerator();
             ilStartup.Emit(OpCodes.Call, typeof(System.AppDomain).GetMethod("get_CurrentDomain"));
             ilStartup.Emit(OpCodes.Ldnull);
             ilStartup.Emit(OpCodes.Ldftn, resolveAssemblyMethod);
             ilStartup.Emit(OpCodes.Newobj, MethodResolver.GetConstructor(typeof(System.ResolveEventHandler)));
             ilStartup.Emit(OpCodes.Callvirt, MethodResolver.GetMethod(typeof(System.AppDomain), "add_AssemblyResolve"));
-            ilStartup.EmitWriteLine("Added ref");
             ilStartup.Emit(OpCodes.Ret);
-
-            foreach (ProcessDefinition procdef in this) {
-                if (procdef.EntryProc || true) {
-                    Type startProc = module.GetType(procdef.ProcessConstant.Name);
-                    ilMain.Emit(OpCodes.Newobj, MethodResolver.GetConstructor(startProc));
-                    ilMain.Emit(OpCodes.Callvirt, MethodResolver.GetMethod(startProc, "Run"));
-                }
-            }
-            
-            ilMain.Emit(OpCodes.Call, typeof(Scheduler).GetMethod("get_Instance"));
-            ilMain.Emit(OpCodes.Callvirt, typeof(Scheduler).GetMethod("Run"));
-
-            //return 0;
-            ilMain.Emit(OpCodes.Ldc_I4_0);
-            ilMain.Emit(OpCodes.Ret);
-            programType.CreateType();
-            assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication);
-            assembly.Save(exeName);
         }
-
     }
 }
 
