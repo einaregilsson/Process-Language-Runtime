@@ -35,9 +35,13 @@ namespace PLR.AST
             }
             TypeBuilder programType = module.DefineType("Program");
             ConstructorBuilder staticCons = programType.DefineConstructor(MethodAttributes.Static, CallingConventions.Standard, new Type[] { });
-            MethodBuilder resolveAssemblyMethod = programType.DefineMethod("ResolveAssembly", MethodAttributes.Public | MethodAttributes.Static, typeof(Assembly), new Type[] { typeof(object), typeof(System.ResolveEventArgs)});
+            MethodBuilder resolveAssemblyMethod = module.DefineGlobalMethod("ResolveAssembly", MethodAttributes.Public | MethodAttributes.Static, typeof(Assembly), new Type[] { typeof(object), typeof(System.ResolveEventArgs)});
             ILGenerator ilResolve = resolveAssemblyMethod.GetILGenerator();
 
+            MethodBuilder init = module.DefineGlobalMethod(".cctor", MethodAttributes.Private | MethodAttributes.RTSpecialName | MethodAttributes.Static, null, new Type[] { });
+            ILGenerator ilInit = init.GetILGenerator();
+            ilInit.EmitWriteLine("INITING");
+            ilInit.Emit(OpCodes.Ret);
             LocalBuilder localBuf = ilResolve.DeclareLocal(typeof(byte[]));
             LocalBuilder localStream = ilResolve.DeclareLocal(typeof(Stream));
             ilResolve.EmitWriteLine("RESOLVING");
@@ -62,6 +66,8 @@ namespace PLR.AST
             ilResolve.Emit(OpCodes.Ldloc, localBuf);
             ilResolve.Emit(OpCodes.Call, typeof(Assembly).GetMethod("Load", new Type[] {typeof(byte[])}));
             ilResolve.Emit(OpCodes.Ret);
+
+            module.CreateGlobalFunctions();
 
             MethodBuilder mainMethod = programType.DefineMethod("Main", MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] { });
             ILGenerator ilMain = mainMethod.GetILGenerator();

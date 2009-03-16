@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace PLR.AST {
 
@@ -90,5 +92,24 @@ namespace PLR.AST {
         {
             return this.GetEnumerator();
         }
+
+        #region Compile helpers
+        protected readonly Type[] NO_PARAMS = new Type[] { };
+        
+        protected void EmitCall(ILGenerator il, LocalBuilder assignedVariable, LocalBuilder instance, MethodInfo method, params object[] args) {
+
+            if (instance != null) {
+                il.Emit(OpCodes.Ldloc, instance);
+            }
+
+            if (as
+            if (assignedVariable != null) {
+                il.Emit(OpCodes.Stloc, assignedVariable);
+            } 
+        }
+
+        #endregion
+
+
     }
 }
