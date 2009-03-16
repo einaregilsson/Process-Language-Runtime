@@ -96,7 +96,7 @@ private ProcessSystem system = new ProcessSystem();
 			Get();
 		} else if (la.kind == 10) {
 			Get();
-			sub = new Constant(int.Parse(t.val)); SetPos(sub, t); 
+			sub = new Number(int.Parse(t.val)); SetPos(sub, t); 
 		} else SynErr(26);
 	}
 
@@ -275,10 +275,10 @@ private ProcessSystem system = new ProcessSystem();
 			aexp.ParenCount += 1; 
 		} else if (la.kind == 5) {
 			Get();
-			aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t); 
+			aexp = new Number(int.Parse(t.val)); SetPos(aexp, t); 
 		} else if (la.kind == 10) {
 			Get();
-			aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t);
+			aexp = new Number(int.Parse(t.val)); SetPos(aexp, t);
 		} else if (la.kind == 3) {
 			Get();
 			aexp = new Variable(t.val); SetPos(aexp, t); 

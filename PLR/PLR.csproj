@@ -55,9 +55,17 @@
     <Compile Include="AST\Expressions\ArithmeticExpression.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Expressions\Constant.cs">
+    <Compile Include="AST\Expressions\Bool.cs" />
+    <Compile Include="AST\Expressions\MethodInvokeBase.cs" />
+    <Compile Include="AST\Expressions\NewObject.cs" />
+    <Compile Include="AST\Expressions\Number.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Expressions\Expression.cs" />
+    <Compile Include="AST\Expressions\MethodCall.cs" />
+    <Compile Include="AST\Expressions\PLRString.cs" />
+    <Compile Include="AST\Expressions\ThisPointer.cs" />
+    <Compile Include="AST\Expressions\TypedNull.cs" />
     <Compile Include="AST\Expressions\UnaryMinus.cs">
       <SubType>Code</SubType>
     </Compile>

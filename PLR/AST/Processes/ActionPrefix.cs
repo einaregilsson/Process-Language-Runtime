@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using PLR.AST.Actions;
+using PLR.AST.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -37,25 +38,14 @@ namespace PLR.AST.Processes {
             
             //Init and store new List in a local var
             LocalBuilder localList = il.DeclareLocal(listType);
-            ConstructorInfo con = listType.GetConstructor(new Type[] { });
-            il.Emit(OpCodes.Newobj, con);
-            il.Emit(OpCodes.Stloc, localList);
-            
-            ////Call the .Add method with new stringaction
-            il.Emit(OpCodes.Ldloc, localList);
-            il.Emit(OpCodes.Ldstr, _action.Name);
-            il.Emit(OpCodes.Ldarg_0); //Push the "this" onto the stack
-            il.Emit(_action is InAction ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
-            il.Emit(OpCodes.Newobj, MethodResolver.GetConstructor(typeof(StringAction)));
-            il.Emit(OpCodes.Callvirt, listType.GetMethod("Add", new Type[] { typeof(IAction) }));
+            Assign(localList, New(listType), il);
+
+            NewObject newAction = New(typeof(StringAction), _action.Name, new ThisPointer(procType), _action is InAction);
+            Call(localList, "Add", true, newAction).Compile(il);
 
             ////Call "Sync" with the list and get the return value back
-            //LocalBuilder localChosen = il.DeclareLocal(typeof(int));
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldnull);
-            il.Emit(OpCodes.Callvirt, MethodResolver.GetMethod(procType, "Sync"));
-            //il.Emit(OpCodes.Stloc, localChosen);
-            il.Emit(OpCodes.Pop);
+            LocalBuilder localChosen = il.DeclareLocal(typeof(int));
+            Assign(localChosen, Call(new ThisPointer(procType), "Sync", false, localList), il);
             il.EmitWriteLine("Did the sync");
         }
     }

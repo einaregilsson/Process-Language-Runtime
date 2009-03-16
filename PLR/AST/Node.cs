@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using PLR.AST.Expressions;
 
 namespace PLR.AST {
 
@@ -94,18 +96,26 @@ namespace PLR.AST {
         }
 
         #region Compile helpers
-        protected readonly Type[] NO_PARAMS = new Type[] { };
+
+        protected void Assign(LocalBuilder local, Expression exp, ILGenerator il) {
+            exp.Compile(il);
+            il.Emit(OpCodes.Stloc, local);
+        }
+
+        protected MethodCall Call(LocalBuilder instance, string methodName, bool popReturn, params object[] args) {
+            MethodCall mc = new MethodCall(instance, methodName, args);
+            mc.PopReturnValue = popReturn;
+            return mc;
+        }
         
-        protected void EmitCall(ILGenerator il, LocalBuilder assignedVariable, LocalBuilder instance, MethodInfo method, params object[] args) {
+        protected MethodCall Call(Expression instance, string methodName, bool popReturn, params object[] args) {
+            MethodCall mc = new MethodCall(instance, methodName, args);
+            mc.PopReturnValue = popReturn;
+            return mc;
+        }
 
-            if (instance != null) {
-                il.Emit(OpCodes.Ldloc, instance);
-            }
-
-            if (as
-            if (assignedVariable != null) {
-                il.Emit(OpCodes.Stloc, assignedVariable);
-            } 
+        public NewObject New(Type type, params object[] args) {
+            return new NewObject(type, args);
         }
 
         #endregion

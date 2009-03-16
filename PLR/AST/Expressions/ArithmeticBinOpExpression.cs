@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using System.Text;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace PLR.AST.Expressions {
 
@@ -53,6 +54,30 @@ namespace PLR.AST.Expressions {
         public override void Accept(AbstractVisitor visitor)
         {
             visitor.Visit(this);
+        }
+        public override void Compile(ILGenerator il) {
+            _left.Compile(il);
+            _right.Compile(il);
+            switch (this.Op) {
+                case ArithmeticBinOp.Divide:
+                    il.Emit(OpCodes.Div);
+                    break;
+                case ArithmeticBinOp.Minus:
+                    il.Emit(OpCodes.Sub_Ovf);
+                    break;
+                case ArithmeticBinOp.Multiply:
+                    il.Emit(OpCodes.Mul_Ovf);
+                    break;
+                case ArithmeticBinOp.Plus:
+                    il.Emit(OpCodes.Add_Ovf);
+                    break;
+                case ArithmeticBinOp.Modulo:
+                    il.Emit(OpCodes.Rem);
+                    break;
+                default:
+                    throw new Exception("Unknown arithmetic binary operation: " + this.Op);
+            }
+
         }
 
     }

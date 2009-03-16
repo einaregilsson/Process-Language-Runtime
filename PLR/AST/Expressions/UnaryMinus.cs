@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace PLR.AST.Expressions {
+
     public class UnaryMinus : ArithmeticExpression{
         protected ArithmeticExpression _exp;
         public ArithmeticExpression Expression { get { return _exp; } }
@@ -18,5 +21,9 @@ namespace PLR.AST.Expressions {
             visitor.Visit(this);
         }
 
+        public override void Compile(ILGenerator il) {
+            _exp.Compile(il);
+            il.Emit(OpCodes.Neg);
+        }
     }
 }

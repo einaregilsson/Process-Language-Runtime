@@ -188,8 +188,8 @@ namespace CCS.Formatters {
                 return Format((ArithmeticBinOpExpression)aexp);
             } else if (aexp is UnaryMinus) {
                 return Format((UnaryMinus)aexp);
-            } else if (aexp is Constant) {
-                return Format((Constant)aexp);
+            } else if (aexp is Number) {
+                return Format((Number)aexp);
             } else if (aexp is Variable) {
                 return Format((Variable)aexp);
             }
@@ -216,7 +216,7 @@ namespace CCS.Formatters {
             return SurroundWithParens("-" + Format(um.Expression), um.ParenCount);
         }
 
-        public virtual string Format(Constant c) {
+        public virtual string Format(Number c) {
             return SurroundWithParens(c.Value.ToString(), c.ParenCount);
         }
 

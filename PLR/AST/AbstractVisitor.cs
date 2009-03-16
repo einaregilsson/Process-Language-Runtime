@@ -30,7 +30,7 @@ namespace PLR.AST
         public abstract void Visit(OutAction act);
         public abstract void Visit(TauAction act);
         public abstract void Visit(ArithmeticBinOpExpression exp);
-        public abstract void Visit(Constant exp);
+        public abstract void Visit(Number exp);
         public abstract void Visit(UnaryMinus exp);
         public abstract void Visit(Variable var);
         public abstract void Visit(ActionPrefix proc);
@@ -42,5 +42,6 @@ namespace PLR.AST
         public abstract void Visit(Relabellings relabellings);
         public abstract void Visit(Restrictions res);
         public abstract void Visit(Subscript subscript);
+        public abstract void Visit(Node node);
     }
 }
