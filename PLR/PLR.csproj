@@ -105,11 +105,11 @@
     <Compile Include="AST\Subscript.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CompileOptions.cs" />
     <Compile Include="IAction.cs" />
     <Compile Include="MethodResolver.cs" />
     <Compile Include="PLRError.cs" />
     <Compile Include="ProcessBase.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheduler.cs" />
   </ItemGroup>

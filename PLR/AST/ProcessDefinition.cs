@@ -44,7 +44,7 @@ namespace PLR.AST {
         }
 
 
-        public void Compile(ModuleBuilder module, string nameSpace) {
+        public void Compile(ModuleBuilder module) {
             Type baseType = typeof(ProcessBase);
             TypeBuilder type = module.DefineType(this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit,  baseType);
             MethodBuilder methodStart = type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);

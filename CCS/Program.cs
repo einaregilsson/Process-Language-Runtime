@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using CCS.Parsing;
+using PLR;
 using PLR.AST;
 using PLR.AST.Processes;
 using CCS.Formatters;
@@ -13,18 +14,46 @@ namespace CCS {
     class Program {
 
         static int Main(string[] args) {
-            Compiler compiler = new Compiler();
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-            return compiler.Compile(args[0]);
+            if (args.Length == 0) {
+                Console.Error.WriteLine(@"
+CCS Compiler
+Copyright (C) 2009 Einar Egilsson
+
+Usage: CCS [options] <filename>
+");
+                return 1;
+            }
+            List<string> listArgs = new List<string>(args);
+            CompileOptions options = CompileOptions.Parse(listArgs);
+
+            DieIf(options.Arguments.Count == 0, "ERROR: Missing input file name");
+            DieIf(options.Arguments.Count > 1, "ERROR: Only one input file is expected");
+            string filename = listArgs[listArgs.Count - 1];
+            DieIf(!File.Exists(filename), "ERROR: File '{0}' does not exist!", filename);
+            if (options.OutputFile == null) {
+                options.OutputFile = filename;
+                if (options.OutputFile.ToLower().EndsWith(".ccs")) {
+                    options.OutputFile = options.OutputFile.Substring(0, options.OutputFile.Length - 4);
+                }
+            }
+
+            if (!options.OutputFile.ToLower().EndsWith(".exe")) {
+                options.OutputFile += ".exe";
+            }
+
+            Parser parser = new Parser(new Scanner(new FileStream(filename, FileMode.Open)));
+            parser.Parse();
+            ProcessSystem system = parser.System;
+            system.Compile(options);
+            return 0;
         }
 
-        static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("CCS.PLR.dll");
-            byte[] buf = new byte[s.Length];
-            s.Read(buf, 0, buf.Length);
-            Console.WriteLine(Convert.ToBase64String(new MD5CryptoServiceProvider().ComputeHash(buf)));
-            Console.WriteLine("Loaded from self");
-            return Assembly.Load(buf);
+        private static void DieIf(bool condition, string msg, params object[] args) {
+            if (condition) {
+                Console.Error.WriteLine(string.Format(msg, args));
+                System.Environment.Exit(1);
+            }
         }
+
     }
 }

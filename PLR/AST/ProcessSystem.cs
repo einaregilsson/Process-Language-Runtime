@@ -25,18 +25,20 @@ namespace PLR.AST
             visitor.Visit(this);
         }
 
-        public void Compile(string exeName, string nameSpace) {
-            AssemblyName name = new AssemblyName(exeName);
+        public void Compile(CompileOptions options) {
+            AssemblyName name = new AssemblyName(options.OutputFile);
             AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save);
-            ModuleBuilder module = assembly.DefineDynamicModule(exeName, "test.exe");
+            ModuleBuilder module = assembly.DefineDynamicModule(options.OutputFile, options.OutputFile);
 
-            GenerateAssemblyLookup(module);
+            if (options.EmbedPLR) {
+                GenerateAssemblyLookup(module);
+            }
 
             MethodBuilder mainMethod = module.DefineGlobalMethod("Main", MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] { });
             ILGenerator ilMain = mainMethod.GetILGenerator();
 
             foreach (ProcessDefinition procdef in this) {
-                procdef.Compile(module, "");
+                procdef.Compile(module);
             }
             foreach (ProcessDefinition procdef in this) {
                 if (procdef.EntryProc || true) {
@@ -51,12 +53,11 @@ namespace PLR.AST
             ilMain.Emit(OpCodes.Ret);
             module.CreateGlobalFunctions();
             assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication);
-            assembly.Save(exeName);
+            assembly.Save(options.OutputFile);
         }
 
 
         private void GenerateAssemblyLookup(ModuleBuilder module) {
-
 
             File.Copy("plr.dll", "plr.dll.embed", true);
             module.DefineManifestResource("PLR", new FileStream(@"plr.dll.embed", FileMode.Open), ResourceAttributes.Public);
