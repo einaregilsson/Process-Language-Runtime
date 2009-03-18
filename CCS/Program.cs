@@ -12,7 +12,6 @@ using System.Security.Cryptography;
 
 namespace CCS {
     class Program {
-
         static int Main(string[] args) {
             if (args.Length == 0) {
                 Console.Error.WriteLine(@"
@@ -28,9 +27,9 @@ Usage: CCS [options] <filename>
 
             DieIf(options.Arguments.Count == 0, "ERROR: Missing input file name");
             DieIf(options.Arguments.Count > 1, "ERROR: Only one input file is expected");
-            string filename = listArgs[listArgs.Count - 1];
+            string filename = options.Arguments[0];
             DieIf(!File.Exists(filename), "ERROR: File '{0}' does not exist!", filename);
-            if (options.OutputFile == null) {
+            if (string.IsNullOrEmpty(options.OutputFile)) {
                 options.OutputFile = filename;
                 if (options.OutputFile.ToLower().EndsWith(".ccs")) {
                     options.OutputFile = options.OutputFile.Substring(0, options.OutputFile.Length - 4);

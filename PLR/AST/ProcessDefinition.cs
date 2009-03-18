@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using PLR.AST.Processes;
+using PLR.AST.Expressions;
 using System;
 using System.Reflection.Emit;
 using System.Reflection;
@@ -50,29 +51,14 @@ namespace PLR.AST {
             MethodBuilder methodStart = type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
             type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
             ILGenerator il = methodStart.GetILGenerator();
+
+            Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(il);
             this.Process.Compile(il);
+
+            EmitDebug("End of life for me, see you later...", il);
+            CallScheduler("KillProcess", true, il, new ThisPointer(typeof(ProcessBase)));
             il.Emit(OpCodes.Ret);
             type.CreateType();
-            
-    //public class ProcA : ProcessBase {
-    //    public override void Start() {
-    //        try {
-    //            _scheduler.AddProcess(this);
-
-    //            this.Sync(new StringAction("a", this));
-    //            this.Sync(new StringAction("b", this));
-    //            this.Sync(new StringAction("a", this));
-
-    //        } catch (ThreadAbortException ex) {
-    //            Debug("Am being killed");
-    //            Debug(ex.Message);
-    //            _scheduler.KillProcess(this);
-    //            return;
-    //        }
-    //        Debug("End of life for me, have turned into 0");
-    //        _scheduler.KillProcess(this);
-    //    }
-    //}
 
         }
     }

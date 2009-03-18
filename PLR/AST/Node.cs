@@ -125,6 +125,17 @@ namespace PLR.AST {
             return new NewObject(type, args);
         }
 
+        protected void EmitDebug(string msg, ILGenerator il) {
+            ThisPointer thisP = new ThisPointer(typeof(ProcessBase));
+            Call(thisP, "Debug", true, msg).Compile(il);
+        }
+        protected void CallScheduler(string methodName, bool popReturn, ILGenerator il, params object[] args) {
+            Call(Call(typeof(Scheduler), "get_Instance", false), methodName, popReturn, args).Compile(il);
+        }
+            
+
+
+
         #endregion
 
 

@@ -10,7 +10,6 @@ namespace PLR {
 
         private int _id;
         public int ID { get { return _id; } }
-
         private Guid _setID = Guid.Empty;
         public Guid SetID{ 
             get { return _setID; }
@@ -23,6 +22,10 @@ namespace PLR {
             set { _chosenAction = value; }
         }
 
+        public ProcessBase() {
+            Scheduler.Instance.AddProcess(this);
+        }
+
         private Thread _procThread;
         public void Run() {
             Thread t = new Thread(new ThreadStart(this.StartProcess));
@@ -31,15 +34,25 @@ namespace PLR {
 
         public const int KILL_YOURSELF = -1;
 
-        public bool Waiting {
-            get { return _procThread != null && _procThread.ThreadState == ThreadState.Suspended; }
+        protected void InitSetID() {
+            if (this.SetID == Guid.Empty) {
+                this.SetID = Guid.NewGuid();
+            }
         }
 
-        protected void Debug(string msg, params object[] args) {
-            Console.WriteLine(this.GetType().Name + "_" + this.ID + ": " + string.Format(msg, args));
+        public ThreadState State {
+            get { return _procThread != null ? _procThread.ThreadState : ThreadState.Unstarted; }
         }
+
         protected void Debug(string msg) {
-            Console.WriteLine(this.GetType().Name + "_" + this.ID + ": " + msg);
+            lock (_colors) {
+                ConsoleColor original = Console.ForegroundColor;
+                if (_colors.ContainsKey(_id)) {
+                    Console.ForegroundColor = _colors[_id];
+                }
+                Console.WriteLine(this.GetType().Name + "_" + this.ID + ": " + msg);
+                Console.ForegroundColor = original;
+            }
         }
 
         public ThreadState state { get { return _procThread.ThreadState; } }
@@ -54,12 +67,13 @@ namespace PLR {
             }
             Debug("Woke up");
             if (this.ChosenAction == KILL_YOURSELF) {
+                Debug("Was told to kill myself");
                 _procThread.Abort();
             } else {
+                Debug("Executing chosen action");
                 actions[this.ChosenAction].Execute();
             }
             return this.ChosenAction;
-
         }
 
         protected int NonDeterministicChoiceSync(List<IAction> actions) {
@@ -73,16 +87,28 @@ namespace PLR {
         public void Continue() {
             _procThread.Resume();
         }
-
+        private static ConsoleColor[] _availableColors = new ConsoleColor[] { ConsoleColor.Blue, ConsoleColor.Cyan, ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.Red, ConsoleColor.Yellow };
+        private static Dictionary<int, ConsoleColor> _colors = new Dictionary<int, ConsoleColor>();
         private void StartProcess() {
             _procThread = Thread.CurrentThread;
             _id = Thread.CurrentThread.ManagedThreadId;
+            lock(_colors) {
+                foreach (ConsoleColor c in _availableColors) {
+                    if (!_colors.ContainsValue(c)) {
+                        _colors.Add(_id, c);
+                        break;
+                    }
+                }
+            }
             RunProcess();
         }
         public abstract void RunProcess();
     }
     public class ProcA : ProcessBase {
         public override void RunProcess() {
+            if (this.SetID == Guid.Empty) {
+                this.SetID = Guid.NewGuid();
+            }
             try {
                 Scheduler.Instance.AddProcess(this);
                 List<IAction> tmp = new List<IAction>();

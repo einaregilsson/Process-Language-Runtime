@@ -62,7 +62,7 @@ namespace PLR {
         }
         public string this[string key] {
             get {
-                if (_definedOpts.ContainsKey(Normalize(key))) {
+                if (!_definedOpts.ContainsKey(Normalize(key))) {
                     return null;
                 } else {
                     return _definedOpts[Normalize(key)];
@@ -70,10 +70,11 @@ namespace PLR {
                 
             }
             set {
+                key = Normalize(key);
                 if (this[key] != null) {
-                    _definedOpts[Normalize(key)] = value;
+                    _definedOpts[key] = value;
                 } else {
-                    _definedOpts.Add(Normalize(key), value);
+                    _definedOpts.Add(key, value);
                 }
             }
         }
@@ -107,7 +108,7 @@ namespace PLR {
 
                         Match m = Regex.Match(args[i].ToLower(), string.Format("^(-{0}=|/{0}:|--{1}=|/{1}:)(.+)$", opt.ShortForm, opt.LongForm), RegexOptions.IgnoreCase);
                         if (opt.TakesArgument && m.Success) {
-                            options._definedOpts.Add(opt.LongForm, m.Groups[2].Value);
+                            options._definedOpts[opt.LongForm] = m.Groups[2].Value;
                             processed = true;
                         }
 

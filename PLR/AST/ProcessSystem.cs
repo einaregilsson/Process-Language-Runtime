@@ -26,9 +26,12 @@ namespace PLR.AST
         }
 
         public void Compile(CompileOptions options) {
-            AssemblyName name = new AssemblyName(options.OutputFile);
-            AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save);
-            ModuleBuilder module = assembly.DefineDynamicModule(options.OutputFile, options.OutputFile);
+            string absolutePath = Path.Combine(Environment.CurrentDirectory, options.OutputFile);
+            string filename = Path.GetFileName(absolutePath);
+            string folder = Path.GetDirectoryName(absolutePath);
+            AssemblyName name = new AssemblyName(filename);
+            AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save, folder);
+            ModuleBuilder module = assembly.DefineDynamicModule(options.OutputFile, filename);
 
             if (options.EmbedPLR) {
                 GenerateAssemblyLookup(module);
@@ -40,25 +43,29 @@ namespace PLR.AST
             foreach (ProcessDefinition procdef in this) {
                 procdef.Compile(module);
             }
+            List<LocalBuilder> initial = new List<LocalBuilder>();
             foreach (ProcessDefinition procdef in this) {
                 if (procdef.EntryProc || true) {
                     Type startProc = module.GetType(procdef.ProcessConstant.Name);
-                    Call(New(startProc), "Run",true).Compile(ilMain);
+                    LocalBuilder loc = ilMain.DeclareLocal(startProc);
+                    Assign(loc, New(startProc), ilMain);
                 }
             }
-            Call(Call(typeof(Scheduler), "get_Instance",false), "Run", true);
+            //Run Scheduler, who now knows all the new Processes
+            ilMain.EmitWriteLine("Starting Scheduler");
+            CallScheduler("Run", true, ilMain);
 
             //return 0;
             ilMain.Emit(OpCodes.Ldc_I4_0);
             ilMain.Emit(OpCodes.Ret);
+
             module.CreateGlobalFunctions();
             assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication);
-            assembly.Save(options.OutputFile);
+            assembly.Save(filename);
         }
 
 
         private void GenerateAssemblyLookup(ModuleBuilder module) {
-
             File.Copy("plr.dll", "plr.dll.embed", true);
             module.DefineManifestResource("PLR", new FileStream(@"plr.dll.embed", FileMode.Open), ResourceAttributes.Public);
 

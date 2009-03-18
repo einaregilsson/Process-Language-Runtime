@@ -43,10 +43,12 @@ namespace PLR.AST.Processes {
             NewObject newAction = New(typeof(StringAction), _action.Name, thisP, _action is InAction);
             Call(localList, "Add", true, newAction).Compile(il);
 
-            Call(thisP, "Debug", true, "Did the sync, works!").Compile(il);
+            EmitDebug("Preparing to sync now...",il);
+
             ////Call "Sync" with the list and get the return value back
             LocalBuilder localChosen = il.DeclareLocal(typeof(int));
             Assign(localChosen, Call(thisP, "Sync", false, localList), il);
+            this.Process.Compile(il);
         }
     }
 }

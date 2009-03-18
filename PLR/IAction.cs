@@ -28,7 +28,7 @@ namespace PLR {
             return otherAction._name == this._name && otherAction._input != this._input;
         }
         public override string ToString() {
-            return _name;
+            return _input ? _name : "_" + _name + "_";
         }
 
         public int ProcessID {
