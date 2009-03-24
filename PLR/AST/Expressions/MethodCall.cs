@@ -27,6 +27,9 @@ namespace PLR.AST.Expressions {
 
         private void LookupMethod(Type objectType, string name) {
             _method = objectType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, GetArgTypes(), null);
+            if (_method == null) {
+                _method = objectType.BaseType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, GetArgTypes(), null);
+            }
         }
 
         public override Type Type {

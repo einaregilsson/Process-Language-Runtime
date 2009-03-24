@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace PLR.AST.Processes {
@@ -17,7 +18,10 @@ namespace PLR.AST.Processes {
             visitor.Visit(this);
         }
 
-        public override void Compile(ILGenerator il) {
+        public override void Compile(CompileInfo info) {
+            foreach (Process p in this) {
+                p.Compile(info);
+            }
         }
 
     }

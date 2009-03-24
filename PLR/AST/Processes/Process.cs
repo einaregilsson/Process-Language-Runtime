@@ -11,6 +11,6 @@ namespace PLR.AST.Processes {
         private Restrictions _restrictions = new Restrictions();
         public Restrictions Restrictions { get { return _restrictions; } }
 
-        public abstract void Compile(ILGenerator il);
+        public abstract void Compile(CompileInfo info);
     }
 }

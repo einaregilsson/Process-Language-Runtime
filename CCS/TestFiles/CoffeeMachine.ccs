@@ -1,5 +1,4 @@
+System = CM | CS | CA
 CM = coin . _coffee_ .CM
 CS = _coin_ . coffee . CS
-CF = coin . coffee . john . siggy . 0
-CA = coin . coffee . john . siggy . 0
-CE = _coffee_ . john . siggy . 0
+CA = _coin_ . _coin_ . coffee . CA

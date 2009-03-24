@@ -11,6 +11,8 @@ namespace PLR.AST {
         public abstract void Accept(AbstractVisitor visitor);
         //Source file information
 
+        protected static Dictionary<TypeBuilder, ConstructorBuilder> _processConstructors = new Dictionary<TypeBuilder, ConstructorBuilder>();
+        protected static Dictionary<TypeBuilder, MethodBuilder> _processRunMethods = new Dictionary<TypeBuilder, MethodBuilder>();
         protected object _extraData;
         public object ExtraData {
             get { return _extraData; }

@@ -45,21 +45,30 @@ namespace PLR.AST {
         }
 
 
+        public void CompileSignature(ModuleBuilder module) {
+            TypeBuilder type = module.DefineType(this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, typeof(ProcessBase));
+            ConstructorBuilder constructor = type.DefineDefaultConstructor(MethodAttributes.Public);
+            _processConstructors.Add(type, constructor);
+        }
+
         public void Compile(ModuleBuilder module) {
+            TypeBuilder type = (TypeBuilder)module.GetType(this.ProcessConstant.Name);
             Type baseType = typeof(ProcessBase);
-            TypeBuilder type = module.DefineType(this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit,  baseType);
+
             MethodBuilder methodStart = type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
             type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
             ILGenerator il = methodStart.GetILGenerator();
 
             Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(il);
-            this.Process.Compile(il);
+            CompileInfo info = new CompileInfo();
+            info.Module = module;
+            info.ILGenerator = il;
+            info.Type = type;
+            this.Process.Compile(info);
 
-            EmitDebug("End of life for me, see you later...", il);
-            CallScheduler("KillProcess", true, il, new ThisPointer(typeof(ProcessBase)));
+            Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(il);
             il.Emit(OpCodes.Ret);
             type.CreateType();
-
         }
     }
 }

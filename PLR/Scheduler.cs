@@ -16,27 +16,19 @@ namespace PLR {
             get { return _instance; }
         }
         //Active processes and their possible actions
-        private Dictionary<ProcessBase, List<IAction>> _activeProcs = new Dictionary<ProcessBase, List<IAction>>();
-        private List<Match> _matches = new List<Match>();
-
-        public void SyncActions(ProcessBase proc, List<IAction> possibleActions) {
-            lock (_activeProcs) {
-                _activeProcs[proc] = possibleActions;
-                Console.WriteLine("Synced actions for " + proc);
-            }
-        }
+        private List<ProcessBase> _activeProcs = new List<ProcessBase>();
 
         public void AddProcess(ProcessBase p) {
-            Console.WriteLine("Added " + p);
+            Debug("Added " + p);
             lock (_activeProcs) {
-                _activeProcs.Add(p, new List<IAction>());
+                _activeProcs.Add(p);
             }
         }
 
         public void KillProcess(ProcessBase p) {
             lock (_activeProcs) {
                 _activeProcs.Remove(p);
-                Console.WriteLine("Killed " + p);
+                Debug("Killed " + p);
             }
         }
 
@@ -46,19 +38,19 @@ namespace PLR {
         }
 
         public void Run() {
-            Console.WriteLine("Running Scheduler");
+            Debug("Running Scheduler");
             lock (_activeProcs) {
-                foreach (ProcessBase p in _activeProcs.Keys) {
+                foreach (ProcessBase p in _activeProcs) {
                     p.Run();
                 }
             }
             while (true) {
-                Console.WriteLine("Procs: " + _activeProcs.Keys.Count);
+                Debug("Procs: " + _activeProcs.Count);
                 bool allWaiting = true;
                 lock (_activeProcs) {
-                    foreach (ProcessBase p in _activeProcs.Keys) {
+                    foreach (ProcessBase p in _activeProcs) {
                         allWaiting &= p.State == ThreadState.Suspended;
-                        Console.WriteLine(p + " is in state: " + p.State);
+                        Debug(p + " is in state: " + p.State);
                     }
                 }
                 
@@ -70,74 +62,91 @@ namespace PLR {
         }
 
         private Guid ProcessIdToSetId(int processID) {
-            foreach (ProcessBase p in _activeProcs.Keys) {
+            foreach (ProcessBase p in _activeProcs) {
                 if (p.ID == processID) {
                     return p.SetID;
                 }
             }
             return Guid.Empty;
         }
-        public void FindMatches() {
-            List<IAction> allActions = new List<IAction>();
-            foreach (List<IAction> actions in _activeProcs.Values) {
-                allActions.AddRange(actions);
-            }
-            Console.Write("ALL ACTIONS: ");
-            foreach (IAction a in allActions) Console.Write(a + ", ");
-            Console.WriteLine();
-            _matches.Clear();
-            Console.WriteLine("Finding matches");
-            for (int i = 0; i < allActions.Count; i++) {
-                for (int j = i + 1; j < allActions.Count; j++) {
-                    int p1id = allActions[i].ProcessID, p2id = allActions[j].ProcessID;
+
+        private void Debug(object msg) {
+            Logger.Debug("SCHED: " + msg);
+        }
+
+        private List<Match> FindMatches(List<IAction> actions) {
+            List<Match> candidates = new List<Match>();
+            for (int i = 0; i < actions.Count; i++) {
+                for (int j = i + 1; j < actions.Count; j++) {
+                    int p1id = actions[i].ProcessID, p2id = actions[j].ProcessID;
                     Guid p1setID = ProcessIdToSetId(p1id), p2setID = ProcessIdToSetId(p2id);
-                    if (allActions[i].CanSyncWith(allActions[j]) 
+                    if (actions[i].CanSyncWith(actions[j])
                         && (p1setID != p2setID || p1setID == Guid.Empty)) {
-                        _matches.Add(new Match(allActions[i], allActions[j]));
+                        candidates.Add(new Match(actions[i], actions[j]));
                     }
                 }
             }
-            if (_matches.Count == 0) {
-                Console.WriteLine("System is deadlocked");
+            return candidates;
+        }
+
+        public void FindMatches() {
+            List<ProcessBase> finished = new List<ProcessBase>();
+            List<Match> matches = new List<Match>();
+
+            foreach (ProcessBase proc in _activeProcs) {
+                ProcessBase parent = proc;
+                while (parent != null) {
+                    if (!finished.Contains(parent)) {
+                        Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions");
+                        matches.AddRange(FindMatches(parent.LocalActions));
+                        finished.Add(parent);
+                        parent = parent.Parent;
+                    }
+                }
+            }
+
+            FindMatches(GlobalScope.Actions);
+
+            if (matches.Count == 0) {
+                Debug("System is deadlocked");
                 Console.ReadKey();
                 Environment.Exit(1);
             }
 
-            Match m = _matches[new Random().Next(_matches.Count)];
+            Match m = matches[new Random().Next(matches.Count)];
             _trace.Add(m.a1);
             List<ProcessBase> wakeUp = new List<ProcessBase>();
             List<Guid> wakeUpGuids = new List<Guid>();
-            foreach (ProcessBase p in _activeProcs.Keys) {
-                if (p.ID == m.a1.ProcessID || p.ID == m.a2.ProcessID) {
-                    List<IAction> procActions = _activeProcs[p];
-                    for (int i = 0; i < procActions.Count; i++) {
-                        if (procActions[i] == m.a1 || procActions[i] == m.a2) {
-                            p.ChosenAction = i;
-                            wakeUp.Add(p);
-                            wakeUpGuids.Add(p.SetID);
-                        }
-                    }
+            foreach (ProcessBase p in _activeProcs) {
+                if (m.a1.ProcessID == p.ID)
+                {
+                    p.ChosenAction = m.a1;
+                    wakeUp.Add(p);
+                    wakeUpGuids.Add(p.SetID);
+                } else if (m.a2.ProcessID == p.ID) {
+                    p.ChosenAction = m.a2;
+                    wakeUp.Add(p);
+                    wakeUpGuids.Add(p.SetID);
                 }
             }
 
 
-            Console.WriteLine("Chose match " + m.a1.ToString() + ", procs " + m.a1.ProcessID + " and " + m.a2.ProcessID);
+            Debug("Chose match " + m.a1.ToString().Replace("_","") + ", procs " + wakeUp[0] + " and " + wakeUp[1]);
             string[] tmp = new String[_trace.Count];
             for (int i = 0; i < _trace.Count ; i++) {
                 tmp[i] = _trace[i].ToString();
             }
-            Console.WriteLine("TRACE: " + String.Join(", ", tmp));
-            foreach (ProcessBase p in _activeProcs.Keys) {
+            Debug("TRACE: " + String.Join(", ", tmp));
+            foreach (ProcessBase p in _activeProcs) {
                 if (!wakeUp.Contains(p) && wakeUpGuids.Contains(p.SetID)) {
-                    p.ChosenAction = ProcessBase.KILL_YOURSELF;
+                    p.ChosenAction = null;
                     wakeUp.Add(p);
                 }
             }
 
             //Finally, wake everyone up that needs to do something
             foreach (ProcessBase p in wakeUp) {
-                Console.WriteLine("Waking up " + p);
-                Console.WriteLine(p.SetID);
+                Debug("Waking up " + p);
                 p.Continue();
             }
         }

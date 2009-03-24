@@ -41,11 +41,15 @@ namespace PLR.AST
             ILGenerator ilMain = mainMethod.GetILGenerator();
 
             foreach (ProcessDefinition procdef in this) {
+                procdef.CompileSignature(module);
+            }
+
+            foreach (ProcessDefinition procdef in this) {
                 procdef.Compile(module);
             }
             List<LocalBuilder> initial = new List<LocalBuilder>();
             foreach (ProcessDefinition procdef in this) {
-                if (procdef.EntryProc || true) {
+                if (procdef.EntryProc) {
                     Type startProc = module.GetType(procdef.ProcessConstant.Name);
                     LocalBuilder loc = ilMain.DeclareLocal(startProc);
                     Assign(loc, New(startProc), ilMain);

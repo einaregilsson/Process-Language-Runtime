@@ -6,7 +6,10 @@ namespace PLR.AST.Processes {
         {
             visitor.Visit(this);
         }
-        public override void Compile(ILGenerator il) { }
+
+        public override void Compile(CompileInfo info) {
+            EmitDebug("Turned into 0",info.ILGenerator);
+        }
 
     }
 }

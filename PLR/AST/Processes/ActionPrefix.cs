@@ -32,23 +32,25 @@ namespace PLR.AST.Processes {
         {
             visitor.Visit(this);
         }
-        public override void Compile(ILGenerator il) {
+        public override void Compile(CompileInfo info) {
             Type listType = typeof(List<IAction>);
             Type procType = typeof(ProcessBase);
+            ILGenerator il = info.ILGenerator;
             ThisPointer thisP = new ThisPointer(procType);
             //Init and store new List in a local var
             LocalBuilder localList = il.DeclareLocal(listType);
             Assign(localList, New(listType), il);
 
-            NewObject newAction = New(typeof(StringAction), _action.Name, thisP, _action is InAction);
+            NewObject newAction = New(typeof(ChannelSync), _action.Name, thisP, _action is InAction);
             Call(localList, "Add", true, newAction).Compile(il);
 
             EmitDebug("Preparing to sync now...",il);
 
             ////Call "Sync" with the list and get the return value back
-            LocalBuilder localChosen = il.DeclareLocal(typeof(int));
-            Assign(localChosen, Call(thisP, "Sync", false, localList), il);
-            this.Process.Compile(il);
+            //LocalBuilder localChosen = il.DeclareLocal(typeof(int));
+            //Assign(localChosen, Call(thisP, "Sync", false, localList), il);
+            Call(thisP, "Sync", true, localList).Compile(il);
+            this.Process.Compile(info);
         }
     }
 }
