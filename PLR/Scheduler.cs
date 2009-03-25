@@ -97,15 +97,17 @@ namespace PLR {
                 ProcessBase parent = proc;
                 while (parent != null) {
                     if (!finished.Contains(parent)) {
-                        Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions");
+                        Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions: " + Util.Join(", ", parent.LocalActions));
                         matches.AddRange(FindMatches(parent.LocalActions));
                         finished.Add(parent);
-                        parent = parent.Parent;
                     }
+                    parent = parent.Parent;
+
                 }
             }
 
-            FindMatches(GlobalScope.Actions);
+            Debug("Global scope contains " + GlobalScope.Actions.Count + " candidate actions: " + Util.Join(", ", GlobalScope.Actions));
+            matches.AddRange(FindMatches(GlobalScope.Actions));
 
             if (matches.Count == 0) {
                 Debug("System is deadlocked");
@@ -114,6 +116,7 @@ namespace PLR {
             }
 
             Match m = matches[new Random().Next(matches.Count)];
+            Debug("Chose match");
             _trace.Add(m.a1);
             List<ProcessBase> wakeUp = new List<ProcessBase>();
             List<Guid> wakeUpGuids = new List<Guid>();
@@ -134,7 +137,7 @@ namespace PLR {
             Debug("Chose match " + m.a1.ToString().Replace("_","") + ", procs " + wakeUp[0] + " and " + wakeUp[1]);
             string[] tmp = new String[_trace.Count];
             for (int i = 0; i < _trace.Count ; i++) {
-                tmp[i] = _trace[i].ToString();
+                tmp[i] = _trace[i].ToString().Replace("_","");
             }
             Debug("TRACE: " + String.Join(", ", tmp));
             foreach (ProcessBase p in _activeProcs) {

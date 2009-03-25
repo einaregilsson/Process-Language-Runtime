@@ -40,8 +40,7 @@ namespace PLR.AST.Processes
         public override void Compile(CompileInfo info) {
             //Invoke a new instance of that process
 
-            TypeBuilder type = (TypeBuilder)info.Module.GetType(this.Name);
-            ConstructorBuilder constructor = _processConstructors[type];
+            ConstructorBuilder constructor = _processConstructors[this.Name];
             ILGenerator il = info.ILGenerator;
             LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
             il.Emit(OpCodes.Newobj, constructor);
@@ -59,7 +58,7 @@ namespace PLR.AST.Processes
 
             //Run the new proc
             il.Emit(OpCodes.Ldloc, loc);
-            Call(typeof(ProcessBase), "Run", true).Compile(il);
+            Call(typeof(ProcessBase), "Run", true).Compile(info);
         }
     }
 }

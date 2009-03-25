@@ -5,24 +5,22 @@ using System.Reflection.Emit;
 using System.IO;
 using System;
 
-namespace PLR.AST
-{
+namespace PLR.AST {
 
-    public class ProcessSystem : Node
-    {
+    public class ProcessSystem : Node {
 
-        public new ProcessDefinition this[int index]
-        {
+        public new ProcessDefinition this[int index] {
             get { return (ProcessDefinition)_children[index]; }
         }
 
-        public void Add(ProcessDefinition pd)
-        {
+        public void Add(ProcessDefinition pd) {
             _children.Add(pd);
         }
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+        }
+
+        public override void Compile(CompileInfo info) {
         }
 
         public void Compile(CompileOptions options) {
@@ -32,36 +30,38 @@ namespace PLR.AST
             AssemblyName name = new AssemblyName(filename);
             AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save, folder);
             ModuleBuilder module = assembly.DefineDynamicModule(options.OutputFile, filename);
-
             if (options.EmbedPLR) {
                 GenerateAssemblyLookup(module);
             }
 
+            CompileInfo mainInfo = new CompileInfo();
+            mainInfo.Module = module;
             MethodBuilder mainMethod = module.DefineGlobalMethod("Main", MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] { });
-            ILGenerator ilMain = mainMethod.GetILGenerator();
+            mainInfo.ILGenerator = mainMethod.GetILGenerator();
 
             foreach (ProcessDefinition procdef in this) {
                 procdef.CompileSignature(module);
             }
-
+            CompileInfo info = new CompileInfo();
+            info.Module = module;
             foreach (ProcessDefinition procdef in this) {
-                procdef.Compile(module);
+                procdef.Compile(info);
             }
             List<LocalBuilder> initial = new List<LocalBuilder>();
             foreach (ProcessDefinition procdef in this) {
                 if (procdef.EntryProc) {
                     Type startProc = module.GetType(procdef.ProcessConstant.Name);
-                    LocalBuilder loc = ilMain.DeclareLocal(startProc);
-                    Assign(loc, New(startProc), ilMain);
+                    LocalBuilder loc = mainInfo.ILGenerator.DeclareLocal(startProc);
+                    Assign(loc, New(startProc), mainInfo);
                 }
             }
             //Run Scheduler, who now knows all the new Processes
-            ilMain.EmitWriteLine("Starting Scheduler");
-            CallScheduler("Run", true, ilMain);
+            mainInfo.ILGenerator.EmitWriteLine("Starting Scheduler");
+            CallScheduler("Run", true, mainInfo);
 
             //return 0;
-            ilMain.Emit(OpCodes.Ldc_I4_0);
-            ilMain.Emit(OpCodes.Ret);
+            mainInfo.ILGenerator.Emit(OpCodes.Ldc_I4_0);
+            mainInfo.ILGenerator.Emit(OpCodes.Ret);
 
             module.CreateGlobalFunctions();
             assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication);
@@ -75,13 +75,14 @@ namespace PLR.AST
 
             MethodBuilder resolveAssemblyMethod = module.DefineGlobalMethod("ResolveAssembly", MethodAttributes.Public | MethodAttributes.Static, typeof(Assembly), new Type[] { typeof(object), typeof(System.ResolveEventArgs) });
             ILGenerator ilResolve = resolveAssemblyMethod.GetILGenerator();
-
+            CompileInfo resolveInfo = new CompileInfo();
+            resolveInfo.ILGenerator = ilResolve;
             LocalBuilder localStream = ilResolve.DeclareLocal(typeof(Stream));
             LocalBuilder localBuf = ilResolve.DeclareLocal(typeof(byte[]));
             ilResolve.EmitWriteLine("PLR Not found, loading embedded PLR");
-            Assign(localStream, Call(Call(typeof(Assembly), "GetExecutingAssembly", false), "GetManifestResourceStream", false, "PLR"),ilResolve);
+            Assign(localStream, Call(Call(typeof(Assembly), "GetExecutingAssembly", false), "GetManifestResourceStream", false, "PLR"), resolveInfo);
 
-            Call(localStream, "get_Length", false).Compile(ilResolve);
+            Call(localStream, "get_Length", false).Compile(resolveInfo);
             ilResolve.Emit(OpCodes.Conv_Ovf_I);
             ilResolve.Emit(OpCodes.Newarr, typeof(System.Byte));
             ilResolve.Emit(OpCodes.Stloc, localBuf);
@@ -95,7 +96,7 @@ namespace PLR.AST
             ilResolve.Emit(OpCodes.Callvirt, typeof(Stream).GetMethod("Read", new Type[] { typeof(byte[]), typeof(int), typeof(int) }));
             ilResolve.Emit(OpCodes.Pop);
 
-            Call(typeof(Assembly), "Load", false, localBuf).Compile(ilResolve);
+            Call(typeof(Assembly), "Load", false, localBuf).Compile(resolveInfo);
             ilResolve.Emit(OpCodes.Ret);
             MethodBuilder moduleInitializer = module.DefineGlobalMethod(".cctor", MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.RTSpecialName, null, new Type[] { });
             ILGenerator ilStartup = moduleInitializer.GetILGenerator();

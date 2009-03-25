@@ -25,6 +25,10 @@ namespace PLR {
             return _input ? _name : "_" + _name + "_";
         }
 
+        public string Name {
+            get { return _name; }
+            set { _name = value; }
+        }
         public int ProcessID {
             get { return _proc.ID; }
         }

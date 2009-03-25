@@ -1,4 +1,3 @@
-System = CM | CS | CA
-CM = coin . _coffee_ .CM
-CS = _coin_ . coffee . CS
-CA = _coin_ . _coin_ . coffee . CA
+System = ( CM | CS) [coke/coffee] \{coin, coffee}
+CM = coin . _coffee_ . (CS  | CS)
+CS = (_coin_ . water . CM)[coffee/water]

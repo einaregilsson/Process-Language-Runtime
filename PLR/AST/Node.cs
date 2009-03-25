@@ -11,8 +11,7 @@ namespace PLR.AST {
         public abstract void Accept(AbstractVisitor visitor);
         //Source file information
 
-        protected static Dictionary<TypeBuilder, ConstructorBuilder> _processConstructors = new Dictionary<TypeBuilder, ConstructorBuilder>();
-        protected static Dictionary<TypeBuilder, MethodBuilder> _processRunMethods = new Dictionary<TypeBuilder, MethodBuilder>();
+        protected static Dictionary<string, ConstructorBuilder> _processConstructors = new Dictionary<string, ConstructorBuilder>();
         protected object _extraData;
         public object ExtraData {
             get { return _extraData; }
@@ -99,9 +98,11 @@ namespace PLR.AST {
 
         #region Compile helpers
 
-        protected void Assign(LocalBuilder local, Expression exp, ILGenerator il) {
-            exp.Compile(il);
-            il.Emit(OpCodes.Stloc, local);
+        public abstract void Compile(CompileInfo info);
+
+        protected void Assign(LocalBuilder local, Expression exp, CompileInfo info) {
+            exp.Compile(info);
+            info.ILGenerator.Emit(OpCodes.Stloc, local);
         }
 
         protected MethodCall Call(LocalBuilder instance, string methodName, bool popReturn, params object[] args) {
@@ -127,16 +128,14 @@ namespace PLR.AST {
             return new NewObject(type, args);
         }
 
-        protected void EmitDebug(string msg, ILGenerator il) {
+        protected void EmitDebug(string msg, CompileInfo info) {
             ThisPointer thisP = new ThisPointer(typeof(ProcessBase));
-            Call(thisP, "Debug", true, msg).Compile(il);
+            Call(thisP, "Debug", true, msg).Compile(info);
         }
-        protected void CallScheduler(string methodName, bool popReturn, ILGenerator il, params object[] args) {
-            Call(Call(typeof(Scheduler), "get_Instance", false), methodName, popReturn, args).Compile(il);
+        protected void CallScheduler(string methodName, bool popReturn, CompileInfo info, params object[] args) {
+            Call(Call(typeof(Scheduler), "get_Instance", false), methodName, popReturn, args).Compile(info);
         }
             
-
-
 
         #endregion
 

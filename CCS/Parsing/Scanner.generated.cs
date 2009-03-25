@@ -10,8 +10,8 @@ namespace CCS.Parsing {
 //-----------------------------------------------------------------------------------
 public partial class Scanner {
 
-	const int maxT = 24;
-	const int noSym = 24;
+	const int maxT = 23;
+	const int noSym = 23;
 
 
 	static Scanner() {
@@ -68,7 +68,7 @@ public partial class Scanner {
 
 
 	bool Comment0() {
-		int level = 1, line0 = line;
+		int level = 1, pos0 = pos, line0 = line, col0 = col;
 		NextCh();
 			for(;;) {
 				if (ch == 10) {
@@ -84,7 +84,6 @@ public partial class Scanner {
 	void CheckLiteral() {
 		switch (t.val) {
 			case "0": t.kind = 10; break;
-			case "t": t.kind = 16; break;
 			default: break;
 		}
 	}
@@ -108,7 +107,7 @@ public partial class Scanner {
 				{t.kind = 2; break;}
 			case 2:
 				if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 2;}
-				else {t.kind = 3; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
+				else {t.kind = 3; break;}
 			case 3:
 				if (ch >= 'a' && ch <= 'z') {AddCh(); goto case 4;}
 				else {t.kind = noSym; break;}
@@ -149,19 +148,19 @@ public partial class Scanner {
 			case 17:
 				{t.kind = 15; break;}
 			case 18:
-				{t.kind = 17; break;}
+				{t.kind = 16; break;}
 			case 19:
-				{t.kind = 18; break;}
+				{t.kind = 17; break;}
 			case 20:
-				{t.kind = 19; break;}
+				{t.kind = 18; break;}
 			case 21:
-				{t.kind = 20; break;}
+				{t.kind = 19; break;}
 			case 22:
-				{t.kind = 21; break;}
+				{t.kind = 20; break;}
 			case 23:
-				{t.kind = 22; break;}
+				{t.kind = 21; break;}
 			case 24:
-				{t.kind = 23; break;}
+				{t.kind = 22; break;}
 
 		}
 		t.val = new String(tval, 0, tlen);

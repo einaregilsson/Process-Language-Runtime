@@ -21,9 +21,9 @@ namespace PLR.AST.Expressions {
             visitor.Visit(this);
         }
 
-        public override void Compile(ILGenerator il) {
-            _exp.Compile(il);
-            il.Emit(OpCodes.Neg);
+        public override void Compile(CompileInfo info) {
+            _exp.Compile(info);
+            info.ILGenerator.Emit(OpCodes.Neg);
         }
     }
 }

@@ -2,9 +2,10 @@ using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
 using PLR.AST.Actions;
+using PLR.AST.ActionHandling;
 using Action = PLR.AST.Actions.Action;
 
-COMPILER CCS 
+COMPILER CCS  
     
     private ProcessSystem system = new ProcessSystem();
     public ProcessSystem System {get { return this.system;}}
@@ -73,7 +74,7 @@ Subscript<out ArithmeticExpression sub>                 (. sub = null; .)
 =
     LCASEIDENT                                          (. sub = new Variable(t.val); SetPos(sub, t); .)
     |
-    NUMBER|'0'                                          (. sub = new Constant(int.Parse(t.val)); SetPos(sub, t); .)
+    NUMBER|'0'                                          (. sub = new Number(int.Parse(t.val)); SetPos(sub, t); .)
 .
 
 Process<out Process proc>                               
@@ -110,8 +111,12 @@ ActionPrefix<out Process proc>                          (. ActionPrefix ap = nul
         ProcessConstantInvoke<out pc>                   (. nextProc = pc; .)
     )                                                   (. if (first == null) proc = nextProc; else {ap.Process = nextProc; proc = first;}; .)
 
-    [Relabelling<nextProc.Relabelling>]
-    [Restriction<nextProc.Restrictions>]
+    [													(. RelabelActions ra = new RelabelActions(); .)
+    Relabelling<ra>										(. nextProc.PreProcessActions = ra; .)
+    ]
+    [													(. ChannelRestrictions cr = new ChannelRestrictions(); .)
+    Restriction<cr>										(. nextProc.ActionRestrictions = cr; .)
+    ]
 .
 
 ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; .)
@@ -131,14 +136,12 @@ ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; .)
 
 Action<out Action act>                                  (. act = null; .)
 =
-    't'                                                 (. act = new TauAction(); SetPos(act, t); .)
-    |
     LCASEIDENT                                          (. act = new InAction(t.val); SetPos(act, t);.)
     |
-    OUTACTION                                           (. if (t.val == "_t_") SemErr("Tau actions cannot be output actions!"); act = new OutAction(t.val); SetPos(act, t);.) 
+    OUTACTION                                           (. act = new OutAction(t.val); SetPos(act, t);.) 
 .
 
-Relabelling<Relabellings labels>                        (. string relabelTo, relabelFrom; .)
+Relabelling<RelabelActions labels>                        (. string relabelTo, relabelFrom; .)
 =
     '['                                                 (. SetPos(labels, t); .)
         LCASEIDENT                                      (. relabelTo = t.val; .)
@@ -153,7 +156,7 @@ Relabelling<Relabellings labels>                        (. string relabelTo, rel
     ']'
 .
 
-Restriction<Restrictions res>          
+Restriction<ChannelRestrictions res>          
 =
     '\\'
     (
@@ -208,9 +211,9 @@ UnaryMinusTerm<out ArithmeticExpression aexp>           (. bool isMinus = false;
     (
         '(' ArithmeticExpression<out aexp> ')'          (. aexp.ParenCount += 1; .)
         |
-        NUMBER                                          (. aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t); .)
+        NUMBER                                          (. aexp = new Number(int.Parse(t.val)); SetPos(aexp, t); .)
         |
-        '0'                                             (. aexp = new Constant(int.Parse(t.val)); SetPos(aexp, t);.)
+        '0'                                             (. aexp = new Number(int.Parse(t.val)); SetPos(aexp, t);.)
         |
         LCASEIDENT                                      (. aexp = new Variable(t.val); SetPos(aexp, t); .)
     )

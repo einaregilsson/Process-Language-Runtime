@@ -7,7 +7,7 @@ using PLR.AST.Expressions;
 using PLR.AST.Processes;
 using PLR.AST.Actions;
 using Action = PLR.AST.Actions.Action;
-
+using PLR.AST.ActionHandling;
 namespace CCS.Formatters {
 
     public class SourceFormatter {
@@ -53,7 +53,7 @@ namespace CCS.Formatters {
         }
 
         public virtual string Format(ProcessConstant pc) {
-                return SurroundWithParens(pc.Name+Format(pc.Subscript), pc.ParenCount) + Format(pc.Relabelling) + Format(pc.Restrictions);
+                return SurroundWithParens(pc.Name+Format(pc.Subscript), pc.ParenCount) + Format(pc.PreProcessActions) + Format(pc.ActionRestrictions);
         }
 
         public virtual string Format(Subscript s) {
@@ -65,11 +65,11 @@ namespace CCS.Formatters {
         }
 
         public virtual string Format(NonDeterministicChoice ndc) {
-            return SurroundWithParens(Join("+", ndc), ndc.ParenCount) + Format(ndc.Relabelling) + Format(ndc.Restrictions);
+            return SurroundWithParens(Join("+", ndc), ndc.ParenCount) + Format(ndc.PreProcessActions) + Format(ndc.ActionRestrictions);
         }
 
         public virtual string Format(ParallelComposition pc) {
-            return SurroundWithParens(Join(" | ", pc), pc.ParenCount) + Format(pc.Relabelling) + Format(pc.Restrictions);
+            return SurroundWithParens(Join(" | ", pc), pc.ParenCount) + Format(pc.PreProcessActions) + Format(pc.ActionRestrictions);
         }
 
         public virtual string Format(ActionPrefix ap) {
@@ -86,10 +86,6 @@ namespace CCS.Formatters {
                 result = Format((InAction)act);
             } else if (act is OutAction) {
                 result = Format((OutAction)act);
-            }
-            else if (act is TauAction)
-            {
-                result = Format((TauAction)act);
             }
             else
             {
@@ -111,24 +107,19 @@ namespace CCS.Formatters {
             return "_" + act.Name + "_";
         }
 
-        public virtual string Format(TauAction act) {
-            return "t";
-        }
-        
-
-        public virtual string Format(Relabellings labels) {
+        public virtual string Format(PreProcessActions labels) {
             if (labels.Count == 0) {
                 return "";
             } else {
                 StringList temp = new StringList();
-                foreach (ActionID id in labels) {
-                    temp.Add(labels[id] + "/" + id);
+                foreach (object id in labels) {
+                    temp.Add(id.ToString());
                 }
                 return "[" + Join(", ", temp) + "]";
             }
         }
 
-        public virtual string Format(Restrictions res) {
+        public virtual string Format(ActionRestrictions res) {
             if (res.HasParens) {
                 return " \\{" + Join(", ", res) + '}';
             } else if (res.Count == 1 && !res.HasParens) {
@@ -147,10 +138,10 @@ namespace CCS.Formatters {
                 return Format((Process)node);
             } else if (node is ProcessDefinition) {
                 return Format((ProcessDefinition)node);
-            } else if (node is Relabellings) {
-                return Format((Relabellings)node);
-            } else if (node is Restrictions) {
-                return Format((Restrictions)node);
+            } else if (node is PreProcessActions) {
+                return Format((PreProcessActions)node);
+            } else if (node is ActionRestrictions) {
+                return Format((ActionRestrictions)node);
             } else if (node is ArithmeticExpression) {
                 return Format((ArithmeticExpression)node);
             } else if (node is Subscript) {

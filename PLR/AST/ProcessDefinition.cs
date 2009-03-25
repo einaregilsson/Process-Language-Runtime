@@ -48,27 +48,32 @@ namespace PLR.AST {
         public void CompileSignature(ModuleBuilder module) {
             TypeBuilder type = module.DefineType(this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, typeof(ProcessBase));
             ConstructorBuilder constructor = type.DefineDefaultConstructor(MethodAttributes.Public);
-            _processConstructors.Add(type, constructor);
+            _processConstructors.Add(this.ProcessConstant.Name, constructor);
         }
 
-        public void Compile(ModuleBuilder module) {
-            TypeBuilder type = (TypeBuilder)module.GetType(this.ProcessConstant.Name);
+        public override void Compile(CompileInfo info) {
+            info.Type = (TypeBuilder)info.Module.GetType(this.ProcessConstant.Name);
             Type baseType = typeof(ProcessBase);
 
-            MethodBuilder methodStart = type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
-            type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
-            ILGenerator il = methodStart.GetILGenerator();
+            MethodBuilder methodStart = info.Type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
+            info.Type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
+            info.ILGenerator = methodStart.GetILGenerator();
 
-            Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(il);
-            CompileInfo info = new CompileInfo();
-            info.Module = module;
-            info.ILGenerator = il;
-            info.Type = type;
+            Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(info);
+
+            
+            info.ILGenerator.BeginExceptionBlock();
             this.Process.Compile(info);
+            info.ILGenerator.BeginCatchBlock(typeof(ProcessKilledException));
+            info.ILGenerator.Emit(OpCodes.Pop); //Pop the exception off the stack
+            EmitDebug("Caught ProcessKilledException", info);
+            //Just catch here to abort, don't do anything
+            info.ILGenerator.EndExceptionBlock();
 
-            Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(il);
-            il.Emit(OpCodes.Ret);
-            type.CreateType();
+            //Ev
+            Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(info);
+            info.ILGenerator.Emit(OpCodes.Ret);
+            info.Type.CreateType();
         }
     }
 }

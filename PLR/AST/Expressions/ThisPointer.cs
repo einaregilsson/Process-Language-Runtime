@@ -15,8 +15,8 @@ namespace PLR.AST.Expressions {
             get { return _thisType; }
         }
 
-        public override void Compile(ILGenerator il) {
-            il.Emit(OpCodes.Ldarg_0);
+        public override void Compile(CompileInfo info) {
+            info.ILGenerator.Emit(OpCodes.Ldarg_0);
         }
     }
 }

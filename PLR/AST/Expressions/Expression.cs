@@ -10,6 +10,5 @@ namespace PLR.AST.Expressions {
             visitor.Visit(this);
         }
         public abstract Type Type { get; }
-        public abstract void Compile(ILGenerator il);
     }
 }

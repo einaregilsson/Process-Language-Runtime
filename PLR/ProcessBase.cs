@@ -57,11 +57,15 @@ namespace PLR {
             set { _parent = value; }
         }
 
-        protected virtual bool IsRestricted(IAction action) {
-            return false;
+        public virtual bool IsRestricted(IAction action) {
+            if (!(action is ChannelSync)) {
+                return false;
+            }
+            ChannelSync c = (ChannelSync)action;
+            return c.Name == "A" || c.Name == "B" || c.Name == "D";
         }
 
-        protected IAction PreProcess(IAction action) {
+        public virtual IAction PreProcess(IAction action) {
             return action;
         }
 
@@ -89,7 +93,8 @@ namespace PLR {
             this.Thread.Suspend();
             Debug("Woke up");
             if (this.ChosenAction == null) {
-                Die();
+                Debug("I wasn't chosen...");
+                throw new ProcessKilledException();
             } else {
                 Debug("Executing chosen action");
                 this.ChosenAction.Execute();
@@ -149,19 +154,19 @@ namespace PLR {
         }
 
         protected void CleanActions() {
-            ProcessBase parent = this;
-
             //Kill our candidate actions
-            while (parent != null) {
-                parent.LocalActions.RemoveAll(delegate(IAction act) {
+            for (ProcessBase parent = this; parent != null; parent = parent.Parent) {
+                lock (parent.LocalActions) {
+                    parent.LocalActions.RemoveAll(delegate(IAction act) {
+                        return act.ProcessID == this.ID;
+                    });
+                }
+            }
+            lock (GlobalScope.Actions) {
+                GlobalScope.Actions.RemoveAll(delegate(IAction act) {
                     return act.ProcessID == this.ID;
                 });
-                parent = parent.Parent;
             }
-            GlobalScope.Actions.RemoveAll(delegate(IAction act) {
-                return act.ProcessID == this.ID;
-            });
-
         }
 
         public abstract void RunProcess();

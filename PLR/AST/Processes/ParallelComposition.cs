@@ -19,6 +19,7 @@ namespace PLR.AST.Processes {
         }
 
         public override void Compile(CompileInfo info) {
+            base.Compile(info);
             foreach (Process p in this) {
                 p.Compile(info);
             }

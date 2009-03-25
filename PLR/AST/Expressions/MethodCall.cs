@@ -41,21 +41,21 @@ namespace PLR.AST.Expressions {
             set { _popReturnValue = value; }
         }
 
-        public override void Compile(ILGenerator il) {
+        public override void Compile(CompileInfo info) {
             if (_instance != null) {
-                _instance.Compile(il);
+                _instance.Compile(info);
             }
             
             foreach (Expression exp in Arguments) {
-                exp.Compile(il);
+                exp.Compile(info);
             }
             if (_method.IsVirtual) {
-                il.Emit(OpCodes.Callvirt, _method);
+                info.ILGenerator.Emit(OpCodes.Callvirt, _method);
             } else {
-                il.Emit(OpCodes.Call, _method);
+                info.ILGenerator.Emit(OpCodes.Call, _method);
             }
             if (PopReturnValue && _method.ReturnType != typeof(void)) {
-                il.Emit(OpCodes.Pop);
+                info.ILGenerator.Emit(OpCodes.Pop);
             }
         }
     }

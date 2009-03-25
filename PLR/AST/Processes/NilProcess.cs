@@ -8,7 +8,7 @@ namespace PLR.AST.Processes {
         }
 
         public override void Compile(CompileInfo info) {
-            EmitDebug("Turned into 0",info.ILGenerator);
+            EmitDebug("Turned into 0",info);
         }
 
     }

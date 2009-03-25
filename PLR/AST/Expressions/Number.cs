@@ -16,8 +16,8 @@ namespace PLR.AST.Expressions {
         {
             visitor.Visit(this);
         }
-        public override void Compile(ILGenerator il) {
-            il.Emit(OpCodes.Ldc_I4, _number);
+        public override void Compile(CompileInfo info) {
+            info.ILGenerator.Emit(OpCodes.Ldc_I4, _number);
         }
     }
 }

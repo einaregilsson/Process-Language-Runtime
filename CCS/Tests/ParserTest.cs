@@ -79,10 +79,10 @@ namespace CCS.Tests {
         }
 
         private void AssertNoRestrictions(Process p) {
-            Assert.AreEqual(0, p.Restrictions.Count);
+            Assert.AreEqual(0, p.ActionRestrictions.Count);
         }
         private void AssertNoRelabelling(Process p) {
-            Assert.AreEqual(0, p.Relabelling.Count);
+            Assert.AreEqual(0, p.PreProcessActions.Count);
         }
         private ProcessSystem Parse(string source) {
             MemoryStream ms = new MemoryStream();
