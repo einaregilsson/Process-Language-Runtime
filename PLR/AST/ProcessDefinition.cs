@@ -66,16 +66,18 @@ namespace PLR.AST {
             
             context.ILGenerator.BeginExceptionBlock();
             this.Process.Compile(context);
-            context.ILGenerator.BeginCatchBlock(typeof(ProcessKilledException));
-            context.ILGenerator.Emit(OpCodes.Pop); //Pop the exception off the stack
-            EmitDebug("Caught ProcessKilledException", context);
-            //Just catch here to abort, don't do anything
-            context.ILGenerator.EndExceptionBlock();
+            if (!context.Type.IsCreated()) {
+                context.ILGenerator.BeginCatchBlock(typeof(ProcessKilledException));
+                context.ILGenerator.Emit(OpCodes.Pop); //Pop the exception off the stack
+                EmitDebug("Caught ProcessKilledException", context);
+                //Just catch here to abort, don't do anything
+                context.ILGenerator.EndExceptionBlock();
 
-            //Ev
-            Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(context);
-            context.ILGenerator.Emit(OpCodes.Ret);
-            context.Type.CreateType();
+                //Ev
+                Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(context);
+                context.ILGenerator.Emit(OpCodes.Ret);
+                context.Type.CreateType();
+            }
         }
     }
 }

@@ -1,21 +1,4 @@
 use External.CustomFunctions
 use PLR.BuiltIns
 
-System = (CM | CS)
-CM =  
-	:Println("Going to sync on foo", 4) . 
-	foo . 
-	:Println("Synced on FOO") . 
-	CM
-
-CS =  
-	_foo_ . 
-	(
-		foo .
-		bar .
-		0
-	+
-		_foo_ .
-		_bar_ .
-		0
-	)
+System = (a . b . 0 | _a_ . _b_ . 0)

@@ -8,5 +8,4 @@ namespace PLR.Runtime {
         int ProcessID { get; }
         bool IsAsynchronous { get; }
     }
-
 }
