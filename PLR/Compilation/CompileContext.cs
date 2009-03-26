@@ -4,7 +4,7 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace PLR {
+namespace PLR.Compilation {
     public class CompileContext {
 
         private ModuleBuilder _module;

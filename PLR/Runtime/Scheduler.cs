@@ -5,7 +5,7 @@ using System.Threading;
 
 using PLR.AST.Actions;
 
-namespace PLR {
+namespace PLR.Runtime {
 
     public class Scheduler {
 

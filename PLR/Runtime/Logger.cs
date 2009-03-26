@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace PLR {
+namespace PLR.Runtime {
     static class Logger {
         private static List<ConsoleColor> _availableColors = new List<ConsoleColor>(
             new ConsoleColor[] { 

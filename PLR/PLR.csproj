@@ -35,7 +35,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Analyzer.cs" />
     <Compile Include="AST\ActionHandling\ChannelRestrictions.cs" />
     <Compile Include="AST\ActionHandling\CustomPreprocess.cs" />
     <Compile Include="AST\ActionHandling\CustomRestrictions.cs" />
@@ -106,20 +105,19 @@
     <Compile Include="AST\Subscript.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="BuiltIns.cs" />
-    <Compile Include="ChannelSyncAction.cs" />
-    <Compile Include="CompileContext.cs" />
-    <Compile Include="CompileOptions.cs" />
-    <Compile Include="GlobalScope.cs" />
-    <Compile Include="IAction.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="MethodCallAction.cs" />
+    <Compile Include="Runtime\BuiltIns.cs" />
+    <Compile Include="Runtime\ChannelSyncAction.cs" />
+    <Compile Include="Compilation\CompileContext.cs" />
+    <Compile Include="Compilation\CompileOptions.cs" />
+    <Compile Include="Runtime\GlobalScope.cs" />
+    <Compile Include="Runtime\IAction.cs" />
+    <Compile Include="Runtime\Logger.cs" />
+    <Compile Include="Runtime\MethodCallAction.cs" />
     <Compile Include="MethodResolver.cs" />
-    <Compile Include="PLRError.cs" />
-    <Compile Include="ProcessBase.cs" />
-    <Compile Include="ProcessKilledException.cs" />
+    <Compile Include="Runtime\ProcessBase.cs" />
+    <Compile Include="Runtime\ProcessKilledException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scheduler.cs" />
+    <Compile Include="Runtime\Scheduler.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

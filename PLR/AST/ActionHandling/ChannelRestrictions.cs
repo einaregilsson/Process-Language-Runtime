@@ -4,6 +4,8 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 using PLR.AST.Expressions;
+using PLR.Compilation;
+using PLR.Runtime;
 
 namespace PLR.AST.ActionHandling {
     public class ChannelRestrictions : ActionRestrictions{

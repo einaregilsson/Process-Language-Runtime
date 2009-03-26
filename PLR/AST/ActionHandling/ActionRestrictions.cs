@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Collections.Generic;
+using PLR.Compilation;
+using PLR.Runtime;
 
 
 namespace PLR.AST.ActionHandling {

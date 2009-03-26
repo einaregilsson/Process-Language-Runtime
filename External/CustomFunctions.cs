@@ -1,4 +1,5 @@
 using PLR;
+using PLR.Runtime;
 
 namespace External {
     public static class CustomFunctions {

@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.IO;
 using System;
+using PLR.Compilation;
 
 namespace PLR.AST {
 

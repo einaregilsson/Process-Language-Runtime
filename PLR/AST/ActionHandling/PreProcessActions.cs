@@ -2,6 +2,8 @@
 using System.Reflection;
 using System;
 using System.Reflection.Emit;
+using PLR.Compilation;
+using PLR.Runtime;
 
 namespace PLR.AST.ActionHandling {
     public abstract class PreProcessActions : Node {

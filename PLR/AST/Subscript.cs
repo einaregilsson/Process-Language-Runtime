@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using System.Text;
 using PLR.AST.Expressions;
+using PLR.Compilation;
 
 namespace PLR.AST {
     public class Subscript : Node {

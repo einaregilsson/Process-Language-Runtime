@@ -4,6 +4,8 @@ using System.Text;
 using System.IO;
 using CCS.Parsing;
 using PLR;
+using PLR.Runtime;
+using PLR.Compilation;
 using PLR.AST;
 using PLR.AST.Processes;
 using CCS.Formatters;

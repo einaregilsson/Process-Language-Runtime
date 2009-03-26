@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using PLR.AST.Actions;
 
-namespace PLR {
+namespace PLR.Runtime {
 
     public delegate IAction PreProcessAction(IAction action);
     public delegate bool RestrictAction(IAction action);

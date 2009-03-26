@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using PLR.AST.Actions;
 using PLR.AST.Expressions;
+using PLR.Compilation;
 using System.Reflection;
 using System.Reflection.Emit;
 

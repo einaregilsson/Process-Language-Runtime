@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
+using PLR.Compilation;
+using PLR.Runtime;
 
 namespace PLR.AST.Actions {
     public class InAction : Action {

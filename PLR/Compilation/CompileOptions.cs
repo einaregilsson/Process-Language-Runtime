@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PLR {
+namespace PLR.Compilation {
     public class CompileOptions {
 
         #region Static initalization and members
