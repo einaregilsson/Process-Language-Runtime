@@ -51,29 +51,29 @@ namespace PLR.AST {
             _processConstructors.Add(this.ProcessConstant.Name, constructor);
         }
 
-        public override void Compile(CompileInfo info) {
-            info.Type = (TypeBuilder)info.Module.GetType(this.ProcessConstant.Name);
+        public override void Compile(CompileContext context) {
+            context.Type = (TypeBuilder)context.Module.GetType(this.ProcessConstant.Name);
             Type baseType = typeof(ProcessBase);
 
-            MethodBuilder methodStart = info.Type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
-            info.Type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
-            info.ILGenerator = methodStart.GetILGenerator();
+            MethodBuilder methodStart = context.Type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
+            context.Type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
+            context.ILGenerator = methodStart.GetILGenerator();
 
-            Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(info);
+            Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(context);
 
             
-            info.ILGenerator.BeginExceptionBlock();
-            this.Process.Compile(info);
-            info.ILGenerator.BeginCatchBlock(typeof(ProcessKilledException));
-            info.ILGenerator.Emit(OpCodes.Pop); //Pop the exception off the stack
-            EmitDebug("Caught ProcessKilledException", info);
+            context.ILGenerator.BeginExceptionBlock();
+            this.Process.Compile(context);
+            context.ILGenerator.BeginCatchBlock(typeof(ProcessKilledException));
+            context.ILGenerator.Emit(OpCodes.Pop); //Pop the exception off the stack
+            EmitDebug("Caught ProcessKilledException", context);
             //Just catch here to abort, don't do anything
-            info.ILGenerator.EndExceptionBlock();
+            context.ILGenerator.EndExceptionBlock();
 
             //Ev
-            Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(info);
-            info.ILGenerator.Emit(OpCodes.Ret);
-            info.Type.CreateType();
+            Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(context);
+            context.ILGenerator.Emit(OpCodes.Ret);
+            context.Type.CreateType();
         }
     }
 }

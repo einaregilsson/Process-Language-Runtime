@@ -9,7 +9,7 @@ namespace PLR.AST {
     public abstract class Node : IEnumerable<Node> {
 
         public abstract void Accept(AbstractVisitor visitor);
-        //Source file information
+        //Source file contextrmation
 
         protected static Dictionary<string, ConstructorBuilder> _processConstructors = new Dictionary<string, ConstructorBuilder>();
         protected object _extraData;
@@ -98,11 +98,11 @@ namespace PLR.AST {
 
         #region Compile helpers
 
-        public abstract void Compile(CompileInfo info);
+        public abstract void Compile(CompileContext context);
 
-        protected void Assign(LocalBuilder local, Expression exp, CompileInfo info) {
-            exp.Compile(info);
-            info.ILGenerator.Emit(OpCodes.Stloc, local);
+        protected void Assign(LocalBuilder local, Expression exp, CompileContext context) {
+            exp.Compile(context);
+            context.ILGenerator.Emit(OpCodes.Stloc, local);
         }
 
         protected MethodCall Call(LocalBuilder instance, string methodName, bool popReturn, params object[] args) {
@@ -128,12 +128,12 @@ namespace PLR.AST {
             return new NewObject(type, args);
         }
 
-        protected void EmitDebug(string msg, CompileInfo info) {
+        protected void EmitDebug(string msg, CompileContext context) {
             ThisPointer thisP = new ThisPointer(typeof(ProcessBase));
-            Call(thisP, "Debug", true, msg).Compile(info);
+            Call(thisP, "Debug", true, msg).Compile(context);
         }
-        protected void CallScheduler(string methodName, bool popReturn, CompileInfo info, params object[] args) {
-            Call(Call(typeof(Scheduler), "get_Instance", false), methodName, popReturn, args).Compile(info);
+        protected void CallScheduler(string methodName, bool popReturn, CompileContext context, params object[] args) {
+            Call(Call(typeof(Scheduler), "get_Instance", false), methodName, popReturn, args).Compile(context);
         }
             
 

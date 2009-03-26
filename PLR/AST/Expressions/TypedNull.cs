@@ -15,8 +15,8 @@ namespace PLR.AST.Expressions {
             get { return _nullType; }
         }
 
-        public override void Compile(CompileInfo info) {
-            info.ILGenerator.Emit(OpCodes.Ldnull);
+        public override void Compile(CompileContext context) {
+            context.ILGenerator.Emit(OpCodes.Ldnull);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace PLR {
             Output(msg);
         }
 
-        public static void Info(object msg) {
+        public static void context(object msg) {
             Output(msg);
         }
 

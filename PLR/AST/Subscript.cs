@@ -19,7 +19,7 @@ namespace PLR.AST {
             visitor.Visit(this);
         }
 
-        public override void Compile(CompileInfo info) {
+        public override void Compile(CompileContext context) {
         }
     }
 }

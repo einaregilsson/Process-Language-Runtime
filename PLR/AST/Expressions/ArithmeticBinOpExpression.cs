@@ -55,10 +55,10 @@ namespace PLR.AST.Expressions {
         {
             visitor.Visit(this);
         }
-        public override void Compile(CompileInfo info) {
-            ILGenerator il = info.ILGenerator;
-            _left.Compile(info);
-            _right.Compile(info);
+        public override void Compile(CompileContext context) {
+            ILGenerator il = context.ILGenerator;
+            _left.Compile(context);
+            _right.Compile(context);
             switch (this.Op) {
                 case ArithmeticBinOp.Divide:
                     il.Emit(OpCodes.Div);

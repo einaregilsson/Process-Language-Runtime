@@ -7,8 +7,8 @@ namespace PLR.AST.Processes {
             visitor.Visit(this);
         }
 
-        public override void Compile(CompileInfo info) {
-            EmitDebug("Turned into 0",info);
+        public override void Compile(CompileContext context) {
+            EmitDebug("Turned into 0",context);
         }
 
     }

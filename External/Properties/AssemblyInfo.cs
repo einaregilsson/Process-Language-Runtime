@@ -2,14 +2,14 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-// General contextrmation about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the contextrmation
+// General Information about an assembly is controlled through the following 
+// set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PLR")]
+[assembly: AssemblyTitle("External")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("DTU")]
-[assembly: AssemblyProduct("PLR")]
+[assembly: AssemblyProduct("External")]
 [assembly: AssemblyCopyright("Copyright © DTU 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,9 +20,9 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c6cad333-fb68-4173-a375-9f9dc4f354b4")]
+[assembly: Guid("18a59cd4-db14-4900-a75d-e79b0f83ff84")]
 
-// Version contextrmation for an assembly consists of the following four values:
+// Version information for an assembly consists of the following four values:
 //
 //      Major Version
 //      Minor Version 

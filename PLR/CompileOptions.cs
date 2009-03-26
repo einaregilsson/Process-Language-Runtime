@@ -12,6 +12,7 @@ namespace PLR {
         static CompileOptions() {
             AddOption("d", "debug");
             AddOption("e", "embedPLR");
+            AddOptionWithArgument("r", "reference", "");
             AddOptionWithArgument("o", "out", "");
         }
 
@@ -42,6 +43,12 @@ namespace PLR {
             get { return this["out"]; }
             set { this["out"] = value; } 
         }
+
+        public string References {
+            get { return this["reference"]; }
+            set { this["reference"] = value; }
+        }
+        
         #endregion
 
 

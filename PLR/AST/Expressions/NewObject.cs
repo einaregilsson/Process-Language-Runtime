@@ -16,11 +16,11 @@ namespace PLR.AST.Expressions {
             get { return _constructor.DeclaringType; }
         }
 
-        public override void Compile(CompileInfo info) {
+        public override void Compile(CompileContext context) {
             foreach (Expression exp in Arguments) {
-                exp.Compile(info);
+                exp.Compile(context);
             }
-            info.ILGenerator.Emit(OpCodes.Newobj, _constructor);
+            context.ILGenerator.Emit(OpCodes.Newobj, _constructor);
         }
     }
 }

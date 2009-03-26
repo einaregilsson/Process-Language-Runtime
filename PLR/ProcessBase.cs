@@ -6,6 +6,9 @@ using PLR.AST.Actions;
 
 namespace PLR {
 
+    public delegate IAction PreProcessAction(IAction action);
+    public delegate bool RestrictAction(IAction action);
+
     public abstract class ProcessBase {
 
         #region Members and Properties
@@ -57,26 +60,19 @@ namespace PLR {
             set { _parent = value; }
         }
 
-        public virtual bool IsRestricted(IAction action) {
-            if (!(action is ChannelSync)) {
-                return false;
-            }
-            ChannelSync c = (ChannelSync)action;
-            return c.Name == "A" || c.Name == "B" || c.Name == "D";
+        public virtual PreProcessAction PreProcess {
+            get { return delegate(IAction a) { return a; }; }
         }
 
-        public virtual IAction PreProcess(IAction action) {
-            return action;
+        public virtual RestrictAction Restrict {
+            get { return delegate(IAction a) { return false; }; }
         }
-
-        public const int KILL_YOURSELF = -1;
 
         protected void InitSetID() {
             if (this.SetID == Guid.Empty) {
                 this.SetID = Guid.NewGuid();
             }
         }
-
 
         protected void Debug(string msg) {
             Logger.Debug(msg);
@@ -110,7 +106,7 @@ namespace PLR {
 
             //If restricted then we store it as a local action
             for (int i = actions.Count - 1; i >= 0; i--) {
-                if (IsRestricted(actions[i])) {
+                if (Restrict(actions[i])) {
                     _localActions.Add(actions[i]);
                     actions.RemoveAt(i);
                 }
@@ -171,29 +167,4 @@ namespace PLR {
 
         public abstract void RunProcess();
     }
-
-    public class ProcA : ProcessBase {
-        public override void RunProcess() {
-            if (this.SetID == Guid.Empty) {
-                this.SetID = Guid.NewGuid();
-            }
-            try {
-                Scheduler.Instance.AddProcess(this);
-                List<IAction> tmp = new List<IAction>();
-                tmp.Add(new ChannelSync("a", this, true));
-                this.Sync(tmp);
-                //this.Sync(new StringAction("b", this, false));
-                //this.Sync(new StringAction("a", this));
-
-            } catch (ThreadAbortException ex) {
-                Debug("Am being killed");
-                Debug(ex.Message);
-                Scheduler.Instance.KillProcess(this);
-                return;
-            }
-            Debug("End of life for me, have turned into 0");
-            Scheduler.Instance.KillProcess(this);
-        }
-    }
-
 }

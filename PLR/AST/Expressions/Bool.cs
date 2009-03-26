@@ -13,11 +13,11 @@ namespace PLR.AST.Expressions {
             visitor.Visit(this);
         }
 
-        public override void Compile(CompileInfo info) {
+        public override void Compile(CompileContext context) {
             if (_value) {
-                info.ILGenerator.Emit(OpCodes.Ldc_I4_1);
+                context.ILGenerator.Emit(OpCodes.Ldc_I4_1);
             } else {
-                info.ILGenerator.Emit(OpCodes.Ldc_I4_0);
+                context.ILGenerator.Emit(OpCodes.Ldc_I4_0);
             }
         }
 

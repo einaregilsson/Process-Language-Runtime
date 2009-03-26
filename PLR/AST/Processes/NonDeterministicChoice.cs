@@ -17,7 +17,7 @@ namespace PLR.AST.Processes {
             visitor.Visit(this);
         }
 
-        public override void Compile(CompileInfo info) {
+        public override void Compile(CompileContext context) {
         }
 
     }

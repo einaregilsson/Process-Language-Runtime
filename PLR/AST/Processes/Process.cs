@@ -20,12 +20,12 @@ namespace PLR.AST.Processes {
             set { _restrictions = value; }
         }
 
-        public override void Compile(CompileInfo info) {
+        public override void Compile(CompileContext context) {
             if (this.PreProcessActions != null) {
-                this.PreProcessActions.Compile(info);
+                this.PreProcessActions.Compile(context);
             }
             if (this.ActionRestrictions != null) {
-                this.ActionRestrictions.Compile(info);
+                this.ActionRestrictions.Compile(context);
             }
 
         }

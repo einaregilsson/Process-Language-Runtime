@@ -37,11 +37,11 @@ namespace PLR.AST.Processes
 
         }
 
-        public override void Compile(CompileInfo info) {
+        public override void Compile(CompileContext context) {
             //Invoke a new instance of that process
 
             ConstructorBuilder constructor = _processConstructors[this.Name];
-            ILGenerator il = info.ILGenerator;
+            ILGenerator il = context.ILGenerator;
             LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
             il.Emit(OpCodes.Newobj, constructor);
             il.Emit(OpCodes.Stloc, loc);
@@ -49,7 +49,7 @@ namespace PLR.AST.Processes
             il.Emit(OpCodes.Ldloc, loc);
             il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
 
-            if (info.Restrict == null && info.PreProcess == null) {
+            if (context.Restrict == null && context.PreProcess == null) {
                 //The current process doesn't have a restrict or relabel method, no reason for it
                 //to continue living, set the parent process of the new proc as our own parent process
                 il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
@@ -58,7 +58,7 @@ namespace PLR.AST.Processes
 
             //Run the new proc
             il.Emit(OpCodes.Ldloc, loc);
-            Call(typeof(ProcessBase), "Run", true).Compile(info);
+            Call(typeof(ProcessBase), "Run", true).Compile(context);
         }
     }
 }

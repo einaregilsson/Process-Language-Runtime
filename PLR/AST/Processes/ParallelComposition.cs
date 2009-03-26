@@ -18,10 +18,10 @@ namespace PLR.AST.Processes {
             visitor.Visit(this);
         }
 
-        public override void Compile(CompileInfo info) {
-            base.Compile(info);
+        public override void Compile(CompileContext context) {
+            base.Compile(context);
             foreach (Process p in this) {
-                p.Compile(info);
+                p.Compile(context);
             }
         }
 

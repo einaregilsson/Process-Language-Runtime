@@ -42,8 +42,8 @@ namespace PLR.AST.Expressions {
             il.Emit(OpCodes.Stloc, _local);
         }
 
-        public override void Compile(CompileInfo info) {
-            info.ILGenerator.Emit(OpCodes.Ldloc, _local);
+        public override void Compile(CompileContext context) {
+            context.ILGenerator.Emit(OpCodes.Ldloc, _local);
         }
         #endregion
     }

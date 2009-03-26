@@ -25,14 +25,16 @@ CHARACTERS
   cr  = '\r'.    
   lf  = '\n'.
   tab = '\t'.  
-  space = ' '.      
+  space = ' '.
   underscore = '_'.      
      
 TOKENS    
   PROCNAME   = ucaseletter {letter|digit} {'\''} .
   PROCNAMESUB= ucaseletter {letter|digit} {'\''} '_'.
   LCASEIDENT = lcaseletter {letter|digit}.
+  CLASSNAME  = ucaseletter {letter|digit}  '.' ucaseletter {letter|digit} { '.' ucaseletter {letter|digit}}.
   OUTACTION  = underscore lcaseletter {letter|digit} underscore.
+  METHOD     = ':' letter {letter|digit} .
   NUMBER = digit {digit}.
 
 COMMENTS FROM "#" TO lf
@@ -42,12 +44,18 @@ PRODUCTIONS
 
 CCS                                                   
 =   
+	{ ClassImport<> }
     			                                        (. ProcessDefinition proc; .)						       
 	ProcessDefinition<out proc, true>                   (. this.System.Add(proc); .)
     {
         ProcessDefinition<out proc, false>              (. this.System.Add(proc); .)
     }                                                   (. CopyPos(this.System[0],this.System, t); .)
 .  
+
+ClassImport<>
+=
+	"use" CLASSNAME										(. this.System.AddImport(t.val); .)
+.
 
 ProcessDefinition<out ProcessDefinition procdef, bool entryProc> =      (. Process proc; ProcessConstant pc; .)
     ProcessConstantDef<out pc>                          
@@ -111,11 +119,11 @@ ActionPrefix<out Process proc>                          (. ActionPrefix ap = nul
         ProcessConstantInvoke<out pc>                   (. nextProc = pc; .)
     )                                                   (. if (first == null) proc = nextProc; else {ap.Process = nextProc; proc = first;}; .)
 
-    [													(. RelabelActions ra = new RelabelActions(); .)
-    Relabelling<ra>										(. nextProc.PreProcessActions = ra; .)
+    [													(. PreProcessActions ppa = null; .)
+    Relabelling<out ppa>								(. nextProc.PreProcessActions = ppa; .)
     ]
-    [													(. ChannelRestrictions cr = new ChannelRestrictions(); .)
-    Restriction<cr>										(. nextProc.ActionRestrictions = cr; .)
+    [													(. ActionRestrictions ar = null; .)
+    Restriction<out ar>									(. nextProc.ActionRestrictions = ar; .)
     ]
 .
 
@@ -141,36 +149,42 @@ Action<out Action act>                                  (. act = null; .)
     OUTACTION                                           (. act = new OutAction(t.val); SetPos(act, t);.) 
 .
 
-Relabelling<RelabelActions labels>                        (. string relabelTo, relabelFrom; .)
+Relabelling<out PreProcessActions preproc>               (. preproc = null; string relabelTo, relabelFrom; RelabelActions labels = new RelabelActions(); .)
 =
-    '['                                                 (. SetPos(labels, t); .)
-        LCASEIDENT                                      (. relabelTo = t.val; .)
+    '['                                                 (. Token first = t; .)
+    (
+		METHOD											(. preproc = new CustomPreprocess(t.val.Replace(":","")); SetPos(preproc, first);.)
+		|
+        LCASEIDENT                                      (. relabelTo = t.val; SetPos(labels, first);.)
         '/'
-        LCASEIDENT                                      (. relabelFrom = t.val; labels.Add(new ActionID(relabelFrom), new ActionID(relabelTo)); .)
+        LCASEIDENT                                      (. relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); .)
         {
             ','
             LCASEIDENT                                  (. relabelTo = t.val; .)
             '/'
-            LCASEIDENT                                  (. relabelFrom = t.val; labels.Add(new ActionID(relabelFrom), new ActionID(relabelTo)); .)
-        }
+            LCASEIDENT                                  (. relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); .)
+        }												(. preproc = labels; .)
+     )
     ']'
 .
 
-Restriction<ChannelRestrictions res>          
-=
+Restriction<out ActionRestrictions ar>          
+=														(. ar = null; ChannelRestrictions res = new ChannelRestrictions(); .)
     '\\'
     (
-        LCASEIDENT                                      (. res.Add(new ActionID(t.val)); SetPos(res, t); res.ParenCount = 0; .)
+        LCASEIDENT                                      (. res.Add(t.val); SetPos(res, t); res.ParenCount = 0; ar = res; .)
         |
         (
             '{'                                         (. res.ParenCount = 1; .)
-            LCASEIDENT                                  (. res.Add(new ActionID(t.val)); SetPos(res, t); .)
+            LCASEIDENT                                  (. res.Add(t.val); SetPos(res, t); .)
             {
                 ',' 
-                LCASEIDENT                              (. res.Add(new ActionID(t.val)); .)
+                LCASEIDENT                              (. res.Add(t.val); .)
             }
-            '}'
+            '}'											(. ar = res; .)
         )
+        |
+        METHOD											(. ar = new CustomRestrictions(t.val.Replace(":", "")); SetPos(ar, t); .)
     )        
 .
 

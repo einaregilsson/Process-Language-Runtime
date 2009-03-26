@@ -14,8 +14,8 @@ namespace PLR.AST.Expressions {
             visitor.Visit(this);
         }
 
-        public override void Compile(CompileInfo info) {
-            info.ILGenerator.Emit(OpCodes.Ldstr, _value);
+        public override void Compile(CompileContext context) {
+            context.ILGenerator.Emit(OpCodes.Ldstr, _value);
         }
 
         public override Type Type {

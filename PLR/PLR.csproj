@@ -37,8 +37,9 @@
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
     <Compile Include="AST\ActionHandling\ChannelRestrictions.cs" />
+    <Compile Include="AST\ActionHandling\CustomPreprocess.cs" />
+    <Compile Include="AST\ActionHandling\CustomRestrictions.cs" />
     <Compile Include="AST\ActionHandling\RelabelActions.cs" />
-    <Compile Include="AST\Actions\ActionID.cs" />
     <Compile Include="AST\Actions\Action.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -104,8 +105,9 @@
     <Compile Include="AST\Subscript.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BuiltIns.cs" />
     <Compile Include="ChannelSync.cs" />
-    <Compile Include="CompileInfo.cs" />
+    <Compile Include="CompileContext.cs" />
     <Compile Include="CompileOptions.cs" />
     <Compile Include="GlobalScope.cs" />
     <Compile Include="IAction.cs" />

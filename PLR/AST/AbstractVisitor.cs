@@ -25,7 +25,6 @@ namespace PLR.AST
         }
 
         public abstract void Visit(ProcessSystem system);
-        public abstract void Visit(ActionID id);
         public abstract void Visit(InAction act);
         public abstract void Visit(OutAction act);
         public abstract void Visit(ArithmeticBinOpExpression exp);

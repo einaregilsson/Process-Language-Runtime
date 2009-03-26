@@ -10,7 +10,7 @@ namespace PLR.AST.Actions
             visitor.Visit(this);
         }
 
-        public override void Compile(CompileInfo info) {
+        public override void Compile(CompileContext context) {
         }
 
     }

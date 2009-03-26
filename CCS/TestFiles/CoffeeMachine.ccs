@@ -1,3 +1,6 @@
-System = ( CM | CS) [coke/coffee] \{coin, coffee}
+use External.CustomFunctions
+
+#Foo = ( a.b.c.Foo )[:MyProcess]
+System = ( CM | CS)  \ :RestrictIT
 CM = coin . _coffee_ . (CS  | CS)
-CS = (_coin_ . water . CM)[coffee/water]
+CS = (_coin_ . water . CM)[coffee/water] \:RestrictAll
