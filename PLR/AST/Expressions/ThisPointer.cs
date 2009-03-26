@@ -15,6 +15,10 @@ namespace PLR.AST.Expressions {
             get { return _thisType; }
         }
 
+        public override string ToString() {
+            return "this";
+        }
+
         public override void Compile(CompileContext context) {
             context.ILGenerator.Emit(OpCodes.Ldarg_0);
         }

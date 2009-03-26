@@ -105,20 +105,20 @@ namespace PLR.AST {
             context.ILGenerator.Emit(OpCodes.Stloc, local);
         }
 
-        protected MethodCall Call(LocalBuilder instance, string methodName, bool popReturn, params object[] args) {
-            MethodCall mc = new MethodCall(instance, methodName, args);
+        protected MethodCallExpression Call(LocalBuilder instance, string methodName, bool popReturn, params object[] args) {
+            MethodCallExpression mc = new MethodCallExpression(instance, methodName, args);
             mc.PopReturnValue = popReturn;
             return mc;
         }
         
-        protected MethodCall Call(Expression instance, string methodName, bool popReturn, params object[] args) {
-            MethodCall mc = new MethodCall(instance, methodName, args);
+        protected MethodCallExpression Call(Expression instance, string methodName, bool popReturn, params object[] args) {
+            MethodCallExpression mc = new MethodCallExpression(instance, methodName, args);
             mc.PopReturnValue = popReturn;
             return mc;
         }
 
-        protected MethodCall Call(Type type, string methodName, bool popReturn, params object[] args) {
-            MethodCall mc = new MethodCall(type, methodName, args);
+        protected MethodCallExpression Call(Type type, string methodName, bool popReturn, params object[] args) {
+            MethodCallExpression mc = new MethodCallExpression(type, methodName, args);
             mc.PopReturnValue = popReturn;
             return mc;
         }

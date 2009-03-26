@@ -4,21 +4,21 @@ using System.Text;
 
 namespace PLR {
 
-    public class ChannelSync : IAction {
+    public class ChannelSyncAction : IAction {
 
         private ProcessBase _proc;
         private string _name;
         private bool _input;
-        public ChannelSync(string name, ProcessBase p, bool input) {
+        public ChannelSyncAction(string name, ProcessBase p, bool input) {
             _proc = p;
             _name = name;
             _input = input;
         }
         public bool CanSyncWith(IAction other) {
-            if (!(other is ChannelSync)) {
+            if (!(other is ChannelSyncAction)) {
                 return false;
             }
-            ChannelSync otherAction = (ChannelSync)other;
+            ChannelSyncAction otherAction = (ChannelSyncAction)other;
             return otherAction._name == this._name && otherAction._input != this._input;
         }
         public override string ToString() {
@@ -35,10 +35,6 @@ namespace PLR {
 
         public bool IsAsynchronous {
             get { return false; }
-        }
-
-        public void Execute() {
-            //throw new Exception("The method or operation is not implemented.");
         }
 
     }

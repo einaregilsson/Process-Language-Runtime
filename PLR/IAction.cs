@@ -7,7 +7,6 @@ namespace PLR {
         bool CanSyncWith(IAction other);
         int ProcessID { get; }
         bool IsAsynchronous { get; }
-        void Execute();
     }
 
 }

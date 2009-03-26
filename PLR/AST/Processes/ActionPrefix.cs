@@ -34,19 +34,7 @@ namespace PLR.AST.Processes {
         }
         public override void Compile(CompileContext context) {
             base.Compile(context);
-            Type listType = typeof(List<IAction>);
-            Type procType = typeof(ProcessBase);
-            ILGenerator il = context.ILGenerator;
-            ThisPointer thisP = new ThisPointer(procType);
-            //Init and store new List in a local var
-            LocalBuilder localList = il.DeclareLocal(listType);
-            Assign(localList, New(listType), context);
-
-            NewObject newAction = New(typeof(ChannelSync), _action.Name, thisP, _action is InAction);
-            Call(localList, "Add", true, newAction).Compile(context);
-
-            EmitDebug("Preparing to sync now...",context);
-            Call(thisP, "Sync", true, localList).Compile(context);
+            _action.Compile(context);
             this.Process.Compile(context);
         }
     }

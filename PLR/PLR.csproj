@@ -43,6 +43,7 @@
     <Compile Include="AST\Actions\Action.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Actions\Call.cs" />
     <Compile Include="AST\Actions\InAction.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -62,7 +63,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\Expressions\Expression.cs" />
-    <Compile Include="AST\Expressions\MethodCall.cs" />
+    <Compile Include="AST\Expressions\MethodCallExpression.cs" />
     <Compile Include="AST\Expressions\PLRString.cs" />
     <Compile Include="AST\Expressions\ThisPointer.cs" />
     <Compile Include="AST\Expressions\TypedNull.cs" />
@@ -106,12 +107,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="BuiltIns.cs" />
-    <Compile Include="ChannelSync.cs" />
+    <Compile Include="ChannelSyncAction.cs" />
     <Compile Include="CompileContext.cs" />
     <Compile Include="CompileOptions.cs" />
     <Compile Include="GlobalScope.cs" />
     <Compile Include="IAction.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="MethodCallAction.cs" />
     <Compile Include="MethodResolver.cs" />
     <Compile Include="PLRError.cs" />
     <Compile Include="ProcessBase.cs" />

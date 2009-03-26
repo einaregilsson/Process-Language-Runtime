@@ -18,6 +18,10 @@ namespace PLR.AST.Expressions {
             context.ILGenerator.Emit(OpCodes.Ldstr, _value);
         }
 
+        public override string ToString() {
+            return "\"" + _value + "\"";
+        }
+
         public override Type Type {
             get { return typeof(string); }
         }

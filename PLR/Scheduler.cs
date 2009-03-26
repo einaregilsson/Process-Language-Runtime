@@ -77,12 +77,16 @@ namespace PLR {
         private List<Match> FindMatches(List<IAction> actions) {
             List<Match> candidates = new List<Match>();
             for (int i = 0; i < actions.Count; i++) {
-                for (int j = i + 1; j < actions.Count; j++) {
-                    int p1id = actions[i].ProcessID, p2id = actions[j].ProcessID;
-                    Guid p1setID = ProcessIdToSetId(p1id), p2setID = ProcessIdToSetId(p2id);
-                    if (actions[i].CanSyncWith(actions[j])
-                        && (p1setID != p2setID || p1setID == Guid.Empty)) {
-                        candidates.Add(new Match(actions[i], actions[j]));
+                if (actions[i].IsAsynchronous) {
+                    candidates.Add(new Match(actions[i], null));
+                } else {
+                    for (int j = i + 1; j < actions.Count; j++) {
+                        int p1id = actions[i].ProcessID, p2id = actions[j].ProcessID;
+                        Guid p1setID = ProcessIdToSetId(p1id), p2setID = ProcessIdToSetId(p2id);
+                        if (actions[i].CanSyncWith(actions[j])
+                            && (p1setID != p2setID || p1setID == Guid.Empty)) {
+                            candidates.Add(new Match(actions[i], actions[j]));
+                        }
                     }
                 }
             }
@@ -126,20 +130,24 @@ namespace PLR {
                     p.ChosenAction = m.a1;
                     wakeUp.Add(p);
                     wakeUpGuids.Add(p.SetID);
-                } else if (m.a2.ProcessID == p.ID) {
+                } else if (m.a2 != null && m.a2.ProcessID == p.ID) {
                     p.ChosenAction = m.a2;
                     wakeUp.Add(p);
                     wakeUpGuids.Add(p.SetID);
                 }
             }
 
-
-            Debug("Chose match " + m.a1.ToString().Replace("_","") + ", procs " + wakeUp[0] + " and " + wakeUp[1]);
+            if (wakeUp.Count == 1) {
+                Debug("Chose async action " + m.a1.ToString() + ", proc " + wakeUp[0] + ".");
+            } else {
+                Debug("Chose match " + m.a1.ToString().Replace("_", "") + ", procs " + wakeUp[0] + " and " + wakeUp[1]);
+            }
+            
             string[] tmp = new String[_trace.Count];
             for (int i = 0; i < _trace.Count ; i++) {
                 tmp[i] = _trace[i].ToString().Replace("_","");
             }
-            Debug("TRACE: " + String.Join(", ", tmp));
+            Debug("TRACE: " + "\n     " + String.Join("\n     ", tmp));
             foreach (ProcessBase p in _activeProcs) {
                 if (!wakeUp.Contains(p) && wakeUpGuids.Contains(p.SetID)) {
                     p.ChosenAction = null;

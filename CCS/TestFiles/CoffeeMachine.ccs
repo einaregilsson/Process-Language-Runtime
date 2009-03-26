@@ -1,6 +1,21 @@
 use External.CustomFunctions
+use PLR.BuiltIns
 
-#Foo = ( a.b.c.Foo )[:MyProcess]
-System = ( CM | CS)  \ :RestrictIT
-CM = coin . _coffee_ . (CS  | CS)
-CS = (_coin_ . water . CM)[coffee/water] \:RestrictAll
+System = (CM | CS)
+CM =  
+	:Println("Going to sync on foo", 4) . 
+	foo . 
+	:Println("Synced on FOO") . 
+	CM
+
+CS =  
+	_foo_ . 
+	(
+		foo .
+		bar .
+		0
+	+
+		_foo_ .
+		_bar_ .
+		0
+	)

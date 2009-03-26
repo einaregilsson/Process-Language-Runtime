@@ -16,6 +16,10 @@ namespace PLR.AST.Expressions {
             get { return _constructor.DeclaringType; }
         }
 
+        public override string ToString() {
+            return "new " + _constructor.DeclaringType.Name;
+        }
+
         public override void Compile(CompileContext context) {
             foreach (Expression exp in Arguments) {
                 exp.Compile(context);

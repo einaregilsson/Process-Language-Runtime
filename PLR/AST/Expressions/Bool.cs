@@ -21,6 +21,9 @@ namespace PLR.AST.Expressions {
             }
         }
 
+        public override string ToString() {
+            return _value ? "true" : "false";
+        }
         public override System.Type Type {
             get { return typeof(bool); }
         }

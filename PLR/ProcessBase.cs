@@ -61,7 +61,9 @@ namespace PLR {
         }
 
         public virtual PreProcessAction PreProcess {
-            get { return delegate(IAction a) { return a; }; }
+            get {
+                return delegate(IAction action) { return action; };
+            }
         }
 
         public virtual RestrictAction Restrict {
@@ -83,8 +85,8 @@ namespace PLR {
             get { return _localActions; }
         }
 
-        protected void Sync(List<IAction> actions) {
-            SyncActions(actions);
+        protected void Sync(IAction action) {
+            SyncAction(action);
             Debug("Synced actions, going to sleep");
             this.Thread.Suspend();
             Debug("Woke up");
@@ -92,38 +94,28 @@ namespace PLR {
                 Debug("I wasn't chosen...");
                 throw new ProcessKilledException();
             } else {
-                Debug("Executing chosen action");
-                this.ChosenAction.Execute();
                 CleanActions();
+                Debug("Executing chosen action");
             }
         }
 
-        protected void SyncActions(List<IAction> actions) {
+        protected void SyncAction(IAction action) {
             //Relabellings etc...
-            for (int i = 0; i < actions.Count; i++) {
-                actions[i] = PreProcess(actions[i]);
+
+            if (this.PreProcess == null) {
+                Console.WriteLine("WAHT IS HAPPENS?");
             }
+            action = PreProcess(action);
 
             //If restricted then we store it as a local action
-            for (int i = actions.Count - 1; i >= 0; i--) {
-                if (Restrict(actions[i])) {
-                    _localActions.Add(actions[i]);
-                    actions.RemoveAt(i);
-                }
+            if (Restrict(action)) {
+                _localActions.Add(action);
+            } else if (Parent == null) { //Top level process, add to global scope
+                Debug("Adding action from process " + action.ProcessID + " to global scope");
+                GlobalScope.Actions.Add(action);
+            } else {
+                Parent.SyncAction(action);
             }
-
-            if (Parent == null) { //Top level process, add to global scope
-                foreach (IAction a in actions) {
-                    Debug("Adding actions from process " + a.ProcessID + " to global scope");
-                }
-                GlobalScope.Actions.AddRange(actions);
-            } else if (actions.Count > 0) {
-                Parent.SyncActions(actions);
-            }
-        }
-
-        protected void NonDeterministicChoiceSync(List<IAction> actions) {
-            Sync(actions);
         }
 
         public override string ToString() {

@@ -20,6 +20,10 @@ namespace PLR.AST.Expressions {
         {
             visitor.Visit(this);
         }
+        
+        public override string ToString() {
+            return "-" + _exp.ToString();
+        }
 
         public override void Compile(CompileContext context) {
             _exp.Compile(context);

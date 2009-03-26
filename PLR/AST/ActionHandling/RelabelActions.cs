@@ -22,7 +22,7 @@ namespace PLR.AST.ActionHandling {
                 context.PreProcess = relabel;
                 ILGenerator il = relabel.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Isinst, typeof(ChannelSync));
+                il.Emit(OpCodes.Isinst, typeof(ChannelSyncAction));
                 Label isChannelSync = il.DefineLabel();
                 il.Emit(OpCodes.Brtrue, isChannelSync);
 
@@ -31,9 +31,9 @@ namespace PLR.AST.ActionHandling {
                 il.Emit(OpCodes.Ret);
                 il.MarkLabel(isChannelSync);
 
-                LocalBuilder channel = il.DeclareLocal(typeof(ChannelSync));
+                LocalBuilder channel = il.DeclareLocal(typeof(ChannelSyncAction));
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Castclass, typeof(ChannelSync));
+                il.Emit(OpCodes.Castclass, typeof(ChannelSyncAction));
                 il.Emit(OpCodes.Stloc, channel);
                 Label end = il.DefineLabel();
                 //Now we've got a ChannelSync object
@@ -41,7 +41,7 @@ namespace PLR.AST.ActionHandling {
                     string to = _mapping[from];                    
                     //Check whether the key matches the current name
                     il.Emit(OpCodes.Ldloc, channel);
-                    il.Emit(OpCodes.Call, typeof(ChannelSync).GetMethod("get_Name"));
+                    il.Emit(OpCodes.Call, typeof(ChannelSyncAction).GetMethod("get_Name"));
                     il.Emit(OpCodes.Ldstr, from);
                     il.Emit(OpCodes.Call, typeof(string).GetMethod("op_Equality"));
                     Label nextCheck = il.DefineLabel();
@@ -49,7 +49,7 @@ namespace PLR.AST.ActionHandling {
                     il.Emit(OpCodes.Brfalse, nextCheck);
                     il.Emit(OpCodes.Ldloc, channel);
                     il.Emit(OpCodes.Ldstr, to);
-                    il.Emit(OpCodes.Call, typeof(ChannelSync).GetMethod("set_Name"));
+                    il.Emit(OpCodes.Call, typeof(ChannelSyncAction).GetMethod("set_Name"));
                     il.Emit(OpCodes.Br, end);
                     il.MarkLabel(nextCheck);
                 }

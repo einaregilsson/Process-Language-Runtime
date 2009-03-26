@@ -46,6 +46,11 @@ namespace CCS.Parsing {
             errors = new Errors();
         }
 
+        bool StartOf(int s) {
+            return set[s, la.kind];
+        }
+
+
         void SynErr(int n) {
             if (errDist >= minErrDist) errors.SynErr(la.line, la.col, n);
             errDist = 0;

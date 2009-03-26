@@ -21,7 +21,7 @@ namespace PLR.AST.ActionHandling {
                 MethodBuilder restrict = context.Type.DefineMethod("RestrictByName", MethodAttributes.Public | MethodAttributes.Static, typeof(bool), new Type[] { typeof(IAction) });
                 ILGenerator il = restrict.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Isinst, typeof(ChannelSync));
+                il.Emit(OpCodes.Isinst, typeof(ChannelSyncAction));
                 Label isChannelSync = il.DefineLabel();
                 il.Emit(OpCodes.Brtrue, isChannelSync);
 
@@ -30,15 +30,15 @@ namespace PLR.AST.ActionHandling {
                 il.Emit(OpCodes.Ret);
                 il.MarkLabel(isChannelSync);
 
-                LocalBuilder channel = il.DeclareLocal(typeof(ChannelSync));
+                LocalBuilder channel = il.DeclareLocal(typeof(ChannelSyncAction));
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Castclass, typeof(ChannelSync));
+                il.Emit(OpCodes.Castclass, typeof(ChannelSyncAction));
                 il.Emit(OpCodes.Stloc, channel);
 
                 //Now we've got a ChannelSync object
                 foreach (string channelName in _channelNames) {
                     il.Emit(OpCodes.Ldloc, channel);
-                    il.Emit(OpCodes.Call, typeof(ChannelSync).GetMethod("get_Name"));
+                    il.Emit(OpCodes.Call, typeof(ChannelSyncAction).GetMethod("get_Name"));
                     il.Emit(OpCodes.Ldstr, channelName);
                     il.Emit(OpCodes.Call, typeof(string).GetMethod("op_Equality"));
                 }

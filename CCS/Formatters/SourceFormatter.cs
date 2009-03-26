@@ -91,10 +91,6 @@ namespace CCS.Formatters {
             {
                 return "ERROR: UNKNOWN ACTION";
             }
-            if (act.ID == _highlightID)
-            {
-                return "<sel>" + result + "</sel>";
-            }
             return result;
             
         }

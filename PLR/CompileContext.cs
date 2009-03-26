@@ -50,12 +50,21 @@ namespace PLR {
         }
 
         public MethodInfo GetMethod(string methodName) {
+            return GetMethod(methodName, null);
+        }
+
+        public MethodInfo GetMethod(string methodName, Type[] paramTypes) {
             MethodInfo method;
             foreach (Assembly assembly in this.ReferencedAssemblies) {
                 foreach (string clazz in this.ImportedClasses) {
                     Type type = assembly.GetType(clazz);
                     if (type != null) {
-                        method = type.GetMethod(methodName);
+                        if (paramTypes == null) {
+                            method = type.GetMethod(methodName);
+                        } else {
+                            method = type.GetMethod(methodName, paramTypes);
+                        }
+                        
                         if (method != null) {
                             return method;
                         }

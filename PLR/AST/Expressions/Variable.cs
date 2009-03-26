@@ -42,6 +42,10 @@ namespace PLR.AST.Expressions {
             il.Emit(OpCodes.Stloc, _local);
         }
 
+        public override string ToString() {
+            return _name;
+        }
+
         public override void Compile(CompileContext context) {
             context.ILGenerator.Emit(OpCodes.Ldloc, _local);
         }

@@ -15,6 +15,10 @@ namespace PLR.AST.Expressions {
             get { return _nullType; }
         }
 
+        public override string ToString() {
+            return "null";
+        }
+
         public override void Compile(CompileContext context) {
             context.ILGenerator.Emit(OpCodes.Ldnull);
         }

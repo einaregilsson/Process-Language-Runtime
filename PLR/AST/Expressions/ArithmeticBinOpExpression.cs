@@ -14,7 +14,7 @@ namespace PLR.AST.Expressions {
         Modulo
     }
 
-    public class ArithmeticBinOpExpression : ArithmeticExpression{
+    public class ArithmeticBinOpExpression : ArithmeticExpression {
 
         public ArithmeticBinOpExpression(ArithmeticExpression left, ArithmeticExpression right, ArithmeticBinOp op) {
             _right = right;
@@ -28,9 +28,9 @@ namespace PLR.AST.Expressions {
         private ArithmeticExpression _left;
         private ArithmeticBinOp _op;
 
-        public ArithmeticExpression Right { get {return _right;}}
-        public ArithmeticExpression Left { get {return _left;}}
-        public ArithmeticBinOp Op { get {return _op;}}
+        public ArithmeticExpression Right { get { return _right; } }
+        public ArithmeticExpression Left { get { return _left; } }
+        public ArithmeticBinOp Op { get { return _op; } }
 
         public override int Value {
             get {
@@ -51,8 +51,24 @@ namespace PLR.AST.Expressions {
             }
         }
 
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override string ToString() {
+            switch (this.Op) {
+                case ArithmeticBinOp.Divide:
+                    return Left + "/" + Right;
+                case ArithmeticBinOp.Minus:
+                    return Left + "-" + Right;
+                case ArithmeticBinOp.Multiply:
+                    return Left + "*" + Right;
+                case ArithmeticBinOp.Plus:
+                    return Left + "+" + Right;
+                case ArithmeticBinOp.Modulo:
+                    return Left + "%" + Right;
+                default:
+                    throw new Exception("Unknown arithmetic binary operation: " + this.Op);
+            }
+        }
+
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
         }
         public override void Compile(CompileContext context) {

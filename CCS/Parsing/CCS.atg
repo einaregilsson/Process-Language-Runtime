@@ -4,6 +4,7 @@ using PLR.AST.Processes;
 using PLR.AST.Actions;
 using PLR.AST.ActionHandling;
 using Action = PLR.AST.Actions.Action;
+using System.Collections.Generic;
 
 COMPILER CCS  
     
@@ -26,6 +27,7 @@ CHARACTERS
   lf  = '\n'.
   tab = '\t'.  
   space = ' '.
+  anyButQuote = ANY - '"'.
   underscore = '_'.      
      
 TOKENS    
@@ -36,6 +38,7 @@ TOKENS
   OUTACTION  = underscore lcaseletter {letter|digit} underscore.
   METHOD     = ':' letter {letter|digit} .
   NUMBER = digit {digit}.
+  STRING = '"' {anyButQuote} '"'.
 
 COMMENTS FROM "#" TO lf
 IGNORE cr + lf + tab
@@ -147,6 +150,26 @@ Action<out Action act>                                  (. act = null; .)
     LCASEIDENT                                          (. act = new InAction(t.val); SetPos(act, t);.)
     |
     OUTACTION                                           (. act = new OutAction(t.val); SetPos(act, t);.) 
+    |
+    METHOD												(. List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":",""); Token callStart = t; .) 
+    '('
+    [
+		CallParam<out exp>								(. list.Add(exp); .)
+		
+		{
+			','
+			CallParam<out exp>							(. list.Add(exp); .)
+		}	
+    
+    ]
+    ')'													(. act = new Call(new MethodCallExpression(methodName, list.ToArray())); SetPos(act, t); .)
+.
+
+CallParam<out Expression exp>							(. ArithmeticExpression aexp = null; exp = null;.)
+=
+	ArithmeticExpression<out aexp>						(. exp = aexp; .)
+	|
+	STRING												(. exp = new PLRString(t.val.Substring(1, t.val.Length-2)); SetPos(exp, t);.)
 .
 
 Relabelling<out PreProcessActions preproc>               (. preproc = null; string relabelTo, relabelFrom; RelabelActions labels = new RelabelActions(); .)
@@ -188,7 +211,7 @@ Restriction<out ActionRestrictions ar>
     )        
 .
 
-ArithmeticExpression<out ArithmeticExpression aexp>     (. ArithmeticBinOp op; ArithmeticExpression right = null, left = null; .)
+ArithmeticExpression<out ArithmeticExpression aexp>		(. ArithmeticBinOp op; ArithmeticExpression right = null, left = null; .)
 =
     PlusMinusTerm<out left>                             (. aexp = left; .)
     {

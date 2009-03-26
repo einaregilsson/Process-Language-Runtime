@@ -16,6 +16,11 @@ namespace PLR.AST.Expressions {
         {
             visitor.Visit(this);
         }
+
+        public override string ToString() {
+            return _number.ToString();
+        }
+
         public override void Compile(CompileContext context) {
             context.ILGenerator.Emit(OpCodes.Ldc_I4, _number);
         }
