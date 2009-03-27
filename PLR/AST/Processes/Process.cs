@@ -44,16 +44,12 @@ namespace PLR.AST.Processes {
             return null;
         }
 
-        protected void CheckIfNeedNewProcessEnd(CompileContext context, ConstructorBuilder con, bool wrapInTryCatch) {
-            if (con != null) {
-                CompileNewProcessEnd(context, wrapInTryCatch);
-
-                if (this.NestedProcess) { //start nested Processes automatically
-                    //Now start the new process and die ourselves
-                    context.ILGenerator.Emit(OpCodes.Newobj, con);
-                    context.ILGenerator.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("Run"));
-                }
+        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con) {
+            if (context.Type == null || context.ILGenerator == null) {
+                return; //Are at top level and so can't run the process
             }
+            context.ILGenerator.Emit(OpCodes.Newobj, con);
+            context.ILGenerator.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("Run"));
         }
 
         /// <summary>

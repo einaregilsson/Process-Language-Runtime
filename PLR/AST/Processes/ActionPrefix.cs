@@ -9,7 +9,7 @@ using System.Reflection.Emit;
 
 namespace PLR.AST.Processes {
 
-    public class ActionPrefix : Process{
+    public class ActionPrefix : Process {
 
         public ActionPrefix(Action action, Process proc) {
             _action = action;
@@ -19,8 +19,7 @@ namespace PLR.AST.Processes {
         }
 
         private Action _action;
-        public Action Action
-        {
+        public Action Action {
             get { return _action; }
             set { _action = value; _children[0] = _action; }
         }
@@ -30,8 +29,7 @@ namespace PLR.AST.Processes {
             get { return _proc; }
             set { _proc = value; _children[1] = _proc; }
         }
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
         }
 
@@ -39,7 +37,10 @@ namespace PLR.AST.Processes {
             ConstructorBuilder inner = CheckIfNeedNewProcess(context, true);
             _action.Compile(context);
             this.Process.Compile(context);
-            CheckIfNeedNewProcessEnd(context, inner, true);
+            if (inner != null) {
+                CompileNewProcessEnd(context, true);
+                EmitRunProcess(context, inner);
+            }
         }
     }
 }

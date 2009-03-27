@@ -32,8 +32,17 @@ namespace PLR.AST.Processes {
                 p.TypeName = innerTypeName;
                 p.Compile(context); //Compiling a nested inner process will also start it
                 string fullname = context.Type.FullName + "+" + innerTypeName;
+                ConstructorBuilder con;
+                //Start the processes if they were created under this name.
+                if (context.NamedProcessConstructors.TryGetValue(fullname, out con)) {
+                    EmitRunProcess(context, con);
+                }
             }
-            CheckIfNeedNewProcessEnd(context, inner, false);
+            
+            if (inner != null) {
+                CompileNewProcessEnd(context, false);
+                EmitRunProcess(context, inner);
+            }
         }
     }
 }

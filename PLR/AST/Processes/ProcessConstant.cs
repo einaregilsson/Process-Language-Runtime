@@ -41,11 +41,11 @@ namespace PLR.AST.Processes
 
         public override void Compile(CompileContext context) {
             //Invoke a new instance of that process
-            if (!HasRestrictionsOrPreProcess) {
-                this.TypeName = null; 
-                //Override a possible parent setting this.
-                //We know that ONLY if we have restrictions do we need an extra thing here
-            }
+            //if (!HasRestrictionsOrPreProcess) {
+            //    this.TypeName = null; 
+            //    //Override a possible parent setting this.
+            //   //We know that ONLY if we have restrictions do we need an extra thing here
+            //}
             ConstructorBuilder inner = CheckIfNeedNewProcess(context, false);
 
             ConstructorBuilder constructor = context.NamedProcessConstructors[this.Name];
@@ -68,7 +68,12 @@ namespace PLR.AST.Processes
             //Run the new proc
             il.Emit(OpCodes.Ldloc, loc);
             Call(typeof(ProcessBase), "Run", true).Compile(context);
-            CheckIfNeedNewProcessEnd(context, inner, false);
+
+            
+            if (inner != null) {
+                CompileNewProcessEnd(context, false);
+                EmitRunProcess(context, inner);
+            }
         }
     }
 }
