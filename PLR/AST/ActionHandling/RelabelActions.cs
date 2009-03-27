@@ -21,7 +21,6 @@ namespace PLR.AST.ActionHandling {
         public override void Compile(CompileContext context) {
             if (_mapping.Count > 0) {
                 MethodBuilder relabel = context.Type.DefineMethod("RelabelAction", MethodAttributes.Public | MethodAttributes.Static, typeof(IAction), new Type[] { typeof(IAction) });
-                context.PreProcess = relabel;
                 ILGenerator il = relabel.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Isinst, typeof(ChannelSyncAction));

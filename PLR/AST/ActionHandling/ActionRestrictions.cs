@@ -22,7 +22,6 @@ namespace PLR.AST.ActionHandling {
             il.Emit(OpCodes.Newobj, typeof(RestrictAction).GetConstructors()[0]);
             il.Emit(OpCodes.Ret);
             context.Type.DefineMethodOverride(getRestrict, baseGetRestrict);
-            context.Restrict = getRestrict;
         }
 
     }

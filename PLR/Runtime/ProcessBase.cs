@@ -119,7 +119,7 @@ namespace PLR.Runtime {
         }
 
         public override string ToString() {
-            return this.GetType().Name + "_" + this.ID;
+            return this.GetType().FullName + "_" + this.ID;
         }
 
         public void Continue() {

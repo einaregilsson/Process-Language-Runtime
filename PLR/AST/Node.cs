@@ -13,7 +13,6 @@ namespace PLR.AST {
         public abstract void Accept(AbstractVisitor visitor);
         //Source file contextrmation
 
-        protected static Dictionary<string, ConstructorBuilder> _processConstructors = new Dictionary<string, ConstructorBuilder>();
         protected object _extraData;
         public object ExtraData {
             get { return _extraData; }

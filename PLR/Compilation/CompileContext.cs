@@ -8,18 +8,22 @@ namespace PLR.Compilation {
     public class CompileContext {
 
         private ModuleBuilder _module;
-        private ILGenerator _il;
-        private TypeBuilder _type;
-        private MethodBuilder _preprocess;
-        private MethodBuilder _restrict;
+        private List<ILGenerator> _ilStack = new List<ILGenerator>();
+        private List<TypeBuilder> _typeStack = new List<TypeBuilder>();
         private List<string> _importedClasses = new List<string>();
         private List<Assembly> _referencedAssemblies = new List<Assembly>();
+        private Dictionary<string, ConstructorBuilder> _namedProcessConstructors = new Dictionary<string, ConstructorBuilder>();
 
         public ModuleBuilder Module {
             get { return _module; }
             set { _module = value; }
         }
 
+        public Dictionary<string, ConstructorBuilder> NamedProcessConstructors {
+            get {
+                return _namedProcessConstructors;
+            }
+        }
         public List<String> ImportedClasses {
             get { return _importedClasses; }
             set { _importedClasses = value; }
@@ -30,23 +34,47 @@ namespace PLR.Compilation {
         }
 
         public ILGenerator ILGenerator {
-            get { return _il; }
-            set { _il = value; }
+            get {
+                if (_ilStack.Count == 0) {
+                    return null;
+                } else {
+                    return _ilStack[_ilStack.Count - 1];
+                }
+            }                
         }
 
         public TypeBuilder Type {
-            get { return _type; }
-            set { _type = value; }
+            get {
+                if (_typeStack.Count == 0) {
+                    return null;
+                } else {
+                    return _typeStack[_typeStack.Count - 1];
+                }
+            }
         }
 
-        public MethodBuilder PreProcess {
-            get { return _preprocess; }
-            set { _preprocess = value; }
+        public void PushType(TypeBuilder type) {
+            _typeStack.Add(type);
         }
 
-        public MethodBuilder Restrict {
-            get { return _restrict; }
-            set { _restrict = value; }
+        public void PushIL(ILGenerator il) {
+            _ilStack.Add(il);
+        }
+
+        public TypeBuilder PopType() {
+            TypeBuilder tb = this.Type;
+            if (_typeStack.Count > 0) {
+                _typeStack.RemoveAt(_typeStack.Count - 1);
+            }
+            return tb;
+        }
+
+        public ILGenerator PopIL() {
+            ILGenerator il = this.ILGenerator;
+            if (_ilStack.Count > 0) {
+                _ilStack.RemoveAt(_ilStack.Count - 1);
+            }
+            return il;
         }
 
         public MethodInfo GetMethod(string methodName) {

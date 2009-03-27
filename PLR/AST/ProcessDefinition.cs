@@ -47,37 +47,16 @@ namespace PLR.AST {
         }
 
 
-        public void CompileSignature(ModuleBuilder module) {
+        public void CompileSignature(ModuleBuilder module, CompileContext context) {
             TypeBuilder type = module.DefineType(this.ProcessConstant.Name, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, typeof(ProcessBase));
             ConstructorBuilder constructor = type.DefineDefaultConstructor(MethodAttributes.Public);
-            _processConstructors.Add(this.ProcessConstant.Name, constructor);
+            context.NamedProcessConstructors.Add(this.ProcessConstant.Name, constructor);
         }
 
         public override void Compile(CompileContext context) {
-            context.Type = (TypeBuilder)context.Module.GetType(this.ProcessConstant.Name);
-            Type baseType = typeof(ProcessBase);
-
-            MethodBuilder methodStart = context.Type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
-            context.Type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
-            context.ILGenerator = methodStart.GetILGenerator();
-
-            Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(context);
-
-            
-            context.ILGenerator.BeginExceptionBlock();
+            this.Process.TypeName = this.ProcessConstant.Name; //Bit of a hack...
+            this.Process.NestedProcess = false;
             this.Process.Compile(context);
-            if (!context.Type.IsCreated()) {
-                context.ILGenerator.BeginCatchBlock(typeof(ProcessKilledException));
-                context.ILGenerator.Emit(OpCodes.Pop); //Pop the exception off the stack
-                EmitDebug("Caught ProcessKilledException", context);
-                //Just catch here to abort, don't do anything
-                context.ILGenerator.EndExceptionBlock();
-
-                //Ev
-                Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(context);
-                context.ILGenerator.Emit(OpCodes.Ret);
-                context.Type.CreateType();
-            }
         }
     }
 }

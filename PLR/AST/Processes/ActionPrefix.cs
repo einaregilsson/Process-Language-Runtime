@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using PLR.AST.Actions;
 using PLR.AST.Expressions;
+using PLR.Runtime;
 using PLR.Compilation;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -33,10 +34,12 @@ namespace PLR.AST.Processes {
         {
             visitor.Visit(this);
         }
+
         public override void Compile(CompileContext context) {
-            base.Compile(context);
+            ConstructorBuilder inner = CheckIfNeedNewProcess(context, true);
             _action.Compile(context);
             this.Process.Compile(context);
+            CheckIfNeedNewProcessEnd(context, inner, true);
         }
     }
 }

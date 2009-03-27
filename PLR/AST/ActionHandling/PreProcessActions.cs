@@ -22,7 +22,6 @@ namespace PLR.AST.ActionHandling {
             il.Emit(OpCodes.Newobj, typeof(PreProcessAction).GetConstructors()[0]);
             il.Emit(OpCodes.Ret);
             context.Type.DefineMethodOverride(getPreProcess, baseGetPreProcess);
-            context.PreProcess = getPreProcess;
         }
     }
 }
