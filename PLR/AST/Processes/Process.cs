@@ -41,12 +41,11 @@ namespace PLR.AST.Processes {
             il.Emit(OpCodes.Ldloc, loc);
             il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
 
-            //TODO: Get this back in there...
-            //if (context.Restrict == null && context.PreProcess == null) {
             //The current process doesn't have a restrict or relabel method, no reason for it
             //to continue living, set the parent process of the new proc as our own parent process
-            //  il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
-            //}
+            if (!context.IsRestricted(context.Type)) {
+                il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
+            }
             il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "set_Parent"));
 
             if (setGuidOnProc) {
@@ -75,9 +74,11 @@ namespace PLR.AST.Processes {
 
             if (this.PreProcessActions != null) {
                 this.PreProcessActions.Compile(context);
+                context.AddRestrictedType(context.Type);
             }
             if (this.ActionRestrictions != null) {
                 this.ActionRestrictions.Compile(context);
+                context.AddRestrictedType(context.Type);
             }
 
             MethodBuilder methodStart = context.Type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);

@@ -101,5 +101,16 @@ namespace PLR.Compilation {
             }
             return null;
         }
+
+        private Dictionary<TypeBuilder, bool> _restrictedTypes = new Dictionary<TypeBuilder, bool>();
+        public void AddRestrictedType(TypeBuilder type) {
+            if (!_restrictedTypes.ContainsKey(type)) {
+                _restrictedTypes.Add(type, true);
+            }
+        }
+
+        public bool IsRestricted(TypeBuilder type) {
+            return _restrictedTypes.ContainsKey(type);
+        }
     }
 }

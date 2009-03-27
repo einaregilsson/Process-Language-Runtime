@@ -32,8 +32,8 @@ namespace PLR.AST.Processes {
                 if (p.HasRestrictionsOrPreProcess || !(p is ProcessConstant)) {
                     con = p.CompileNewProcessStart(context, innerTypeName);
                 }
-                p.Compile(context); //Compiling a nested inner process will also start it
-
+                p.Compile(context); 
+                
                 if (con != null) {
                     p.CompileNewProcessEnd(context);
                     EmitRunProcess(context, con,false);

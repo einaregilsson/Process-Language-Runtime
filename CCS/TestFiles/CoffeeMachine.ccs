@@ -1,6 +1,6 @@
 use External.CustomFunctions
 use PLR.BuiltIns
 
-System =  CTM | CS
-CS = _coin_ . (coffee . CS+ tea . CS)
-CTM = coin . _coffee_ . CTM + coin . _tea_ . CTM
+System =  C|A[a/b]
+C = a.0
+A  = c.0

@@ -6,7 +6,7 @@ using PLR.Runtime;
 namespace PLR.AST.Processes {
 
     public class NonDeterministicChoice : Process {
-        
+
         public new Process this[int index] {
             get { return (Process)_children[index]; }
         }
@@ -14,8 +14,7 @@ namespace PLR.AST.Processes {
         public void Add(Process p) {
             _children.Add(p);
         }
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
         }
 
@@ -30,7 +29,7 @@ namespace PLR.AST.Processes {
                 } else {
                     string innerTypeName = "NonDeterministic" + (i + 1);
                     ConstructorBuilder con = p.CompileNewProcessStart(context, innerTypeName);
-                    p.Compile(context); //Compiling a nested inner process will also start it
+                    p.Compile(context);
                     p.CompileNewProcessEnd(context);
                     EmitRunProcess(context, con, true);
                 }

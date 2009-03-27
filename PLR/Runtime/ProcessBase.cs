@@ -129,8 +129,8 @@ namespace PLR.Runtime {
         private void StartProcess() {
             _procThread = Thread.CurrentThread;
             _id = _procThread.ManagedThreadId;
-            Logger.Register(this.GetType().Name + "_" + _id +": ");
-            Debug("Started");
+            Logger.Register(this.GetType().FullName + "_" + _id +": ");
+            Debug("Started, my parent is " + this.Parent);
             RunProcess();
         }
 
