@@ -54,9 +54,9 @@ namespace PLR.AST {
         }
 
         public override void Compile(CompileContext context) {
-            this.Process.TypeName = this.ProcessConstant.Name; //Bit of a hack...
-            this.Process.NestedProcess = false;
+            ConstructorBuilder inner = this.Process.CompileNewProcessStart(context, this.ProcessConstant.Name);
             this.Process.Compile(context);
+            this.Process.CompileNewProcessEnd(context);
         }
     }
 }

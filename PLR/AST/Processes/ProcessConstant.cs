@@ -40,40 +40,7 @@ namespace PLR.AST.Processes
         }
 
         public override void Compile(CompileContext context) {
-            //Invoke a new instance of that process
-            //if (!HasRestrictionsOrPreProcess) {
-            //    this.TypeName = null; 
-            //    //Override a possible parent setting this.
-            //   //We know that ONLY if we have restrictions do we need an extra thing here
-            //}
-            ConstructorBuilder inner = CheckIfNeedNewProcess(context, false);
-
-            ConstructorBuilder constructor = context.NamedProcessConstructors[this.Name];
-            ILGenerator il = context.ILGenerator;
-            LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
-            il.Emit(OpCodes.Newobj, constructor);
-            il.Emit(OpCodes.Stloc, loc);
-
-            il.Emit(OpCodes.Ldloc, loc);
-            il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
-
-            //TODO: Get this back in there...
-            //if (context.Restrict == null && context.PreProcess == null) {
-                //The current process doesn't have a restrict or relabel method, no reason for it
-                //to continue living, set the parent process of the new proc as our own parent process
-              //  il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
-            //}
-            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "set_Parent"));
-
-            //Run the new proc
-            il.Emit(OpCodes.Ldloc, loc);
-            Call(typeof(ProcessBase), "Run", true).Compile(context);
-
-            
-            if (inner != null) {
-                CompileNewProcessEnd(context, false);
-                EmitRunProcess(context, inner);
-            }
+            EmitRunProcess(context, context.NamedProcessConstructors[this.Name], false);
         }
     }
 }

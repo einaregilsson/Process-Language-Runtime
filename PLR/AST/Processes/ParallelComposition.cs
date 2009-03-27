@@ -23,25 +23,21 @@ namespace PLR.AST.Processes {
         }
 
         public override void Compile(CompileContext context) {
-            ConstructorBuilder inner = CheckIfNeedNewProcess(context, false);
 
             for (int i = 0; i < this.Count; i++) {
                 Process p = this[i];
-                p.NestedProcess = true;
                 string innerTypeName = "Parallel" + (i + 1);
-                p.TypeName = innerTypeName;
-                p.Compile(context); //Compiling a nested inner process will also start it
-                string fullname = context.Type.FullName + "+" + innerTypeName;
-                ConstructorBuilder con;
-                //Start the processes if they were created under this name.
-                if (context.NamedProcessConstructors.TryGetValue(fullname, out con)) {
-                    EmitRunProcess(context, con);
+
+                ConstructorBuilder con = null;
+                if (p.HasRestrictionsOrPreProcess || !(p is ProcessConstant)) {
+                    con = p.CompileNewProcessStart(context, innerTypeName);
                 }
-            }
-            
-            if (inner != null) {
-                CompileNewProcessEnd(context, false);
-                EmitRunProcess(context, inner);
+                p.Compile(context); //Compiling a nested inner process will also start it
+
+                if (con != null) {
+                    p.CompileNewProcessEnd(context);
+                    EmitRunProcess(context, con,false);
+                }
             }
         }
     }

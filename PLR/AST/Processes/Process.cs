@@ -17,19 +17,6 @@ namespace PLR.AST.Processes {
             set { _preprocess = value; }
         }
 
-        //A typename for the compiled process, null for processes that are nameless
-        private string _typeName = null;
-        public string TypeName{
-            get { return _typeName; }
-            set { _typeName = value; }
-        }
-
-        //Whether or not the process should be compiled as a nested process
-        private bool _nestedProcess = true;
-        public bool NestedProcess {
-            get { return _nestedProcess; }
-            set { _nestedProcess = value; }
-        }
 
         private ActionRestrictions _restrictions = null;
         public ActionRestrictions ActionRestrictions { 
@@ -37,28 +24,49 @@ namespace PLR.AST.Processes {
             set { _restrictions = value; }
         }
 
-        protected ConstructorBuilder CheckIfNeedNewProcess(CompileContext context, bool wrapInTryCatch) {
-            if (HasRestrictionsOrPreProcess || this.TypeName != null) { //We need a new process
-                return CompileNewProcessStart(context, this.TypeName ?? "Inner", wrapInTryCatch);
-            }
-            return null;
+        protected virtual bool WrapInTryCatch {
+            get { return false; } //Most processes won't need a try catch around them.
         }
 
-        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con) {
+        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con, bool setGuidOnProc) {
             if (context.Type == null || context.ILGenerator == null) {
                 return; //Are at top level and so can't run the process
             }
-            context.ILGenerator.Emit(OpCodes.Newobj, con);
-            context.ILGenerator.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("Run"));
+            ILGenerator il = context.ILGenerator;
+
+            LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
+            il.Emit(OpCodes.Newobj, con);
+            il.Emit(OpCodes.Stloc, loc);
+
+            il.Emit(OpCodes.Ldloc, loc);
+            il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
+
+            //TODO: Get this back in there...
+            //if (context.Restrict == null && context.PreProcess == null) {
+            //The current process doesn't have a restrict or relabel method, no reason for it
+            //to continue living, set the parent process of the new proc as our own parent process
+            //  il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
+            //}
+            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "set_Parent"));
+
+            if (setGuidOnProc) {
+                il.Emit(OpCodes.Ldloc, loc);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("get_SetID"));
+                il.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("set_SetID"));
+            }
+
+            il.Emit(OpCodes.Ldloc, loc);
+            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "Run"));
         }
 
         /// <summary>
         /// Compiles the start block of
         /// </summary>
         /// <param name="context"></param>
-        public ConstructorBuilder CompileNewProcessStart(CompileContext context, string name, bool wrapInTryCatch) {
+        public ConstructorBuilder CompileNewProcessStart(CompileContext context, string name) {
             
-            if (this.NestedProcess) { //No, so let's create a nested type
+            if (context.Type != null) { //Are in a type, so let's create a nested one
                 context.PushType(context.Type.DefineNestedType(name, TypeAttributes.NestedPublic | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, typeof(ProcessBase)));
             } else {
                 context.PushType((TypeBuilder)context.Module.GetType(name));
@@ -76,7 +84,7 @@ namespace PLR.AST.Processes {
             context.Type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
             context.PushIL(methodStart.GetILGenerator());
             Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(context);
-            if (wrapInTryCatch) {
+            if (this.WrapInTryCatch) {
                 context.ILGenerator.BeginExceptionBlock();
             }
 
@@ -86,13 +94,13 @@ namespace PLR.AST.Processes {
             return context.NamedProcessConstructors[context.Type.FullName];
         }
 
-        protected bool HasRestrictionsOrPreProcess {
+        internal bool HasRestrictionsOrPreProcess {
             get { return this.ActionRestrictions != null || this.PreProcessActions != null; }
         }
 
 
-        public void CompileNewProcessEnd(CompileContext context, bool wrapInTryCatch) {
-            if (wrapInTryCatch) {
+        public void CompileNewProcessEnd(CompileContext context) {
+            if (this.WrapInTryCatch) {
                 context.ILGenerator.BeginCatchBlock(typeof(ProcessKilledException));
                 context.ILGenerator.Emit(OpCodes.Pop); //Pop the exception off the stack
                 EmitDebug("Caught ProcessKilledException", context);

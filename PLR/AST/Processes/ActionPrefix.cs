@@ -29,17 +29,25 @@ namespace PLR.AST.Processes {
             get { return _proc; }
             set { _proc = value; _children[1] = _proc; }
         }
+
+        protected override bool WrapInTryCatch {
+            get { return true; } 
+        }
+
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
         }
 
         public override void Compile(CompileContext context) {
-            ConstructorBuilder inner = CheckIfNeedNewProcess(context, true);
             _action.Compile(context);
+            ConstructorBuilder inner = null;
+            if (Process.HasRestrictionsOrPreProcess) {
+                inner = Process.CompileNewProcessStart(context, "Inner");
+            }
             this.Process.Compile(context);
             if (inner != null) {
-                CompileNewProcessEnd(context, true);
-                EmitRunProcess(context, inner);
+                this.Process.CompileNewProcessEnd(context);
+                EmitRunProcess(context, inner, true);
             }
         }
     }
