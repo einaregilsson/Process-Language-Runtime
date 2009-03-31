@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Diagnostics.SymbolStore;
+using PLR.AST;
 
 namespace PLR.Compilation {
     public class CompileContext {
@@ -13,6 +15,18 @@ namespace PLR.Compilation {
         private List<string> _importedClasses = new List<string>();
         private List<Assembly> _referencedAssemblies = new List<Assembly>();
         private Dictionary<string, ConstructorBuilder> _namedProcessConstructors = new Dictionary<string, ConstructorBuilder>();
+        private CompileOptions _options;
+        private ISymbolDocumentWriter _debugWriter;
+
+        public CompileOptions Options {
+            get { return _options; }
+            set { _options = value; }
+        }
+
+        public ISymbolDocumentWriter DebugWriter {
+            get { return _debugWriter; }
+            set { _debugWriter = value; }
+        }
 
         public ModuleBuilder Module {
             get { return _module; }
@@ -40,7 +54,7 @@ namespace PLR.Compilation {
                 } else {
                     return _ilStack[_ilStack.Count - 1];
                 }
-            }                
+            }
         }
 
         public TypeBuilder Type {
@@ -92,7 +106,7 @@ namespace PLR.Compilation {
                         } else {
                             method = type.GetMethod(methodName, paramTypes);
                         }
-                        
+
                         if (method != null) {
                             return method;
                         }
@@ -100,6 +114,14 @@ namespace PLR.Compilation {
                 }
             }
             return null;
+        }
+
+        public void MarkSequencePoint(LexicalInfo lexinfo) {
+            if (this.Options.Debug) {
+                this.ILGenerator.MarkSequencePoint(DebugWriter, lexinfo.StartLine, lexinfo.StartColumn, lexinfo.EndLine, lexinfo.EndColumn);
+            }
+            
+
         }
 
         private Dictionary<TypeBuilder, bool> _restrictedTypes = new Dictionary<TypeBuilder, bool>();

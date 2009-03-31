@@ -73,6 +73,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\AbstractVisitor.cs" />
+    <Compile Include="AST\LexicalInfo.cs" />
     <Compile Include="AST\Node.cs" />
     <Compile Include="AST\ProcessDefinition.cs">
       <SubType>Code</SubType>

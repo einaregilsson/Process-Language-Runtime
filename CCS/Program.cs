@@ -26,7 +26,7 @@ Usage: CCS [options] <filename>
             }
             List<string> listArgs = new List<string>(args);
             CompileOptions options = CompileOptions.Parse(listArgs);
-
+            
             DieIf(options.Arguments.Count == 0, "ERROR: Missing input file name");
             DieIf(options.Arguments.Count > 1, "ERROR: Only one input file is expected");
             string filename = options.Arguments[0];

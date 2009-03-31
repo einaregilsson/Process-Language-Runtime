@@ -28,7 +28,7 @@ namespace PLR.AST.Processes {
             get { return false; } //Most processes won't need a try catch around them.
         }
 
-        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con, bool setGuidOnProc) {
+        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con, bool setGuidOnProc, LexicalInfo lexInfo) {
             if (context.Type == null || context.ILGenerator == null) {
                 return; //Are at top level and so can't run the process
             }
@@ -56,6 +56,9 @@ namespace PLR.AST.Processes {
             }
 
             il.Emit(OpCodes.Ldloc, loc);
+            if (context.Options.Debug && lexInfo != null) {
+                context.MarkSequencePoint(lexInfo);
+            }
             il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "Run"));
         }
 

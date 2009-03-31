@@ -24,6 +24,7 @@ namespace PLR.AST.Actions {
             il.Emit(OpCodes.Ldc_I4_1);
             il.Emit(OpCodes.Newobj, typeof(ChannelSyncAction).GetConstructor(new Type[] { typeof(string), typeof(ProcessBase), typeof(bool) }));
             il.Emit(OpCodes.Call, SyncMethod);
+            context.MarkSequencePoint(this.LexicalInfo);
             //Do nothing here after. In an action class that actually does something we would
             //compile it here.
         }

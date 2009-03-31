@@ -35,7 +35,7 @@ namespace PLR.AST.Actions {
 
             //Call sync
             il.Emit(OpCodes.Call, SyncMethod);
-
+            context.MarkSequencePoint(this.LexicalInfo);
             //Now compile the actual method call
             _exp.Compile(context);
         }

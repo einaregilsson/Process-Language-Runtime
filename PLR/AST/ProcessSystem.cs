@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 using System.IO;
 using System;
 using PLR.Compilation;
+using System.Diagnostics.SymbolStore;
 
 namespace PLR.AST {
 
@@ -36,14 +37,19 @@ namespace PLR.AST {
             string folder = Path.GetDirectoryName(absolutePath);
             AssemblyName name = new AssemblyName(filename);
             AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save, folder);
-            ModuleBuilder module = assembly.DefineDynamicModule(options.OutputFile, filename);
+            ModuleBuilder module = assembly.DefineDynamicModule(options.OutputFile, filename, options.Debug);
             if (options.EmbedPLR) {
                 GenerateAssemblyLookup(module);
             }
 
             CompileContext context = new CompileContext();
+            context.Options = options;
             context.Module = module;
             MethodBuilder mainMethod = module.DefineGlobalMethod("Main", MethodAttributes.Public | MethodAttributes.Static, typeof(int), new Type[] { });
+            if (options.Debug) {
+                context.DebugWriter = module.DefineDocument(options.Arguments[0], Guid.Empty, Guid.Empty, SymDocumentType.Text);
+                module.SetUserEntryPoint(mainMethod);
+            }
 
             context.Module = module;
             context.ImportedClasses = _importedClasses;

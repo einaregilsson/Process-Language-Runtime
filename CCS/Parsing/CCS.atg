@@ -12,12 +12,29 @@ COMPILER CCS
     public ProcessSystem System {get { return this.system;}}
     
     private void SetPos(Node n, Token t) {
-		n.SetPos(t.line, t.col, t.val.Length, t.pos);
-    }
-    private void CopyPos(Node from, Node to, Token end) {
-		to.SetPos(from.Line, from.Column, t.pos-from.Position, from.Position);
+        n.LexicalInfo.StartLine = t.line;
+        n.LexicalInfo.StartColumn = t.col;
+        n.LexicalInfo.EndLine = t.line;
+        n.LexicalInfo.EndColumn = t.col+t.val.Length;
     }
     
+    private void SetStartPos(Node n, Token t) {
+        n.LexicalInfo.StartLine = t.line;
+        n.LexicalInfo.StartColumn = t.col;
+    }
+
+    private void SetEndPos(Node n, Token t) {
+        n.LexicalInfo.EndLine = t.line;
+        n.LexicalInfo.EndColumn = t.col;
+    }
+    
+    private void CopyPos(Node n, Node source, Token end) {
+        n.LexicalInfo.StartLine = source.LexicalInfo.StartLine;
+        n.LexicalInfo.StartColumn = source.LexicalInfo.StartColumn;
+        n.LexicalInfo.EndLine = t.line;
+        n.LexicalInfo.EndColumn = t.col;
+    }
+
 CHARACTERS
   ucaseletter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
   lcaseletter = "abcdefghijklmnopqrstuvwxyz".
@@ -52,7 +69,7 @@ CCS
 	ProcessDefinition<out proc, true>                   (. this.System.Add(proc); .)
     {
         ProcessDefinition<out proc, false>              (. this.System.Add(proc); .)
-    }                                                   (. CopyPos(this.System[0],this.System, t); .)
+    }                                                   (. CopyPos(this.System, this.System[0], t); .)
 .  
 
 ClassImport<>
@@ -63,7 +80,7 @@ ClassImport<>
 ProcessDefinition<out ProcessDefinition procdef, bool entryProc> =      (. Process proc; ProcessConstant pc; .)
     ProcessConstantDef<out pc>                          
     '='
-    Process<out proc>                                   (. procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(pc,procdef,t); .)
+    Process<out proc>                                   (. procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(procdef,pc,t); .)
 .
 
 ProcessConstantDef<out ProcessConstant pc>				(. pc = null; .)
@@ -78,7 +95,7 @@ ProcessConstantDef<out ProcessConstant pc>				(. pc = null; .)
     {
         ',' Subscript<out subscript>                    (. pc.Subscript.Add(subscript); .)
     }
-    '}'                                                 (. SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Position; .)
+    '}'                                                 (. SetPos(pc.Subscript,startToken); .)
 .
 
 Subscript<out ArithmeticExpression sub>                 (. sub = null; .)
@@ -98,7 +115,7 @@ NonDeterministicChoice<out Process proc>                (. Process pc; NonDeterm
     ParallelComposition<out pc>                         (. ndc.Add(pc); .)
     {
         '+' ParallelComposition<out pc>                 (. ndc.Add(pc); .)
-    }                                                   (. if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; CopyPos(ndc[0],proc, t);}.)
+    }                                                   (. if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; CopyPos(proc,ndc[0], t);}.)
 .
 
 ParallelComposition<out Process proc>                   (. Process ap; ParallelComposition pc = new ParallelComposition();.)
@@ -112,7 +129,7 @@ ParallelComposition<out Process proc>                   (. Process ap; ParallelC
 ActionPrefix<out Process proc>                          (. ActionPrefix ap = null; ActionPrefix prev = null; ActionPrefix first = null; Process nextProc = null; ProcessConstant pc; proc = null; Action act = null; .)
 =
     { 
-        Action<out act> '.'                             (. ap = new ActionPrefix(act, null); CopyPos(ap.Action,ap,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;.)
+        Action<out act> '.'                             (. ap = new ActionPrefix(act, null); CopyPos(ap,ap.Action,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;.)
     }
     (
         '(' Process<out nextProc> ')'                   (. nextProc.ParenCount++; .)
@@ -151,7 +168,7 @@ Action<out Action act>                                  (. act = null; .)
     |
     OUTACTION                                           (. act = new OutAction(t.val); SetPos(act, t);.) 
     |
-    METHOD												(. List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":",""); Token callStart = t; .) 
+    METHOD												(. Token start = t; List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":",""); Token callStart = t; .) 
     '('
     [
 		CallParam<out exp>								(. list.Add(exp); .)
@@ -162,7 +179,7 @@ Action<out Action act>                                  (. act = null; .)
 		}	
     
     ]
-    ')'													(. act = new Call(new MethodCallExpression(methodName, list.ToArray())); SetPos(act, t); .)
+    ')'													(. act = new Call(new MethodCallExpression(methodName, list.ToArray())); SetStartPos(act, start); SetEndPos(act, t); .)
 .
 
 CallParam<out Expression exp>							(. ArithmeticExpression aexp = null; exp = null;.)

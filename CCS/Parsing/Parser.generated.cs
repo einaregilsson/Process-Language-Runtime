@@ -29,12 +29,29 @@ private ProcessSystem system = new ProcessSystem();
     public ProcessSystem System {get { return this.system;}}
     
     private void SetPos(Node n, Token t) {
-		n.SetPos(t.line, t.col, t.val.Length, t.pos);
-    }
-    private void CopyPos(Node from, Node to, Token end) {
-		to.SetPos(from.Line, from.Column, t.pos-from.Position, from.Position);
+        n.LexicalInfo.StartLine = t.line;
+        n.LexicalInfo.StartColumn = t.col;
+        n.LexicalInfo.EndLine = t.line;
+        n.LexicalInfo.EndColumn = t.col+t.val.Length;
     }
     
+    private void SetStartPos(Node n, Token t) {
+        n.LexicalInfo.StartLine = t.line;
+        n.LexicalInfo.StartColumn = t.col;
+    }
+
+    private void SetEndPos(Node n, Token t) {
+        n.LexicalInfo.EndLine = t.line;
+        n.LexicalInfo.EndColumn = t.col;
+    }
+    
+    private void CopyPos(Node n, Node source, Token end) {
+        n.LexicalInfo.StartLine = source.LexicalInfo.StartLine;
+        n.LexicalInfo.StartColumn = source.LexicalInfo.StartColumn;
+        n.LexicalInfo.EndLine = t.line;
+        n.LexicalInfo.EndColumn = t.col;
+    }
+
 
 
 	void Get () {
@@ -58,7 +75,7 @@ private ProcessSystem system = new ProcessSystem();
 			ProcessDefinition(out proc, false);
 			this.System.Add(proc); 
 		}
-		CopyPos(this.System[0],this.System, t); 
+		CopyPos(this.System, this.System[0], t); 
 	}
 
 	void ClassImport() {
@@ -72,7 +89,7 @@ private ProcessSystem system = new ProcessSystem();
 		ProcessConstantDef(out pc);
 		Expect(10);
 		Process(out proc);
-		procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(pc,procdef,t); 
+		procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(procdef,pc,t); 
 	}
 
 	void ProcessConstantDef(out ProcessConstant pc) {
@@ -93,7 +110,7 @@ private ProcessSystem system = new ProcessSystem();
 				pc.Subscript.Add(subscript); 
 			}
 			Expect(13);
-			SetPos(pc.Subscript,startToken); pc.Subscript.Length = t.pos - pc.Subscript.Position; 
+			SetPos(pc.Subscript,startToken); 
 		} else SynErr(28);
 	}
 
@@ -123,7 +140,7 @@ private ProcessSystem system = new ProcessSystem();
 			ParallelComposition(out pc);
 			ndc.Add(pc); 
 		}
-		if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; CopyPos(ndc[0],proc, t);}
+		if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; CopyPos(proc,ndc[0], t);}
 	}
 
 	void ParallelComposition(out Process proc) {
@@ -143,7 +160,7 @@ private ProcessSystem system = new ProcessSystem();
 		while (la.kind == 3 || la.kind == 5 || la.kind == 6) {
 			Action(out act);
 			Expect(17);
-			ap = new ActionPrefix(act, null); CopyPos(ap.Action,ap,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;
+			ap = new ActionPrefix(act, null); CopyPos(ap,ap.Action,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;
 		}
 		if (la.kind == 18) {
 			Get();
@@ -180,7 +197,7 @@ private ProcessSystem system = new ProcessSystem();
 			act = new OutAction(t.val); SetPos(act, t);
 		} else if (la.kind == 6) {
 			Get();
-			List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":",""); Token callStart = t; 
+			Token start = t; List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":",""); Token callStart = t; 
 			Expect(18);
 			if (StartOf(1)) {
 				CallParam(out exp);
@@ -192,7 +209,7 @@ private ProcessSystem system = new ProcessSystem();
 				}
 			}
 			Expect(19);
-			act = new Call(new MethodCallExpression(methodName, list.ToArray())); SetPos(act, t); 
+			act = new Call(new MethodCallExpression(methodName, list.ToArray())); SetStartPos(act, start); SetEndPos(act, t); 
 		} else SynErr(31);
 	}
 

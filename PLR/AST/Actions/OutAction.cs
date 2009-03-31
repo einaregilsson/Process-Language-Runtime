@@ -29,6 +29,8 @@ namespace PLR.AST.Actions
             il.Emit(OpCodes.Call, SyncMethod);
             //Do nothing here after. In an action class that actually does something we would
             //compile it here.
+            context.MarkSequencePoint(this.LexicalInfo);
+
         }
     }
 }

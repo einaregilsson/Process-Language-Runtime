@@ -40,7 +40,7 @@ namespace PLR.AST.Processes
         }
 
         public override void Compile(CompileContext context) {
-            EmitRunProcess(context, context.NamedProcessConstructors[this.Name], false);
+            EmitRunProcess(context, context.NamedProcessConstructors[this.Name], false, LexicalInfo);
         }
     }
 }

@@ -12,39 +12,10 @@ namespace PLR.AST {
 
         public abstract void Accept(AbstractVisitor visitor);
         //Source file contextrmation
-
-        protected object _extraData;
-        public object ExtraData {
-            get { return _extraData; }
-            set { _extraData = value; }
-        }
-
-        protected int _line;
-        public int Line
-        {
-            get { return _line; }
-            set { _line = value; }
-        }
-
-        protected int _col;
-        public int Column
-        {
-            get { return _col; }
-            set { _col = value; }
-        }
-
-        protected int _pos;
-        public int Position
-        {
-            get { return _pos; }
-            set { _pos = value; }
-        }
-
-        protected int _length;
-        public int Length
-        {
-            get { return _length; }
-            set { _length = value; }
+        
+        protected readonly LexicalInfo _lexInfo = new LexicalInfo();
+        public LexicalInfo LexicalInfo {
+            get { return _lexInfo; }
         }
 
         protected int _parenCount;
@@ -57,15 +28,6 @@ namespace PLR.AST {
         public bool HasParens { get { return ParenCount > 0; } }
 
         protected List<Node> _children = new List<Node>();
-        public void SetPos(int line, int col, int length, int pos)
-        {
-            _line = line;
-            _col = col;
-            _length = length;
-            _pos = pos;
-        }
-
-        //protected static Formatter formatter = new Formatter();
 
         public virtual int Count
         {

@@ -47,7 +47,7 @@ namespace PLR.AST.Processes {
             this.Process.Compile(context);
             if (inner != null) {
                 this.Process.CompileNewProcessEnd(context);
-                EmitRunProcess(context, inner, true);
+                EmitRunProcess(context, inner, true, null);
             }
         }
     }
