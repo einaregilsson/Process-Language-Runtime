@@ -16,9 +16,10 @@ namespace External {
             return true;
         }
 
-        public static void DoStuff() {
-            System.Console.WriteLine("FROM CCS; YAY");
+        public static void Print(string s) {
+            System.Console.WriteLine(s);
         }
+
 
         public static void WRITE(string s) {
             System.Console.WriteLine(s);

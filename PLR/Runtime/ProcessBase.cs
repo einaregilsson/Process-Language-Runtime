@@ -126,6 +126,7 @@ namespace PLR.Runtime {
             _procThread.Resume();
         }
         
+        [System.Diagnostics.DebuggerStepThrough]
         private void StartProcess() {
             _procThread = Thread.CurrentThread;
             _id = _procThread.ManagedThreadId;
