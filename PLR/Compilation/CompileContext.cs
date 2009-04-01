@@ -17,10 +17,54 @@ namespace PLR.Compilation {
         private Dictionary<string, ConstructorBuilder> _namedProcessConstructors = new Dictionary<string, ConstructorBuilder>();
         private CompileOptions _options;
         private ISymbolDocumentWriter _debugWriter;
-
+        private Dictionary<string, Dictionary<string, FieldBuilder>> _typeFields = new Dictionary<string, Dictionary<string, FieldBuilder>>();
+        private string _procdefName;
         public CompileOptions Options {
             get { return _options; }
             set { _options = value; }
+        }
+        
+        public string ProcessName {
+            get { return _procdefName; }
+            set { _procdefName = value; }
+        }
+
+        public void StartNewProcessDefiniton(string procName) {
+            ProcessName = procName;
+            _typeFields.Add(procName, new Dictionary<string, FieldBuilder>());
+        }
+
+        public void AddField(string typeName, FieldBuilder field) {
+            if (!_typeFields.ContainsKey(typeName)) {
+                _typeFields.Add(typeName, new Dictionary<string, FieldBuilder>());
+            }
+            _typeFields[typeName].Add(field.Name, field);
+        }
+
+        public Dictionary<string, FieldBuilder> ProcessFields {
+            get { return _typeFields[ProcessName]; }
+        }
+
+        public FieldBuilder GetField(string field) {
+            if (_typeFields[this.Type.FullName].ContainsKey(field)) {
+                return _typeFields[this.Type.FullName][field];
+            }
+            return null;
+        }
+
+        public FieldBuilder GetField(string typeName, string field) {
+            if (_typeFields[typeName].ContainsKey(field)) {
+                return _typeFields[typeName][field];
+            }
+            return null;
+        }
+
+        public Dictionary<string, FieldBuilder> GetFields() {
+            return _typeFields[this.Type.FullName];
+        }
+
+        public Dictionary<string,FieldBuilder> GetFields(string typeName) {
+            return _typeFields[typeName];
         }
 
         public ISymbolDocumentWriter DebugWriter {

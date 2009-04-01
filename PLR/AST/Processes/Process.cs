@@ -37,6 +37,15 @@ namespace PLR.AST.Processes {
             LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
             il.Emit(OpCodes.Newobj, con);
             il.Emit(OpCodes.Stloc, loc);
+            
+            //Set fields on the newly created process
+            foreach (FieldBuilder sourceField in context.GetFields().Values) {
+                FieldBuilder destField = context.GetField(con.DeclaringType.FullName, sourceField.Name);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, sourceField);
+                il.Emit(OpCodes.Ldloc, loc);
+                il.Emit(OpCodes.Stfld, destField);
+            }
 
             il.Emit(OpCodes.Ldloc, loc);
             il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
@@ -62,12 +71,13 @@ namespace PLR.AST.Processes {
             il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "Run"));
         }
 
+
         /// <summary>
         /// Compiles the start block of
         /// </summary>
         /// <param name="context"></param>
         public ConstructorBuilder CompileNewProcessStart(CompileContext context, string name) {
-            
+
             if (context.Type != null) { //Are in a type, so let's create a nested one
                 context.PushType(context.Type.DefineNestedType(name, TypeAttributes.NestedPublic | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, typeof(ProcessBase)));
             } else {
@@ -94,6 +104,10 @@ namespace PLR.AST.Processes {
 
             if (!context.NamedProcessConstructors.ContainsKey(context.Type.Name)) {
                 context.NamedProcessConstructors.Add(context.Type.FullName, context.Type.DefineDefaultConstructor(MethodAttributes.Public));
+                foreach (FieldBuilder field in context.ProcessFields.Values) {
+                    FieldBuilder newField = context.Type.DefineField(field.Name, field.FieldType, FieldAttributes.Public);
+                    context.AddField(context.Type.FullName, newField);
+                }
             }
             return context.NamedProcessConstructors[context.Type.FullName];
         }

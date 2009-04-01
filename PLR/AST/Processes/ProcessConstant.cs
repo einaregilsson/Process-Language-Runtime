@@ -40,6 +40,10 @@ namespace PLR.AST.Processes
         }
 
         public override void Compile(CompileContext context) {
+
+            foreach (ArithmeticExpression exp in this.Subscript) {
+                exp.Compile(context);
+            }
             EmitRunProcess(context, context.NamedProcessConstructors[this.Name], false, LexicalInfo);
         }
     }

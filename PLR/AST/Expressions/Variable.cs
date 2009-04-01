@@ -27,7 +27,12 @@ namespace PLR.AST.Expressions {
         }
         public override Type Type {
             get {
-                return _local.LocalType;
+                if (_local != null) {
+                    return _local.LocalType;
+                } else {
+                    return typeof(int);
+                }
+                
             }
         }
         #region Compilation
@@ -48,7 +53,13 @@ namespace PLR.AST.Expressions {
         }
 
         public override void Compile(CompileContext context) {
-            context.ILGenerator.Emit(OpCodes.Ldloc, _local);
+            if (_local != null) {
+                context.ILGenerator.Emit(OpCodes.Ldloc, _local);
+            } else {
+                FieldBuilder field = context.GetField(_name);
+                context.ILGenerator.Emit(OpCodes.Ldarg_0);
+                context.ILGenerator.Emit(OpCodes.Ldfld, field);
+            }
         }
         #endregion
     }

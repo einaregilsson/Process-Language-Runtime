@@ -55,6 +55,7 @@ namespace PLR.AST {
             context.ImportedClasses = _importedClasses;
 
             foreach (ProcessDefinition procdef in this) {
+                context.StartNewProcessDefiniton(procdef.ProcessConstant.Name);
                 procdef.CompileSignature(module, context);
             }
             if (!context.ImportedClasses.Contains("PLR.BuiltIns")) {
@@ -74,6 +75,7 @@ namespace PLR.AST {
             }
 
             foreach (ProcessDefinition procdef in this) {
+                context.ProcessName = procdef.ProcessConstant.Name;
                 procdef.Compile(context);
             }
 

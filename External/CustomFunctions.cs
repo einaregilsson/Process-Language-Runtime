@@ -24,5 +24,10 @@ namespace External {
         public static void WRITE(string s) {
             System.Console.WriteLine(s);
         }
+
+        public static void WRITE(string s, int arg0) {
+            System.Console.WriteLine(s + arg0);
+        }
+
     }
 }
