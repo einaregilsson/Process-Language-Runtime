@@ -1,6 +1,18 @@
 use External.CustomFunctions
 use PLR.BuiltIns
 
-System =  C|A[a/b]
-C = a.0
-A  = c.0
+University = VM[coffee/item] | CS | Conf
+VM = coin . 
+	_item_ . 
+	(VM
+	+
+	VM
+	+
+	VM
+	+
+	coin
+	.
+	0)
+CS = _coin_ . coffee . _submit_ . (accept . CS + reject . CS)
+Conf = submit . (_accept_.Conf+_reject_.Conf+_reject_.Conf)
+

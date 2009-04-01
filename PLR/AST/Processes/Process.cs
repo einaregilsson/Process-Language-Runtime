@@ -57,7 +57,7 @@ namespace PLR.AST.Processes {
 
             il.Emit(OpCodes.Ldloc, loc);
             if (context.Options.Debug && lexInfo != null) {
-                context.MarkSequencePoint(lexInfo);
+                //context.MarkSequencePoint(lexInfo);
             }
             il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "Run"));
         }
