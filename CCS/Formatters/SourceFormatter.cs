@@ -49,18 +49,18 @@ namespace CCS.Formatters {
         }
 
         public virtual string Format(ProcessDefinition def) {
-            return (def.EntryProc ? "->" : "") + Format(def.ProcessConstant) + " = " + Format(def.Process);
+            return (def.EntryProc ? "->" : "") + def.Name + Format(def.Variables) + " = " + Format(def.Process);
         }
 
         public virtual string Format(ProcessConstant pc) {
-                return SurroundWithParens(pc.Name+Format(pc.Subscript), pc.ParenCount) + Format(pc.PreProcessActions) + Format(pc.ActionRestrictions);
+                return SurroundWithParens(pc.Name+Format(pc.Expressions), pc.ParenCount) + Format(pc.PreProcessActions) + Format(pc.ActionRestrictions);
         }
 
-        public virtual string Format(Subscript s) {
+        public virtual string Format(ExpressionList s) {
             if (s.Count == 0) {
                 return "";
             } else {
-                return "_{" + Join(",", s) + "}";
+                return "(" + Join(",", s) + ")";
             }
         }
 
@@ -140,8 +140,8 @@ namespace CCS.Formatters {
                 return Format((ActionRestrictions)node);
             } else if (node is ArithmeticExpression) {
                 return Format((ArithmeticExpression)node);
-            } else if (node is Subscript) {
-                return Format((Subscript)node);
+            } else if (node is ExpressionList) {
+                return Format((ExpressionList)node);
             }
             return "ERROR: UNKNOWN NODE";
         }

@@ -4,6 +4,7 @@ using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using PLR.Compilation;
 using PLR.Runtime;
+using PLR.AST.Expressions;
 
 namespace PLR.AST.Actions {
     public class InAction : Action {
@@ -12,6 +13,9 @@ namespace PLR.AST.Actions {
             visitor.Visit(this);
         }
 
+        public void AddVariable(Variable var) {
+            _children.Add(var);
+        }
 
         public override void Compile(CompileContext context) {
             Type procType = typeof(ProcessBase);

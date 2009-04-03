@@ -20,7 +20,7 @@ namespace PLR.AST.ActionHandling {
 
         public override void Compile(CompileContext context) {
             if (_channelNames.Count > 0) {
-                MethodBuilder restrict = context.Type.DefineMethod("RestrictByName", MethodAttributes.Public | MethodAttributes.Static, typeof(bool), new Type[] { typeof(IAction) });
+                MethodBuilder restrict = context.Type.Builder.DefineMethod("RestrictByName", MethodAttributes.Public | MethodAttributes.Static, typeof(bool), new Type[] { typeof(IAction) });
                 ILGenerator il = restrict.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Isinst, typeof(ChannelSyncAction));

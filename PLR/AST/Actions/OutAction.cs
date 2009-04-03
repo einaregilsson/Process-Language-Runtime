@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using PLR.Compilation;
+using PLR.AST.Expressions;
 using PLR.Runtime;
 
 namespace PLR.AST.Actions
@@ -14,6 +15,11 @@ namespace PLR.AST.Actions
         {
             visitor.Visit(this);
         }
+
+        public void AddExpression(Expression exp) {
+            _children.Add(exp);
+        }
+
 
         public override void Compile(CompileContext context) {
             Type procType = typeof(ProcessBase);

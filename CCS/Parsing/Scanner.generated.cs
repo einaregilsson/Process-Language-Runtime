@@ -22,19 +22,19 @@ public partial class Scanner {
 		for (int i = 48; i <= 57; ++i) start[i] = 12;
 		start[58] = 10; 
 		start[34] = 13; 
-		start[61] = 17; 
-		start[123] = 18; 
-		start[44] = 19; 
-		start[125] = 20; 
+		start[40] = 17; 
+		start[44] = 18; 
+		start[41] = 19; 
+		start[61] = 20; 
 		start[43] = 21; 
 		start[124] = 22; 
 		start[46] = 23; 
-		start[40] = 24; 
-		start[41] = 25; 
-		start[91] = 26; 
-		start[47] = 27; 
-		start[93] = 28; 
-		start[92] = 29; 
+		start[91] = 24; 
+		start[47] = 25; 
+		start[93] = 26; 
+		start[92] = 27; 
+		start[123] = 28; 
+		start[125] = 29; 
 		start[45] = 30; 
 		start[42] = 31; 
 		start[37] = 32; 
@@ -86,7 +86,7 @@ public partial class Scanner {
 	void CheckLiteral() {
 		switch (t.val) {
 			case "use": t.kind = 9; break;
-			case "0": t.kind = 14; break;
+			case "0": t.kind = 17; break;
 			default: break;
 		}
 	}
@@ -168,11 +168,11 @@ public partial class Scanner {
 			case 20:
 				{t.kind = 13; break;}
 			case 21:
-				{t.kind = 15; break;}
+				{t.kind = 14; break;}
 			case 22:
-				{t.kind = 16; break;}
+				{t.kind = 15; break;}
 			case 23:
-				{t.kind = 17; break;}
+				{t.kind = 16; break;}
 			case 24:
 				{t.kind = 18; break;}
 			case 25:

@@ -57,6 +57,7 @@
     <None Include="TestFiles\CoffeeMachine.ccs" />
     <None Include="TestFiles\ComputerScientist.ccs" />
     <None Include="TestFiles\Simple.ccs" />
+    <None Include="TestFiles\ValuePass.ccs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\External\External.csproj">

@@ -25,7 +25,7 @@ namespace PLR.AST.Processes {
                 if (p is ProcessConstant && !p.HasRestrictionsOrPreProcess) {
                     //Don't need to create a special proc just for wrapping this
                     ProcessConstant pc = (ProcessConstant)p;
-                    EmitRunProcess(context, context.NamedProcessConstructors[pc.Name], true, p.LexicalInfo);
+                    EmitRunProcess(context, context.GetType(pc.Name).Constructor, true, p.LexicalInfo);
                 } else {
                     string innerTypeName = "NonDeterministic" + (i + 1);
                     ConstructorBuilder con = p.CompileNewProcessStart(context, innerTypeName);

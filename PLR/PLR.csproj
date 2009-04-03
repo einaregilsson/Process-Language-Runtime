@@ -103,9 +103,10 @@
     <Compile Include="AST\ActionHandling\ActionRestrictions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Subscript.cs">
+    <Compile Include="AST\Expressions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Compilation\TypeInfo.cs" />
     <Compile Include="Runtime\BuiltIns.cs" />
     <Compile Include="Runtime\ChannelSyncAction.cs" />
     <Compile Include="Compilation\CompileContext.cs" />

@@ -11,15 +11,15 @@ namespace PLR.AST.Processes
     public class ProcessConstant : Process {
         public ProcessConstant(string name) {
             _name = name;
-            _subscript = new Subscript();
-            _children.Add(Subscript);
+            _expressions = new ExpressionList();
+            _children.Add(Expressions);
         }
 
         private string _name;
         public string Name { get { return _name; } }
 
-        protected Subscript _subscript;
-        public Subscript Subscript { get { return _subscript; } }
+        protected ExpressionList _expressions;
+        public ExpressionList Expressions { get { return _expressions; } }
         public override void Accept(AbstractVisitor visitor)
         {
             visitor.Visit(this);
@@ -31,20 +31,28 @@ namespace PLR.AST.Processes
                 return false;
             }
             ProcessConstant other = (ProcessConstant)obj;
-            return other.Name == this.Name && other.Subscript.Count == this.Subscript.Count;
+            return other.Name == this.Name && other.Expressions.Count == this.Expressions.Count;
         }
 
         public override int GetHashCode() {
-            return (this.Name + this.Subscript.Count).GetHashCode();
+            return (this.Name + this.Expressions.Count).GetHashCode();
 
+        }
+        public string FullName {
+            get {
+                if (this.Expressions.Count > 0) {
+                    return this.Name + "_" + this.Expressions.Count;
+                }
+                return this.Name;
+            }
         }
 
         public override void Compile(CompileContext context) {
 
-            foreach (ArithmeticExpression exp in this.Subscript) {
+            foreach (ArithmeticExpression exp in this.Expressions) {
                 exp.Compile(context);
             }
-            EmitRunProcess(context, context.NamedProcessConstructors[this.Name], false, LexicalInfo);
+            EmitRunProcess(context, context.GetType(this.FullName).Constructor, false, LexicalInfo);
         }
     }
 }

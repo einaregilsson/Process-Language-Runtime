@@ -11,60 +11,25 @@ namespace PLR.Compilation {
 
         private ModuleBuilder _module;
         private List<ILGenerator> _ilStack = new List<ILGenerator>();
-        private List<TypeBuilder> _typeStack = new List<TypeBuilder>();
+        private List<TypeInfo> _typeStack = new List<TypeInfo>();
         private List<string> _importedClasses = new List<string>();
         private List<Assembly> _referencedAssemblies = new List<Assembly>();
-        private Dictionary<string, ConstructorBuilder> _namedProcessConstructors = new Dictionary<string, ConstructorBuilder>();
         private CompileOptions _options;
         private ISymbolDocumentWriter _debugWriter;
-        private Dictionary<string, Dictionary<string, FieldBuilder>> _typeFields = new Dictionary<string, Dictionary<string, FieldBuilder>>();
-        private string _procdefName;
+        private Dictionary<string, TypeInfo> _types = new Dictionary<string, TypeInfo>();
+        private TypeInfo _currentMasterType;
+
+        public void AddType(TypeInfo type) {
+            _types.Add(type.Name, type);
+        }
         public CompileOptions Options {
             get { return _options; }
             set { _options = value; }
         }
         
-        public string ProcessName {
-            get { return _procdefName; }
-            set { _procdefName = value; }
-        }
-
-        public void StartNewProcessDefiniton(string procName) {
-            ProcessName = procName;
-            _typeFields.Add(procName, new Dictionary<string, FieldBuilder>());
-        }
-
-        public void AddField(string typeName, FieldBuilder field) {
-            if (!_typeFields.ContainsKey(typeName)) {
-                _typeFields.Add(typeName, new Dictionary<string, FieldBuilder>());
-            }
-            _typeFields[typeName].Add(field.Name, field);
-        }
-
-        public Dictionary<string, FieldBuilder> ProcessFields {
-            get { return _typeFields[ProcessName]; }
-        }
-
-        public FieldBuilder GetField(string field) {
-            if (_typeFields[this.Type.FullName].ContainsKey(field)) {
-                return _typeFields[this.Type.FullName][field];
-            }
-            return null;
-        }
-
-        public FieldBuilder GetField(string typeName, string field) {
-            if (_typeFields[typeName].ContainsKey(field)) {
-                return _typeFields[typeName][field];
-            }
-            return null;
-        }
-
-        public Dictionary<string, FieldBuilder> GetFields() {
-            return _typeFields[this.Type.FullName];
-        }
-
-        public Dictionary<string,FieldBuilder> GetFields(string typeName) {
-            return _typeFields[typeName];
+        public TypeInfo CurrentMasterType {
+            get { return _currentMasterType; }
+            set { _currentMasterType = value; }
         }
 
         public ISymbolDocumentWriter DebugWriter {
@@ -77,11 +42,6 @@ namespace PLR.Compilation {
             set { _module = value; }
         }
 
-        public Dictionary<string, ConstructorBuilder> NamedProcessConstructors {
-            get {
-                return _namedProcessConstructors;
-            }
-        }
         public List<String> ImportedClasses {
             get { return _importedClasses; }
             set { _importedClasses = value; }
@@ -101,7 +61,7 @@ namespace PLR.Compilation {
             }
         }
 
-        public TypeBuilder Type {
+        public TypeInfo Type {
             get {
                 if (_typeStack.Count == 0) {
                     return null;
@@ -111,7 +71,7 @@ namespace PLR.Compilation {
             }
         }
 
-        public void PushType(TypeBuilder type) {
+        public void PushType(TypeInfo type) {
             _typeStack.Add(type);
         }
 
@@ -119,14 +79,17 @@ namespace PLR.Compilation {
             _ilStack.Add(il);
         }
 
-        public TypeBuilder PopType() {
-            TypeBuilder tb = this.Type;
+        public TypeInfo PopType() {
+            TypeInfo tb = this.Type;
             if (_typeStack.Count > 0) {
                 _typeStack.RemoveAt(_typeStack.Count - 1);
             }
             return tb;
         }
 
+        public TypeInfo GetType(string name) {
+            return _types[name];
+        }
         public ILGenerator PopIL() {
             ILGenerator il = this.ILGenerator;
             if (_ilStack.Count > 0) {
@@ -166,17 +129,6 @@ namespace PLR.Compilation {
             }
             
 
-        }
-
-        private Dictionary<TypeBuilder, bool> _restrictedTypes = new Dictionary<TypeBuilder, bool>();
-        public void AddRestrictedType(TypeBuilder type) {
-            if (!_restrictedTypes.ContainsKey(type)) {
-                _restrictedTypes.Add(type, true);
-            }
-        }
-
-        public bool IsRestricted(TypeBuilder type) {
-            return _restrictedTypes.ContainsKey(type);
         }
     }
 }

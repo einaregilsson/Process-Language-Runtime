@@ -110,7 +110,7 @@ namespace CCS.Tests {
             ProcessSystem sys = Parse(@"P = X_{" + exp + "}");
             Assert.AreEqual(1, sys.Count);
             ProcessConstant p = (ProcessConstant)sys[0].Process;
-            ArithmeticExpression expr = (ArithmeticExpression)p.Subscript[0];
+            ArithmeticExpression expr = (ArithmeticExpression)p.Expressions[0];
             Assert.AreEqual(expectedValue, expr.Value);
         }
 

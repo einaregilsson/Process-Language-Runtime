@@ -55,9 +55,9 @@ namespace PLR.AST {
             context.ImportedClasses = _importedClasses;
 
             foreach (ProcessDefinition procdef in this) {
-                context.StartNewProcessDefiniton(procdef.ProcessConstant.Name);
                 procdef.CompileSignature(module, context);
             }
+
             if (!context.ImportedClasses.Contains("PLR.BuiltIns")) {
                 context.ImportedClasses.Add("PLR.BuiltIns");
             }
@@ -75,20 +75,23 @@ namespace PLR.AST {
             }
 
             foreach (ProcessDefinition procdef in this) {
-                context.ProcessName = procdef.ProcessConstant.Name;
+                context.CurrentMasterType = null; 
                 procdef.Compile(context);
+                context.CurrentMasterType.Variables.CreateType();
+                context.CurrentMasterType = null;
             }
 
             List<LocalBuilder> initial = new List<LocalBuilder>();
             context.PushIL(mainMethod.GetILGenerator());
             foreach (ProcessDefinition procdef in this) {
                 if (procdef.EntryProc) {
-                    Type startProc = module.GetType(procdef.ProcessConstant.Name);
-                    LocalBuilder loc = context.ILGenerator.DeclareLocal(startProc);
-                    context.ILGenerator.Emit(OpCodes.Newobj, context.NamedProcessConstructors[procdef.ProcessConstant.Name]);
+                    TypeInfo startProc = context.GetType(procdef.FullName);
+                    LocalBuilder loc = context.ILGenerator.DeclareLocal(startProc.Builder);
+                    context.ILGenerator.Emit(OpCodes.Newobj, startProc.Constructor);
                     context.ILGenerator.Emit(OpCodes.Stloc, loc);
                 }
             }
+
             //Run Scheduler, who now knows all the new Processes
             context.ILGenerator.EmitWriteLine("Starting Scheduler");
             CallScheduler("Run", true, context);

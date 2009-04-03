@@ -34,6 +34,13 @@ private ProcessSystem system = new ProcessSystem();
         n.LexicalInfo.EndLine = t.line;
         n.LexicalInfo.EndColumn = t.col+t.val.Length;
     }
+
+    private void SetPos(Node n, Token start, Token end) {
+        n.LexicalInfo.StartLine = start.line;
+        n.LexicalInfo.StartColumn = start.col;
+        n.LexicalInfo.EndLine = end.line;
+        n.LexicalInfo.EndColumn = end.col+end.val.Length;
+    }
     
     private void SetStartPos(Node n, Token t) {
         n.LexicalInfo.StartLine = t.line;
@@ -71,7 +78,7 @@ private ProcessSystem system = new ProcessSystem();
 		ProcessDefinition proc; 
 		ProcessDefinition(out proc, true);
 		this.System.Add(proc); 
-		while (la.kind == 1 || la.kind == 2) {
+		while (la.kind == 1) {
 			ProcessDefinition(out proc, false);
 			this.System.Add(proc); 
 		}
@@ -85,57 +92,39 @@ private ProcessSystem system = new ProcessSystem();
 	}
 
 	void ProcessDefinition(out ProcessDefinition procdef, bool entryProc) {
-		Process proc; ProcessConstant pc; 
-		ProcessConstantDef(out pc);
-		Expect(10);
-		Process(out proc);
-		procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(procdef,pc,t); 
-	}
-
-	void ProcessConstantDef(out ProcessConstant pc) {
-		pc = null; 
-		if (la.kind == 1) {
+		Process proc; string name; List<Variable> vars = new List<Variable>(); 
+		Expect(1);
+		name = t.val; Token startTok = t;
+		if (la.kind == 10) {
 			Get();
-			pc = new ProcessConstant(t.val); SetPos(pc, t);
-		} else if (la.kind == 2) {
-			Get();
-			pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc,t); ArithmeticExpression subscript; 
-			Expect(11);
-			Token startToken = t; 
-			Subscript(out subscript);
-			pc.Subscript.Add(subscript); 
-			while (la.kind == 12) {
+			Expect(3);
+			vars.Add(new Variable(t.val)); 
+			while (la.kind == 11) {
 				Get();
-				Subscript(out subscript);
-				pc.Subscript.Add(subscript); 
+				Expect(3);
+				vars.Add(new Variable(t.val)); 
 			}
-			Expect(13);
-			SetPos(pc.Subscript,startToken); 
-		} else SynErr(28);
+			Expect(12);
+		}
+		Token endTok = t; 
+		Expect(13);
+		Token startProc = la; 
+		Process(out proc);
+		procdef = new ProcessDefinition(proc, name, entryProc); SetPos(procdef, startTok, endTok);
+		foreach (Variable v in vars) { procdef.Variables.Add(v); }
+		SetPos(proc, startProc, t);
+		
 	}
 
 	void Process(out Process proc) {
 		NonDeterministicChoice(out proc);
 	}
 
-	void Subscript(out ArithmeticExpression sub) {
-		sub = null; 
-		if (la.kind == 3) {
-			Get();
-			sub = new Variable(t.val); SetPos(sub, t); 
-		} else if (la.kind == 7) {
-			Get();
-		} else if (la.kind == 14) {
-			Get();
-			sub = new Number(int.Parse(t.val)); SetPos(sub, t); 
-		} else SynErr(29);
-	}
-
 	void NonDeterministicChoice(out Process proc) {
 		Process pc; NonDeterministicChoice ndc = new NonDeterministicChoice();
 		ParallelComposition(out pc);
 		ndc.Add(pc); 
-		while (la.kind == 15) {
+		while (la.kind == 14) {
 			Get();
 			ParallelComposition(out pc);
 			ndc.Add(pc); 
@@ -147,7 +136,7 @@ private ProcessSystem system = new ProcessSystem();
 		Process ap; ParallelComposition pc = new ParallelComposition();
 		ActionPrefix(out ap);
 		pc.Add(ap); 
-		while (la.kind == 16) {
+		while (la.kind == 15) {
 			Get();
 			ActionPrefix(out ap);
 			pc.Add(ap); 
@@ -158,29 +147,31 @@ private ProcessSystem system = new ProcessSystem();
 	void ActionPrefix(out Process proc) {
 		ActionPrefix ap = null; ActionPrefix prev = null; ActionPrefix first = null; Process nextProc = null; ProcessConstant pc; proc = null; Action act = null; 
 		while (la.kind == 3 || la.kind == 5 || la.kind == 6) {
+			Token startAction = la; 
 			Action(out act);
-			Expect(17);
-			ap = new ActionPrefix(act, null); CopyPos(ap,ap.Action,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;
+			ap = new ActionPrefix(act, null); SetStartPos(ap,startAction); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;
+			SetPos(act, startAction, t); 
+			Expect(16);
 		}
-		if (la.kind == 18) {
+		if (la.kind == 10) {
 			Get();
 			Process(out nextProc);
-			Expect(19);
+			Expect(12);
 			nextProc.ParenCount++; 
-		} else if (la.kind == 14) {
+		} else if (la.kind == 17) {
 			Get();
 			nextProc = new NilProcess(); SetPos(nextProc, t);
-		} else if (la.kind == 1 || la.kind == 2) {
+		} else if (la.kind == 1) {
 			ProcessConstantInvoke(out pc);
 			nextProc = pc; 
-		} else SynErr(30);
+		} else SynErr(28);
 		if (first == null) proc = nextProc; else {ap.Process = nextProc; proc = first;}; 
-		if (la.kind == 20) {
+		if (la.kind == 18) {
 			PreProcessActions ppa = null; 
 			Relabelling(out ppa);
 			nextProc.PreProcessActions = ppa; 
 		}
-		if (la.kind == 23) {
+		if (la.kind == 21) {
 			ActionRestrictions ar = null; 
 			Restriction(out ar);
 			nextProc.ActionRestrictions = ar; 
@@ -191,51 +182,72 @@ private ProcessSystem system = new ProcessSystem();
 		act = null; 
 		if (la.kind == 3) {
 			Get();
-			act = new InAction(t.val); SetPos(act, t);
+			InAction inAct = new InAction(t.val); 
+			if (la.kind == 10) {
+				Get();
+				Expect(3);
+				inAct.AddVariable(new Variable(t.val)); 
+				while (la.kind == 11) {
+					Get();
+					Expect(3);
+					inAct.AddVariable(new Variable(t.val)); 
+				}
+				Expect(12);
+			}
+			act = inAct; 
 		} else if (la.kind == 5) {
 			Get();
-			act = new OutAction(t.val); SetPos(act, t);
+			OutAction outAct = new OutAction(t.val);  ArithmeticExpression exp; 
+			if (la.kind == 10) {
+				Get();
+				ArithmeticExpression(out exp);
+				outAct.AddExpression(exp); 
+				while (la.kind == 11) {
+					Get();
+					ArithmeticExpression(out exp);
+					outAct.AddExpression(exp); 
+				}
+				Expect(12);
+			}
+			act = outAct;  
 		} else if (la.kind == 6) {
 			Get();
-			Token start = t; List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":",""); Token callStart = t; 
-			Expect(18);
+			List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":","");  
+			Expect(10);
 			if (StartOf(1)) {
 				CallParam(out exp);
 				list.Add(exp); 
-				while (la.kind == 12) {
+				while (la.kind == 11) {
 					Get();
 					CallParam(out exp);
 					list.Add(exp); 
 				}
 			}
-			Expect(19);
-			act = new Call(new MethodCallExpression(methodName, list.ToArray())); SetStartPos(act, start); SetEndPos(act, t); 
-		} else SynErr(31);
+			Expect(12);
+			act = new Call(new MethodCallExpression(methodName, list.ToArray())); 
+		} else SynErr(29);
 	}
 
 	void ProcessConstantInvoke(out ProcessConstant pc) {
-		pc = null; 
-		if (la.kind == 1) {
+		pc = null; ArithmeticExpression exp = null;
+		Expect(1);
+		pc = new ProcessConstant(t.val); SetPos(pc, t); 
+		if (la.kind == 10) {
 			Get();
-			pc = new ProcessConstant(t.val); SetPos(pc, t); 
-		} else if (la.kind == 2) {
-			Get();
-			pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc, t); ArithmeticExpression subscript; 
-			Expect(11);
-			ArithmeticExpression(out subscript);
-			pc.Subscript.Add(subscript); 
-			while (la.kind == 12) {
+			ArithmeticExpression(out exp);
+			pc.Expressions.Add(exp); 
+			while (la.kind == 11) {
 				Get();
-				ArithmeticExpression(out subscript);
-				pc.Subscript.Add(subscript); 
+				ArithmeticExpression(out exp);
+				pc.Expressions.Add(exp); 
 			}
-			Expect(13);
-		} else SynErr(32);
+			Expect(12);
+		}
 	}
 
 	void Relabelling(out PreProcessActions preproc) {
 		preproc = null; string relabelTo, relabelFrom; RelabelActions labels = new RelabelActions(); 
-		Expect(20);
+		Expect(18);
 		Token first = t; 
 		if (la.kind == 6) {
 			Get();
@@ -243,52 +255,52 @@ private ProcessSystem system = new ProcessSystem();
 		} else if (la.kind == 3) {
 			Get();
 			relabelTo = t.val; SetPos(labels, first);
-			Expect(21);
+			Expect(19);
 			Expect(3);
 			relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); 
-			while (la.kind == 12) {
+			while (la.kind == 11) {
 				Get();
 				Expect(3);
 				relabelTo = t.val; 
-				Expect(21);
+				Expect(19);
 				Expect(3);
 				relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); 
 			}
 			preproc = labels; 
-		} else SynErr(33);
-		Expect(22);
+		} else SynErr(30);
+		Expect(20);
 	}
 
 	void Restriction(out ActionRestrictions ar) {
 		ar = null; ChannelRestrictions res = new ChannelRestrictions(); 
-		Expect(23);
+		Expect(21);
 		if (la.kind == 3) {
 			Get();
 			res.Add(t.val); SetPos(res, t); res.ParenCount = 0; ar = res; 
-		} else if (la.kind == 11) {
+		} else if (la.kind == 22) {
 			Get();
 			res.ParenCount = 1; 
 			Expect(3);
 			res.Add(t.val); SetPos(res, t); 
-			while (la.kind == 12) {
+			while (la.kind == 11) {
 				Get();
 				Expect(3);
 				res.Add(t.val); 
 			}
-			Expect(13);
+			Expect(23);
 			ar = res; 
 		} else if (la.kind == 6) {
 			Get();
 			ar = new CustomRestrictions(t.val.Replace(":", "")); SetPos(ar, t); 
-		} else SynErr(34);
+		} else SynErr(31);
 	}
 
 	void ArithmeticExpression(out ArithmeticExpression aexp) {
 		ArithmeticBinOp op; ArithmeticExpression right = null, left = null; 
 		PlusMinusTerm(out left);
 		aexp = left; 
-		while (la.kind == 15 || la.kind == 24) {
-			if (la.kind == 15) {
+		while (la.kind == 14 || la.kind == 24) {
+			if (la.kind == 14) {
 				Get();
 				op = ArithmeticBinOp.Plus; 
 			} else {
@@ -308,18 +320,18 @@ private ProcessSystem system = new ProcessSystem();
 		} else if (la.kind == 8) {
 			Get();
 			exp = new PLRString(t.val.Substring(1, t.val.Length-2)); SetPos(exp, t);
-		} else SynErr(35);
+		} else SynErr(32);
 	}
 
 	void PlusMinusTerm(out ArithmeticExpression aexp) {
 		ArithmeticBinOp op; ArithmeticExpression right = null, left = null; 
 		UnaryMinusTerm(out left);
 		aexp = left; 
-		while (la.kind == 21 || la.kind == 25 || la.kind == 26) {
+		while (la.kind == 19 || la.kind == 25 || la.kind == 26) {
 			if (la.kind == 25) {
 				Get();
 				op = ArithmeticBinOp.Multiply; 
-			} else if (la.kind == 21) {
+			} else if (la.kind == 19) {
 				Get();
 				op = ArithmeticBinOp.Divide; 
 			} else {
@@ -337,21 +349,21 @@ private ProcessSystem system = new ProcessSystem();
 			Get();
 			isMinus = true; minusToken = t; 
 		}
-		if (la.kind == 18) {
+		if (la.kind == 10) {
 			Get();
 			ArithmeticExpression(out aexp);
-			Expect(19);
+			Expect(12);
 			aexp.ParenCount += 1; 
 		} else if (la.kind == 7) {
 			Get();
 			aexp = new Number(int.Parse(t.val)); SetPos(aexp, t); 
-		} else if (la.kind == 14) {
+		} else if (la.kind == 17) {
 			Get();
 			aexp = new Number(int.Parse(t.val)); SetPos(aexp, t);
 		} else if (la.kind == 3) {
 			Get();
 			aexp = new Variable(t.val); SetPos(aexp, t); 
-		} else SynErr(36);
+		} else SynErr(33);
 		if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} 
 	}
 
@@ -368,8 +380,8 @@ private ProcessSystem system = new ProcessSystem();
 	
 	static readonly bool[,] set = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,x,x,T, x,x,x,T, T,x,x,x, x,x,T,x, x,x,T,x, x,x,x,x, T,x,x,x, x},
-		{x,x,x,T, x,x,x,T, x,x,x,x, x,x,T,x, x,x,T,x, x,x,x,x, T,x,x,x, x}
+		{x,x,x,T, x,x,x,T, T,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, T,x,x,x, x},
+		{x,x,x,T, x,x,x,T, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, T,x,x,x, x}
 
 	};
 } // end Parser
@@ -389,33 +401,30 @@ public partial class Errors {
 			case 7: s = "NUMBER expected"; break;
 			case 8: s = "STRING expected"; break;
 			case 9: s = "\"use\" expected"; break;
-			case 10: s = "\"=\" expected"; break;
-			case 11: s = "\"{\" expected"; break;
-			case 12: s = "\",\" expected"; break;
-			case 13: s = "\"}\" expected"; break;
-			case 14: s = "\"0\" expected"; break;
-			case 15: s = "\"+\" expected"; break;
-			case 16: s = "\"|\" expected"; break;
-			case 17: s = "\".\" expected"; break;
-			case 18: s = "\"(\" expected"; break;
-			case 19: s = "\")\" expected"; break;
-			case 20: s = "\"[\" expected"; break;
-			case 21: s = "\"/\" expected"; break;
-			case 22: s = "\"]\" expected"; break;
-			case 23: s = "\"\\\\\" expected"; break;
+			case 10: s = "\"(\" expected"; break;
+			case 11: s = "\",\" expected"; break;
+			case 12: s = "\")\" expected"; break;
+			case 13: s = "\"=\" expected"; break;
+			case 14: s = "\"+\" expected"; break;
+			case 15: s = "\"|\" expected"; break;
+			case 16: s = "\".\" expected"; break;
+			case 17: s = "\"0\" expected"; break;
+			case 18: s = "\"[\" expected"; break;
+			case 19: s = "\"/\" expected"; break;
+			case 20: s = "\"]\" expected"; break;
+			case 21: s = "\"\\\\\" expected"; break;
+			case 22: s = "\"{\" expected"; break;
+			case 23: s = "\"}\" expected"; break;
 			case 24: s = "\"-\" expected"; break;
 			case 25: s = "\"*\" expected"; break;
 			case 26: s = "\"%\" expected"; break;
 			case 27: s = "??? expected"; break;
-			case 28: s = "invalid ProcessConstantDef"; break;
-			case 29: s = "invalid Subscript"; break;
-			case 30: s = "invalid ActionPrefix"; break;
-			case 31: s = "invalid Action"; break;
-			case 32: s = "invalid ProcessConstantInvoke"; break;
-			case 33: s = "invalid Relabelling"; break;
-			case 34: s = "invalid Restriction"; break;
-			case 35: s = "invalid CallParam"; break;
-			case 36: s = "invalid UnaryMinusTerm"; break;
+			case 28: s = "invalid ActionPrefix"; break;
+			case 29: s = "invalid Action"; break;
+			case 30: s = "invalid Relabelling"; break;
+			case 31: s = "invalid Restriction"; break;
+			case 32: s = "invalid CallParam"; break;
+			case 33: s = "invalid UnaryMinusTerm"; break;
 
         }
         return s;

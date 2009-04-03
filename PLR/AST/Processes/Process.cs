@@ -35,24 +35,17 @@ namespace PLR.AST.Processes {
             ILGenerator il = context.ILGenerator;
 
             LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, context.Type.VariablesField);
             il.Emit(OpCodes.Newobj, con);
             il.Emit(OpCodes.Stloc, loc);
-            
-            //Set fields on the newly created process
-            foreach (FieldBuilder sourceField in context.GetFields().Values) {
-                FieldBuilder destField = context.GetField(con.DeclaringType.FullName, sourceField.Name);
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldfld, sourceField);
-                il.Emit(OpCodes.Ldloc, loc);
-                il.Emit(OpCodes.Stfld, destField);
-            }
 
             il.Emit(OpCodes.Ldloc, loc);
             il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
 
             //The current process doesn't have a restrict or relabel method, no reason for it
             //to continue living, set the parent process of the new proc as our own parent process
-            if (!context.IsRestricted(context.Type)) {
+            if (!context.Type.IsPreProcessed && !context.Type.IsRestricted) {
                 il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
             }
             il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "set_Parent"));
@@ -78,38 +71,47 @@ namespace PLR.AST.Processes {
         /// <param name="context"></param>
         public ConstructorBuilder CompileNewProcessStart(CompileContext context, string name) {
 
-            if (context.Type != null) { //Are in a type, so let's create a nested one
-                context.PushType(context.Type.DefineNestedType(name, TypeAttributes.NestedPublic | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, typeof(ProcessBase)));
+            if (context.CurrentMasterType != null) { //Are in a type, so let's create a nested one
+                TypeInfo nestedType = new TypeInfo();
+                nestedType.Builder = context.CurrentMasterType.Builder.DefineNestedType(name, TypeAttributes.NestedPublic | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, typeof(ProcessBase));
+                context.PushType(nestedType);
             } else {
-                context.PushType((TypeBuilder)context.Module.GetType(name));
+                context.PushType(context.GetType(name));
+                context.CurrentMasterType = context.Type;
             }
             Type baseType = typeof(ProcessBase);
 
             if (this.PreProcessActions != null) {
                 this.PreProcessActions.Compile(context);
-                context.AddRestrictedType(context.Type);
+                context.Type.IsPreProcessed = true;
             }
             if (this.ActionRestrictions != null) {
                 this.ActionRestrictions.Compile(context);
-                context.AddRestrictedType(context.Type);
+                context.Type.IsRestricted = true;
             }
 
-            MethodBuilder methodStart = context.Type.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
-            context.Type.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
+            MethodBuilder methodStart = context.Type.Builder.DefineMethod("RunProcess", MethodAttributes.Public | MethodAttributes.Virtual);
+            context.Type.Builder.DefineMethodOverride(methodStart, baseType.GetMethod("RunProcess"));
             context.PushIL(methodStart.GetILGenerator());
             Call(new ThisPointer(typeof(ProcessBase)), "InitSetID", true).Compile(context);
             if (this.WrapInTryCatch) {
                 context.ILGenerator.BeginExceptionBlock();
             }
 
-            if (!context.NamedProcessConstructors.ContainsKey(context.Type.Name)) {
-                context.NamedProcessConstructors.Add(context.Type.FullName, context.Type.DefineDefaultConstructor(MethodAttributes.Public));
-                foreach (FieldBuilder field in context.ProcessFields.Values) {
-                    FieldBuilder newField = context.Type.DefineField(field.Name, field.FieldType, FieldAttributes.Public);
-                    context.AddField(context.Type.FullName, newField);
-                }
+            if (context.Type.Constructor == null) { //Nested type which hasn't defined its constructor yet
+                context.Type.Constructor = context.Type.Builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new Type[] { context.CurrentMasterType.Variables });
+                context.Type.VariablesField = context.Type.Builder.DefineField("_variables", context.CurrentMasterType.Variables, FieldAttributes.Private);
+                ILGenerator ilCon = context.Type.Constructor.GetILGenerator();
+                ilCon.Emit(OpCodes.Ldarg_0);
+                ilCon.Emit(OpCodes.Call, typeof(ProcessBase).GetConstructor(new Type[] {}));
+
+                //save the variables argument we got passed in
+                ilCon.Emit(OpCodes.Ldarg_1);
+                ilCon.Emit(OpCodes.Ldarg_0);
+                ilCon.Emit(OpCodes.Stfld, context.Type.VariablesField);
+                ilCon.Emit(OpCodes.Ret);
             }
-            return context.NamedProcessConstructors[context.Type.FullName];
+            return context.Type.Constructor;
         }
 
         internal bool HasRestrictionsOrPreProcess {
@@ -128,7 +130,7 @@ namespace PLR.AST.Processes {
 
             Call(new ThisPointer(typeof(ProcessBase)), "Die", true).Compile(context);
             context.ILGenerator.Emit(OpCodes.Ret);
-            context.Type.CreateType();
+            context.Type.Builder.CreateType();
             context.PopType();
             context.PopIL();
         }

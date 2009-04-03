@@ -6,7 +6,7 @@ using PLR.AST.ActionHandling;
 using Action = PLR.AST.Actions.Action;
 using System.Collections.Generic;
 
-COMPILER CCS  
+COMPILER CCS
     
     private ProcessSystem system = new ProcessSystem();
     public ProcessSystem System {get { return this.system;}}
@@ -16,6 +16,13 @@ COMPILER CCS
         n.LexicalInfo.StartColumn = t.col;
         n.LexicalInfo.EndLine = t.line;
         n.LexicalInfo.EndColumn = t.col+t.val.Length;
+    }
+
+    private void SetPos(Node n, Token start, Token end) {
+        n.LexicalInfo.StartLine = start.line;
+        n.LexicalInfo.StartColumn = start.col;
+        n.LexicalInfo.EndLine = end.line;
+        n.LexicalInfo.EndColumn = end.col+end.val.Length;
     }
     
     private void SetStartPos(Node n, Token t) {
@@ -77,32 +84,21 @@ ClassImport<>
 	"use" CLASSNAME										(. this.System.AddImport(t.val); .)
 .
 
-ProcessDefinition<out ProcessDefinition procdef, bool entryProc> =      (. Process proc; ProcessConstant pc; .)
-    ProcessConstantDef<out pc>                          
-    '='
-    Process<out proc>                                   (. procdef = new ProcessDefinition(pc, proc, entryProc); CopyPos(procdef,pc,t); .)
-.
-
-ProcessConstantDef<out ProcessConstant pc>				(. pc = null; .)
-=
-    PROCNAME                                            (. pc = new ProcessConstant(t.val); SetPos(pc, t);.)
-    
-    |
-    
-    PROCNAMESUB                                         (. pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc,t); ArithmeticExpression subscript; .)
-    '{'                                                 (. Token startToken = t; .)
-    Subscript<out subscript>                            (. pc.Subscript.Add(subscript); .)
-    {
-        ',' Subscript<out subscript>                    (. pc.Subscript.Add(subscript); .)
-    }
-    '}'                                                 (. SetPos(pc.Subscript,startToken); .)
-.
-
-Subscript<out ArithmeticExpression sub>                 (. sub = null; .)
-=
-    LCASEIDENT                                          (. sub = new Variable(t.val); SetPos(sub, t); .)
-    |
-    NUMBER|'0'                                          (. sub = new Number(int.Parse(t.val)); SetPos(sub, t); .)
+ProcessDefinition<out ProcessDefinition procdef, bool entryProc> = (. Process proc; string name; List<Variable> vars = new List<Variable>(); .)
+    PROCNAME											(. name = t.val; Token startTok = t;.)
+     [
+		'('
+			LCASEIDENT									(. vars.Add(new Variable(t.val)); .)
+			{ 
+				',' LCASEIDENT							(. vars.Add(new Variable(t.val)); .)
+			}
+		')'
+    ]													(. Token endTok = t; .)
+    '='													(. Token startProc = la; .)
+    Process<out proc>                                   (. procdef = new ProcessDefinition(proc, name, entryProc); SetPos(procdef, startTok, endTok);
+														   foreach (Variable v in vars) { procdef.Variables.Add(v); }
+														   SetPos(proc, startProc, t);
+														   .)
 .
 
 Process<out Process proc>                               
@@ -128,8 +124,10 @@ ParallelComposition<out Process proc>                   (. Process ap; ParallelC
 
 ActionPrefix<out Process proc>                          (. ActionPrefix ap = null; ActionPrefix prev = null; ActionPrefix first = null; Process nextProc = null; ProcessConstant pc; proc = null; Action act = null; .)
 =
-    { 
-        Action<out act> '.'                             (. ap = new ActionPrefix(act, null); CopyPos(ap,ap.Action,t); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;.)
+    {													(. Token startAction = la; .)
+        Action<out act>									(. ap = new ActionPrefix(act, null); SetStartPos(ap,startAction); if (first == null) first = ap; if (prev != null) { prev.Process = ap;} prev = ap;.)
+														(. SetPos(act, startAction, t); .)
+		'.'
     }
     (
         '(' Process<out nextProc> ')'                   (. nextProc.ParenCount++; .)
@@ -147,28 +145,42 @@ ActionPrefix<out Process proc>                          (. ActionPrefix ap = nul
     ]
 .
 
-ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; .)
+ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; ArithmeticExpression exp = null;.)
 =
     PROCNAME                                            (. pc = new ProcessConstant(t.val); SetPos(pc, t); .)
-    
-    |
-    
-    PROCNAMESUB                                         (. pc = new ProcessConstant(t.val.Replace("_",""));  SetPos(pc, t); ArithmeticExpression subscript; .)
-    '{'
-    ArithmeticExpression<out subscript>                 (. pc.Subscript.Add(subscript); .)
-    {
-        ',' ArithmeticExpression<out subscript>         (. pc.Subscript.Add(subscript); .)
-    }
-    '}'
+    [
+		'('
+			ArithmeticExpression<out exp>				(. pc.Expressions.Add(exp); .)
+			{ 
+				',' ArithmeticExpression<out exp>		(. pc.Expressions.Add(exp); .)
+			}
+		')'
+    ]
 .
 
 Action<out Action act>                                  (. act = null; .)
 =
-    LCASEIDENT                                          (. act = new InAction(t.val); SetPos(act, t);.)
+    LCASEIDENT                                          (. InAction inAct = new InAction(t.val); .)
+    [
+		'('
+			LCASEIDENT									(. inAct.AddVariable(new Variable(t.val)); .)
+			{ 
+				',' LCASEIDENT							(. inAct.AddVariable(new Variable(t.val)); .)
+			}
+		')'
+    ]													(. act = inAct; .)
     |
-    OUTACTION                                           (. act = new OutAction(t.val); SetPos(act, t);.) 
+    OUTACTION                                           (. OutAction outAct = new OutAction(t.val);  ArithmeticExpression exp; .) 
+    [
+		'('
+			ArithmeticExpression<out exp>				(. outAct.AddExpression(exp); .)
+			{ 
+				',' ArithmeticExpression<out exp>		(. outAct.AddExpression(exp); .)
+			}
+		')'
+    ]													(. act = outAct;  .)
     |
-    METHOD												(. Token start = t; List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":",""); Token callStart = t; .) 
+    METHOD												(. List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":","");  .) 
     '('
     [
 		CallParam<out exp>								(. list.Add(exp); .)
@@ -179,7 +191,7 @@ Action<out Action act>                                  (. act = null; .)
 		}	
     
     ]
-    ')'													(. act = new Call(new MethodCallExpression(methodName, list.ToArray())); SetStartPos(act, start); SetEndPos(act, t); .)
+    ')'													(. act = new Call(new MethodCallExpression(methodName, list.ToArray())); .)
 .
 
 CallParam<out Expression exp>							(. ArithmeticExpression aexp = null; exp = null;.)

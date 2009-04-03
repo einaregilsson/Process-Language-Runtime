@@ -5,7 +5,7 @@ using PLR.AST.Expressions;
 using PLR.Compilation;
 
 namespace PLR.AST {
-    public class Subscript : Node {
+    public class ExpressionList : Node {
 
         public void Add(ArithmeticExpression exp) {
             _children.Add(exp);

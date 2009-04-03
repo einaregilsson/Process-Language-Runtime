@@ -11,8 +11,8 @@ namespace PLR.AST
 {
     public abstract class AbstractVisitor
     {
-        public void VisitProcessTree(ProcessSystem system) {
-            VisitRecursive(system);
+        public void Start(Node node) {
+            VisitRecursive(node);
         }
 
         protected void VisitRecursive(Node node)
@@ -24,24 +24,24 @@ namespace PLR.AST
             node.Accept(this);
         }
 
-        public abstract void Visit(ProcessSystem system);
-        public abstract void Visit(InAction act);
-        public abstract void Visit(OutAction act);
-        public abstract void Visit(ArithmeticBinOpExpression exp);
-        public abstract void Visit(Number exp);
-        public abstract void Visit(UnaryMinus exp);
-        public abstract void Visit(Variable var);
-        public abstract void Visit(ActionPrefix proc);
-        public abstract void Visit(NilProcess proc);
-        public abstract void Visit(NonDeterministicChoice proc);
-        public abstract void Visit(ParallelComposition proc);
-        public abstract void Visit(ProcessConstant proc);
-        public abstract void Visit(ProcessDefinition procdef);
-        public abstract void Visit(PreProcessActions relabellings);
-        public abstract void Visit(RelabelActions actions);
-        public abstract void Visit(ActionRestrictions res);
-        public abstract void Visit(ChannelRestrictions res);
-        public abstract void Visit(Subscript subscript);
-        public abstract void Visit(Node node);
+        public virtual void Visit(ProcessSystem system){}
+        public virtual void Visit(InAction act){}
+        public virtual void Visit(OutAction act){}
+        public virtual void Visit(ArithmeticBinOpExpression exp) { }
+        public virtual void Visit(Number exp) { }
+        public virtual void Visit(UnaryMinus exp) { }
+        public virtual void Visit(Variable var) { }
+        public virtual void Visit(ActionPrefix proc) { }
+        public virtual void Visit(NilProcess proc) { }
+        public virtual void Visit(NonDeterministicChoice proc) { }
+        public virtual void Visit(ParallelComposition proc) { }
+        public virtual void Visit(ProcessConstant proc) { }
+        public virtual void Visit(ProcessDefinition procdef) { }
+        public virtual void Visit(PreProcessActions relabellings) { }
+        public virtual void Visit(RelabelActions actions) { }
+        public virtual void Visit(ActionRestrictions res) { }
+        public virtual void Visit(ChannelRestrictions res) { }
+        public virtual void Visit(ExpressionList expressions) { }
+        public virtual void Visit(Node node) { }
     }
 }
