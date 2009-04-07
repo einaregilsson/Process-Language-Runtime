@@ -13,6 +13,7 @@ LPAREN = '('
 RPAREN = ')'
 COMMA = ','
 PLUS = '+'
+PIPE = '|'
 MINUS = '-'
 ASTERISK = '*'
 DIVIDE = '/'
@@ -68,8 +69,6 @@ class Lexer:
         return self.pos >= len(self.buffer)
         
     def lex(self):
-        if self.pos == len(self.buffer):
-            return Token(EOF, EOF, self.line, self.col)
         while not self.at_end():
             ch = self.buffer[self.pos]
             l,c = self.line, self.col
@@ -77,43 +76,66 @@ class Lexer:
 
             if ch.isspace():
                 pass
+            #Comments
             elif ch == COMMENTSTART:
                 self.get_until(lambda c: c == COMMENTEND)
-            elif ch in (DOT, LPAREN, RPAREN, LANGLE, RANGLE, COMMA, PLUS, MINUS, AT, ASTERISK, DIVIDE):           
+            #Double char tokens...
+            elif ch == ':' and self.buffer[self.pos-1:self.pos+1] == DOUBLESEMI:
+                self.update_pos(self.buffer[self.pos])
+                return Token(DOUBLESEMI, DOUBLESEMI, l, c)
+            elif ch == '|' and self.buffer[self.pos-1:self.pos+1] == DOUBLEPIPE:
+                self.update_pos(self.buffer[self.pos])
+                return Token(DOUBLEPIPE, DOUBLEPIPE, l, c)
+            #Single char tokens...
+            elif ch in (DOT, LPAREN, RPAREN, LANGLE, RANGLE, COMMA, PLUS, MINUS, AT, ASTERISK, DIVIDE, PIPE):           
                 return Token(ch, ch, l, c)
+            #Lower case words
             elif ch.isalpha() and ch.islower():
                 val = ch + self.get_until(lambda c: not c.isalnum())
                 if val in (IN, OUT, READ):
                     return Token(val, val, l,c)
                 return Token(val, VARIABLE, l,c)
+            #Upper case words
             elif ch.isalpha() and ch.isupper():
                 val = ch + self.get_until(lambda c: not c.isalnum())
                 return Token(val, LOCATION, l,c)
+            #Digits
             elif ch.isdigit():
                 val = int(ch + self.get_until(lambda c: not c.isdigit()))
                 return Token(val, NUMBER, l,c)
-            elif ch == ':' and not self.at_end() and self.buffer[self.pos] == ':':
-                self.update_pos(self.buffer[self.pos])
-                return Token(DOUBLESEMI, DOUBLESEMI, l, c)
-            elif ch == ':' and self.buffer[self.pos-1:self.pos+1] == '::':
-                self.update_pos(self.buffer[self.pos])
-                return Token(DOUBLESEMI, DOUBLESEMI, l, c)
-            elif ch == '|' and self.buffer[self.pos-1:self.pos+1] == '||':
-                self.update_pos(self.buffer[self.pos])
-                return Token(DOUBLEPIPE, DOUBLEPIPE, l, c)
             else:
-                print 'Invalid token "%s" at (%d, %d)' % (ch, l, c)
+                raise ParseError('(%d, %d) Invalid token "%s")' % (l, c, ch))
+                
+        #If we reach here we are at the end
+        return Token(EOF, EOF, self.line, self.col)
             
+class ParseError(Exception):
+    def __init__(self,msg):
+        self.msg = msg
 
 class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
         self.t = None
         self.la = self.lexer.lex()
+        self.errors = []
         
     def get(self):
         self.t = self.la
         self.la = self.lexer.lex()
+
+    def parse(self):
+        while self.la.type != EOF:
+            try:
+                self.net()
+            except ParseError, ex: #Try to recover
+                self.errors.append(ex.msg)
+                print ex.msg
+
+                #Try to resync to the next located item
+                while self.t.type not in (EOF, '||'):
+                    self.get()
+            
 
     def net(self):
         self.located_item()
@@ -122,64 +144,104 @@ class Parser:
         while self.la.type == DOUBLEPIPE:
             self.get()
             self.located_item()
+        self.expect(self.la, EOF)
 
+    def expect_t(self, *expected):
+        self.get()
+        self.expect(self.t, *expected)
+        
     def expect(self, token, *expected):
-            
         if all(token.type != exp for exp in expected):
             if len(expected) == 1:
-                print "(%d, %d) Expected %s" % (token.line, token.col, expected[0])
-            elif len(expected) == 2:
-                print "(%d, %d) Expected %s or %s" % (token.line, token.col, expected[0], expected[1])
-            elif len(expected) > 2:
-                print "(%d, %d) Expected %s or %s" % (token.line, token.col, ', '.join(expected[:-1]), expected[-1])
+                raise ParseError("(%d, %d) Expected %s" % (token.line, token.col, expected[0]))
+            elif len(expected) > 1:
+                raise ParseError("(%d, %d) Expected %s or %s" % (token.line, token.col, ', '.join(expected[:-1]), expected[-1]))
     
     def located_item(self):
-        self.get()
-        self.expect(self.t, LOCATION)
-        self.get()
-        self.expect(self.t, DOUBLESEMI)
+        self.expect_t(LOCATION)
+        self.expect_t(DOUBLESEMI)
         if self.la.type == LANGLE:
             self.tuple()
         else:
             self.process()
         
     def tuple(self):
-        self.get()
-        self.expect(self.t, LANGLE)
-        self.element()
+        self.expect_t(LANGLE)
+        self.atom()
         self.expect(self.la, COMMA, RANGLE)
         while self.la.type == COMMA:
             self.get()
-            self.element()
-        self.get()
-        self.expect(self.t, RANGLE)
+            self.atom()
+        self.expect_t(RANGLE)
+    
+    def process(self):
+        if self.la.type == LPAREN:
+            self.get()
+            self.non_deterministic_choice()
+            self.expect_t(RPAREN)
+        elif self.la.val == 0:
+            self.get()
+        else:
+            self.non_deterministic_choice()
 
-    def element(self):
-        self.get()
+    def non_deterministic_choice(self):
+        self.parallel_composition()
+        while self.la.type == PLUS:
+            self.get()
+            self.parallel_composition()
+            
+    def parallel_composition(self):
+        self.action_prefix()
+        while self.la.type == PIPE:
+            self.get()
+            self.action_prefix()
+            
+    def action_prefix(self):
+        self.action()
+        self.expect_t(DOT)
+        self.process()
+
+    def action(self):
+        self.expect_t(IN, OUT, READ)
+        self.expect_t(LPAREN)
+        self.element()
+        while self.la.type == COMMA:
+            self.get()
+            self.element()
+        self.expect_t(RPAREN)
+        self.expect_t(AT)
+        self.expect_t(LOCATION, VARIABLE)
+    
+    def expression(self):
+        #TODO: arithmetic expressions
+        self.atom()
+
+    def atom(self):
+        self.expect_t(VARIABLE, LOCATION, NUMBER)
         if self.t.type == VARIABLE:
             pass #process var
         elif self.t.type == LOCATION:
             pass #process loc
         elif self.t.type == NUMBER:
             pass #process number
-        else:
-            print '(%d, %d) Expected NUMBER, VARIABLE or LOCATION' % (self.t.line, self.t.col)
-        
-    def process(self):
-        pass
-        
-                
-        
+    
+    def list_of(self, func, seperator=COMMA):
+        list items = []
+        items.append(func())
+        while self.la.type == seperator:
+            self.get()
+            items.append(func())
         
         
 if __name__ == '__main__':
     text = """
     Foo::<23, Foj, j>
-    || FAS::<asdf ,s> 
+    || FAS::<asdf, s>
+    || John::read( a)@J. in(1)@self . (out(x, y, John, 0)@a . 0) | read(a, F, 0)@x . 0 + out(1)@a .  0
 
     """
     p = Parser(Lexer(text))
-    p.net()
+    p.parse()
 #    tok = Token('begin','begin',21,3)
 #    while tok:
 #        print tok.val, ' type: ', tok.type, ' (%d,%d)' % (tok.line,tok.col)
