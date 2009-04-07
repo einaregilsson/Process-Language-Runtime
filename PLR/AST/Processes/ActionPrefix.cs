@@ -50,6 +50,11 @@ namespace PLR.AST.Processes {
                 EmitRunProcess(context, inner, true, null);
             }
         }
+
+        public override string ToString() {
+            return _action.ToString() + " . " + _proc.ToString();
+        }
+
     }
 }
 

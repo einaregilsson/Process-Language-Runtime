@@ -14,8 +14,10 @@ namespace PLR.AST.Processes {
                 context.MarkSequencePoint(LexicalInfo);
                 context.ILGenerator.Emit(OpCodes.Nop);
             }
-            
         }
 
+        public override string ToString() {
+            return "0";
+        }
     }
 }

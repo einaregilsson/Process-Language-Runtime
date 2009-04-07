@@ -1,8 +1,16 @@
+import clr
+clr.AddReference('PLR.dll')
+from PLR import *
+from PLR.AST import *
+from PLR.AST.Actions import *
+from PLR.AST.Processes import *
+from PLR.Runtime import *
 
 
 #token types
 LOCATION = 'LOCATION'
 VARIABLE = 'VARIABLE'
+BOUNDVARIABLE = 'BOUNDVARIABLE'
 NUMBER = 'NUMBER'
 DOUBLESEMI = '::'
 DOUBLEPIPE = '||'
@@ -14,6 +22,7 @@ RPAREN = ')'
 COMMA = ','
 PLUS = '+'
 PIPE = '|'
+BANG = '!'
 MINUS = '-'
 ASTERISK = '*'
 DIVIDE = '/'
@@ -89,6 +98,15 @@ class Lexer:
             #Single char tokens...
             elif ch in (DOT, LPAREN, RPAREN, LANGLE, RANGLE, COMMA, PLUS, MINUS, AT, ASTERISK, DIVIDE, PIPE):           
                 return Token(ch, ch, l, c)
+            elif ch == BANG: #BOUNDVARIABLE
+                val = self.get_until(lambda c: not c.isalnum())
+                if len(val) == 0:
+                    raise ParseError('(%d, %d) Expecting variable name after !' % (l,c))
+                elif val[0].isdigit():
+                    raise ParseError('(%d, %d) Bound variable name cannot start with a digit' % (l,c+1))
+                elif val[0].isupper():
+                    raise ParseError('(%d, %d) Location cannot be bound with !' % (l,c+1))
+                return Token(val, BOUNDVARIABLE, l,c)
             #Lower case words
             elif ch.isalpha() and ch.islower():
                 val = ch + self.get_until(lambda c: not c.isalnum())
@@ -113,38 +131,67 @@ class ParseError(Exception):
     def __init__(self,msg):
         self.msg = msg
 
+class Tuple:
+    def __init__(self, location, items):
+        self.location = location
+        self.items = items
+    def __str__(self):
+        return '%s::<%s>' % (self.location, ', '.join(str(i) for i in self.items))
+
+class In(Action):
+    def __new__(cls):
+        return Action.__new__(cls, 'in')
+
+    def __str__(self):
+        return 'inaction'
+        
+class Out(Action):
+    def __new__(cls):
+        return Action.__new__(cls, 'out')
+
+    def __str__(self):
+        return 'out'
+
+class Read(Action):
+    def __new__(cls):
+        return Action.__new__(cls, 'read')
+
+    def __str__(self):
+        return 'read'
+
 class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
         self.t = None
         self.la = self.lexer.lex()
         self.errors = []
+        self.procnames = []
         
     def get(self):
         self.t = self.la
         self.la = self.lexer.lex()
 
     def parse(self):
+        system = ProcessSystem()
         while self.la.type != EOF:
             try:
-                self.net()
+                items = self.net()
+                for item in items:
+                    if type(item) == ActionPrefix:
+                        print "HI",item.Action
+                        print item
+                  
+                    
             except ParseError, ex: #Try to recover
                 self.errors.append(ex.msg)
                 print ex.msg
 
                 #Try to resync to the next located item
-                while self.t.type not in (EOF, '||'):
+                while self.t.type not in (EOF, DOUBLEPIPE):
                     self.get()
-            
 
     def net(self):
-        self.located_item()
-
-        self.expect(self.la, DOUBLEPIPE, EOF)
-        while self.la.type == DOUBLEPIPE:
-            self.get()
-            self.located_item()
-        self.expect(self.la, EOF)
+        return self.list_of(self.located_item, DOUBLEPIPE)
 
     def expect_t(self, *expected):
         self.get()
@@ -159,85 +206,114 @@ class Parser:
     
     def located_item(self):
         self.expect_t(LOCATION)
+        loc = self.t.val
         self.expect_t(DOUBLESEMI)
         if self.la.type == LANGLE:
-            self.tuple()
+            return Tuple(loc, self.tuple())
         else:
-            self.process()
+            return self.process()
         
     def tuple(self):
-        self.expect_t(LANGLE)
-        self.atom()
-        self.expect(self.la, COMMA, RANGLE)
-        while self.la.type == COMMA:
-            self.get()
-            self.atom()
-        self.expect_t(RANGLE)
+        return self.list_of(self.constant, COMMA, LANGLE, RANGLE)
     
     def process(self):
         if self.la.type == LPAREN:
             self.get()
-            self.non_deterministic_choice()
+            proc = self.non_deterministic_choice()
             self.expect_t(RPAREN)
+            return proc
         elif self.la.val == 0:
             self.get()
+            return NilProcess()
         else:
-            self.non_deterministic_choice()
-
+            return self.non_deterministic_choice()
+    
     def non_deterministic_choice(self):
-        self.parallel_composition()
-        while self.la.type == PLUS:
-            self.get()
-            self.parallel_composition()
+        procs = self.list_of(self.parallel_composition, PLUS)
+        if len(procs) == 1:
+            return procs[0]
+        else:
+            pc = NonDeterministicChoice()
+            for p in procs:
+                pc.Add(p)
+            return pc
             
     def parallel_composition(self):
-        self.action_prefix()
-        while self.la.type == PIPE:
-            self.get()
-            self.action_prefix()
+        procs = self.list_of(self.action_prefix, PIPE)
+        if len(procs) == 1:
+            return procs[0]
+        else:
+            pc = ParallelComposition()
+            for p in procs:
+                pc.Add(p)
+            return pc
             
     def action_prefix(self):
-        self.action()
+        act = self.action()
         self.expect_t(DOT)
-        self.process()
+        proc = self.process()
+        return ActionPrefix(act, proc)
 
     def action(self):
         self.expect_t(IN, OUT, READ)
-        self.expect_t(LPAREN)
-        self.element()
-        while self.la.type == COMMA:
-            self.get()
-            self.element()
-        self.expect_t(RPAREN)
+        name = self.t.val
+        if self.t.type in (IN,READ):
+            expressions = self.list_of(self.input_expression, COMMA, LPAREN, RPAREN)
+        else:
+            expressions = self.list_of(self.expression, COMMA, LPAREN, RPAREN)
         self.expect_t(AT)
         self.expect_t(LOCATION, VARIABLE)
+        if name == 'in':
+            return In()
+        elif name == 'out':
+            return Out()
+        elif name == 'read':
+            return Read()
     
+    def input_expression(self):
+        self.expect(self.la, BOUNDVARIABLE, VARIABLE, LOCATION, NUMBER)
+        if self.la.type == BOUNDVARIABLE:
+            self.get()
+            return self.t.val
+        else:   
+            return self.expression()
+        
     def expression(self):
-        #TODO: arithmetic expressions
-        self.atom()
+        self.expect(self.la, VARIABLE, LOCATION, NUMBER)
+        if self.la.type in (LOCATION, NUMBER):
+            return self.constant()
+        self.expect_t(VARIABLE)
+        return self.t.val
 
-    def atom(self):
-        self.expect_t(VARIABLE, LOCATION, NUMBER)
-        if self.t.type == VARIABLE:
-            pass #process var
-        elif self.t.type == LOCATION:
-            pass #process loc
+    def constant(self):
+        self.expect_t(LOCATION, NUMBER)
+        if self.t.type == LOCATION:
+            return self.t.val
         elif self.t.type == NUMBER:
-            pass #process number
+            return self.t.val
+
     
-    def list_of(self, func, seperator=COMMA):
-        list items = []
+    def list_of(self, func, seperator=COMMA, startTok=None, endTok=None):
+        if startTok:
+            self.expect_t(startTok)
+        items = []
         items.append(func())
         while self.la.type == seperator:
             self.get()
             items.append(func())
+            
+        if endTok:
+            self.expect_t(endTok)
+        
+        return items
+
         
         
 if __name__ == '__main__':
     text = """
-    Foo::<23, Foj, j>
-    || FAS::<asdf, s>
-    || John::read( a)@J. in(1)@self . (out(x, y, John, 0)@a . 0) | read(a, F, 0)@x . 0 + out(1)@a .  0
+    Foo::<23, Foj, 3>
+    || FAS::<Con1, Con2>
+    || John::read( !x23ASD)@J. in(1)@self . (out(x, y, John, 0)@a . 0) | read(a, F, 0)@x . 0 + out(1)@a .  0
 
     """
     p = Parser(Lexer(text))

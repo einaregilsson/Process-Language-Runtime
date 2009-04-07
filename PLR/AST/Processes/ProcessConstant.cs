@@ -54,5 +54,9 @@ namespace PLR.AST.Processes
             }
             EmitRunProcess(context, context.GetType(this.FullName).Constructor, false, LexicalInfo);
         }
+
+        public override string ToString() {
+            return this.Name;
+        }
     }
 }

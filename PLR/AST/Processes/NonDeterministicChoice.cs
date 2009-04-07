@@ -35,5 +35,10 @@ namespace PLR.AST.Processes {
                 }
             }
         }
+
+        public override string ToString() {
+            return Util.Join(" + ", _children);
+        }
+
     }
 }
