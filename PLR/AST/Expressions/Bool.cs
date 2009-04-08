@@ -4,7 +4,7 @@ using PLR.Compilation;
 
 namespace PLR.AST.Expressions {
 
-    public class Bool : Expression {
+    public class Bool : BooleanExpression {
         private bool _value;
         public Bool(bool value) {
             _value = value;

@@ -22,7 +22,7 @@ public partial class Parser {
 	public const int _METHOD = 6;
 	public const int _NUMBER = 7;
 	public const int _STRING = 8;
-	public const int maxT = 27;
+	public const int maxT = 41;
 
 
 private ProcessSystem system = new ProcessSystem();
@@ -164,14 +164,16 @@ private ProcessSystem system = new ProcessSystem();
 		} else if (la.kind == 1) {
 			ProcessConstantInvoke(out pc);
 			nextProc = pc; 
-		} else SynErr(28);
+		} else if (la.kind == 18) {
+			BranchProcess(out nextProc);
+		} else SynErr(42);
 		if (first == null) proc = nextProc; else {ap.Process = nextProc; proc = first;}; 
-		if (la.kind == 18) {
+		if (la.kind == 21) {
 			PreProcessActions ppa = null; 
 			Relabelling(out ppa);
 			nextProc.PreProcessActions = ppa; 
 		}
-		if (la.kind == 21) {
+		if (la.kind == 24) {
 			ActionRestrictions ar = null; 
 			Restriction(out ar);
 			nextProc.ActionRestrictions = ar; 
@@ -197,7 +199,7 @@ private ProcessSystem system = new ProcessSystem();
 			act = inAct; 
 		} else if (la.kind == 5) {
 			Get();
-			OutAction outAct = new OutAction(t.val);  ArithmeticExpression exp; 
+			OutAction outAct = new OutAction(t.val);  Expression exp; 
 			if (la.kind == 10) {
 				Get();
 				ArithmeticExpression(out exp);
@@ -225,11 +227,11 @@ private ProcessSystem system = new ProcessSystem();
 			}
 			Expect(12);
 			act = new Call(new MethodCallExpression(methodName, list.ToArray())); 
-		} else SynErr(29);
+		} else SynErr(43);
 	}
 
 	void ProcessConstantInvoke(out ProcessConstant pc) {
-		pc = null; ArithmeticExpression exp = null;
+		pc = null; Expression exp = null;
 		Expect(1);
 		pc = new ProcessConstant(t.val); SetPos(pc, t); 
 		if (la.kind == 10) {
@@ -245,9 +247,20 @@ private ProcessSystem system = new ProcessSystem();
 		}
 	}
 
+	void BranchProcess(out Process proc) {
+		Expression exp = null; Process ifProc = null; Process elseProc = null; 
+		Expect(18);
+		Expression(out exp);
+		Expect(19);
+		Process(out ifProc);
+		Expect(20);
+		Process(out elseProc);
+		proc = new BranchProcess(exp, ifProc, elseProc); 
+	}
+
 	void Relabelling(out PreProcessActions preproc) {
 		preproc = null; string relabelTo, relabelFrom; RelabelActions labels = new RelabelActions(); 
-		Expect(18);
+		Expect(21);
 		Token first = t; 
 		if (la.kind == 6) {
 			Get();
@@ -255,29 +268,29 @@ private ProcessSystem system = new ProcessSystem();
 		} else if (la.kind == 3) {
 			Get();
 			relabelTo = t.val; SetPos(labels, first);
-			Expect(19);
+			Expect(22);
 			Expect(3);
 			relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); 
 			while (la.kind == 11) {
 				Get();
 				Expect(3);
 				relabelTo = t.val; 
-				Expect(19);
+				Expect(22);
 				Expect(3);
 				relabelFrom = t.val; labels.Add(relabelFrom, relabelTo); 
 			}
 			preproc = labels; 
-		} else SynErr(30);
-		Expect(20);
+		} else SynErr(44);
+		Expect(23);
 	}
 
 	void Restriction(out ActionRestrictions ar) {
 		ar = null; ChannelRestrictions res = new ChannelRestrictions(); 
-		Expect(21);
+		Expect(24);
 		if (la.kind == 3) {
 			Get();
 			res.Add(t.val); SetPos(res, t); res.ParenCount = 0; ar = res; 
-		} else if (la.kind == 22) {
+		} else if (la.kind == 25) {
 			Get();
 			res.ParenCount = 1; 
 			Expect(3);
@@ -287,19 +300,30 @@ private ProcessSystem system = new ProcessSystem();
 				Expect(3);
 				res.Add(t.val); 
 			}
-			Expect(23);
+			Expect(26);
 			ar = res; 
 		} else if (la.kind == 6) {
 			Get();
 			ar = new CustomRestrictions(t.val.Replace(":", "")); SetPos(ar, t); 
-		} else SynErr(31);
+		} else SynErr(45);
 	}
 
-	void ArithmeticExpression(out ArithmeticExpression aexp) {
-		ArithmeticBinOp op; ArithmeticExpression right = null, left = null; 
+	void Expression(out Expression exp) {
+		Expression right = null, left = null; 
+		OrTerm(out left);
+		exp = left; 
+		while (la.kind == 27) {
+			Get();
+			OrTerm(out right);
+			exp = new LogicalBinOpExpression(exp, right, LogicalBinOp.Or); CopyPos(exp, ((LogicalBinOpExpression)exp).Left,t);
+		}
+	}
+
+	void ArithmeticExpression(out Expression aexp) {
+		ArithmeticBinOp op; Expression right = null, left = null; 
 		PlusMinusTerm(out left);
 		aexp = left; 
-		while (la.kind == 14 || la.kind == 24) {
+		while (la.kind == 14 || la.kind == 36) {
 			if (la.kind == 14) {
 				Get();
 				op = ArithmeticBinOp.Plus; 
@@ -313,25 +337,89 @@ private ProcessSystem system = new ProcessSystem();
 	}
 
 	void CallParam(out Expression exp) {
-		ArithmeticExpression aexp = null; exp = null;
+		Expression aexp = null; exp = null;
 		if (StartOf(2)) {
 			ArithmeticExpression(out aexp);
 			exp = aexp; 
 		} else if (la.kind == 8) {
 			Get();
 			exp = new PLRString(t.val.Substring(1, t.val.Length-2)); SetPos(exp, t);
-		} else SynErr(32);
+		} else SynErr(46);
 	}
 
-	void PlusMinusTerm(out ArithmeticExpression aexp) {
-		ArithmeticBinOp op; ArithmeticExpression right = null, left = null; 
+	void OrTerm(out Expression exp) {
+		Expression right = null, left = null; 
+		AndTerm(out left);
+		exp = left; 
+		while (la.kind == 28) {
+			Get();
+			AndTerm(out right);
+			exp = new LogicalBinOpExpression(exp, right, LogicalBinOp.And); CopyPos(exp, ((LogicalBinOpExpression)exp).Left,t);
+		}
+	}
+
+	void AndTerm(out Expression exp) {
+		Expression right = null, left = null; 
+		RelationalTerm(out left);
+		exp = left; 
+		while (la.kind == 29) {
+			Get();
+			RelationalTerm(out right);
+			exp = new LogicalBinOpExpression(exp, right, LogicalBinOp.Xor); CopyPos(exp, ((LogicalBinOpExpression)exp).Left,t);
+		}
+	}
+
+	void RelationalTerm(out Expression exp) {
+		Expression right = null, left = null; RelationalBinOp op = RelationalBinOp.Equal;
+		ArithmeticExpression(out left);
+		exp = left; 
+		if (StartOf(3)) {
+			switch (la.kind) {
+			case 30: {
+				Get();
+				op = RelationalBinOp.Equal; 
+				break;
+			}
+			case 31: {
+				Get();
+				op = RelationalBinOp.NotEqual; 
+				break;
+			}
+			case 32: {
+				Get();
+				op = RelationalBinOp.GreaterThan; 
+				break;
+			}
+			case 33: {
+				Get();
+				op = RelationalBinOp.GreaterThanOrEqual; 
+				break;
+			}
+			case 34: {
+				Get();
+				op = RelationalBinOp.LessThan; 
+				break;
+			}
+			case 35: {
+				Get();
+				op = RelationalBinOp.LessThanOrEqual; 
+				break;
+			}
+			}
+			ArithmeticExpression(out right);
+			exp = new RelationalBinOpExpression(exp, right, op); CopyPos(exp, ((RelationalBinOpExpression)exp).Left,t);
+		}
+	}
+
+	void PlusMinusTerm(out Expression aexp) {
+		ArithmeticBinOp op; Expression right = null, left = null; 
 		UnaryMinusTerm(out left);
 		aexp = left; 
-		while (la.kind == 19 || la.kind == 25 || la.kind == 26) {
-			if (la.kind == 25) {
+		while (la.kind == 22 || la.kind == 37 || la.kind == 38) {
+			if (la.kind == 37) {
 				Get();
 				op = ArithmeticBinOp.Multiply; 
-			} else if (la.kind == 19) {
+			} else if (la.kind == 22) {
 				Get();
 				op = ArithmeticBinOp.Divide; 
 			} else {
@@ -343,27 +431,47 @@ private ProcessSystem system = new ProcessSystem();
 		}
 	}
 
-	void UnaryMinusTerm(out ArithmeticExpression aexp) {
+	void UnaryMinusTerm(out Expression aexp) {
 		bool isMinus = false; Token minusToken = null; aexp = null; 
-		if (la.kind == 24) {
+		if (la.kind == 36) {
 			Get();
 			isMinus = true; minusToken = t; 
 		}
-		if (la.kind == 10) {
+		switch (la.kind) {
+		case 10: {
 			Get();
 			ArithmeticExpression(out aexp);
 			Expect(12);
 			aexp.ParenCount += 1; 
-		} else if (la.kind == 7) {
+			break;
+		}
+		case 7: {
 			Get();
 			aexp = new Number(int.Parse(t.val)); SetPos(aexp, t); 
-		} else if (la.kind == 17) {
+			break;
+		}
+		case 17: {
 			Get();
 			aexp = new Number(int.Parse(t.val)); SetPos(aexp, t);
-		} else if (la.kind == 3) {
+			break;
+		}
+		case 39: {
+			Get();
+			aexp = new Bool(true); 
+			break;
+		}
+		case 40: {
+			Get();
+			aexp = new Bool(false); 
+			break;
+		}
+		case 3: {
 			Get();
 			aexp = new Variable(t.val); SetPos(aexp, t); 
-		} else SynErr(33);
+			break;
+		}
+		default: SynErr(47); break;
+		}
 		if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} 
 	}
 
@@ -379,9 +487,10 @@ private ProcessSystem system = new ProcessSystem();
 	}
 	
 	static readonly bool[,] set = {
-		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x},
-		{x,x,x,T, x,x,x,T, T,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, T,x,x,x, x},
-		{x,x,x,T, x,x,x,T, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, T,x,x,x, x}
+		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x},
+		{x,x,x,T, x,x,x,T, T,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,T, T,x,x},
+		{x,x,x,T, x,x,x,T, x,x,T,x, x,x,x,x, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,T, T,x,x},
+		{x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,T,T, x,x,x,x, x,x,x}
 
 	};
 } // end Parser
@@ -409,22 +518,36 @@ public partial class Errors {
 			case 15: s = "\"|\" expected"; break;
 			case 16: s = "\".\" expected"; break;
 			case 17: s = "\"0\" expected"; break;
-			case 18: s = "\"[\" expected"; break;
-			case 19: s = "\"/\" expected"; break;
-			case 20: s = "\"]\" expected"; break;
-			case 21: s = "\"\\\\\" expected"; break;
-			case 22: s = "\"{\" expected"; break;
-			case 23: s = "\"}\" expected"; break;
-			case 24: s = "\"-\" expected"; break;
-			case 25: s = "\"*\" expected"; break;
-			case 26: s = "\"%\" expected"; break;
-			case 27: s = "??? expected"; break;
-			case 28: s = "invalid ActionPrefix"; break;
-			case 29: s = "invalid Action"; break;
-			case 30: s = "invalid Relabelling"; break;
-			case 31: s = "invalid Restriction"; break;
-			case 32: s = "invalid CallParam"; break;
-			case 33: s = "invalid UnaryMinusTerm"; break;
+			case 18: s = "\"if\" expected"; break;
+			case 19: s = "\"then\" expected"; break;
+			case 20: s = "\"else\" expected"; break;
+			case 21: s = "\"[\" expected"; break;
+			case 22: s = "\"/\" expected"; break;
+			case 23: s = "\"]\" expected"; break;
+			case 24: s = "\"\\\\\" expected"; break;
+			case 25: s = "\"{\" expected"; break;
+			case 26: s = "\"}\" expected"; break;
+			case 27: s = "\"or\" expected"; break;
+			case 28: s = "\"and\" expected"; break;
+			case 29: s = "\"xor\" expected"; break;
+			case 30: s = "\"==\" expected"; break;
+			case 31: s = "\"!=\" expected"; break;
+			case 32: s = "\">\" expected"; break;
+			case 33: s = "\">=\" expected"; break;
+			case 34: s = "\"<\" expected"; break;
+			case 35: s = "\"<=\" expected"; break;
+			case 36: s = "\"-\" expected"; break;
+			case 37: s = "\"*\" expected"; break;
+			case 38: s = "\"%\" expected"; break;
+			case 39: s = "\"true\" expected"; break;
+			case 40: s = "\"false\" expected"; break;
+			case 41: s = "??? expected"; break;
+			case 42: s = "invalid ActionPrefix"; break;
+			case 43: s = "invalid Action"; break;
+			case 44: s = "invalid Relabelling"; break;
+			case 45: s = "invalid Restriction"; break;
+			case 46: s = "invalid CallParam"; break;
+			case 47: s = "invalid UnaryMinusTerm"; break;
 
         }
         return s;

@@ -56,6 +56,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\Expressions\Bool.cs" />
+    <Compile Include="AST\Expressions\BooleanExpression.cs" />
+    <Compile Include="AST\Expressions\LogicalBinOpExpression.cs" />
     <Compile Include="AST\Expressions\MethodInvokeBase.cs" />
     <Compile Include="AST\Expressions\NewObject.cs" />
     <Compile Include="AST\Expressions\Number.cs">
@@ -64,6 +66,7 @@
     <Compile Include="AST\Expressions\Expression.cs" />
     <Compile Include="AST\Expressions\MethodCallExpression.cs" />
     <Compile Include="AST\Expressions\PLRString.cs" />
+    <Compile Include="AST\Expressions\RelationalBinOpExpression.cs" />
     <Compile Include="AST\Expressions\ThisPointer.cs" />
     <Compile Include="AST\Expressions\TypedNull.cs" />
     <Compile Include="AST\Expressions\UnaryMinus.cs">
@@ -81,6 +84,7 @@
     <Compile Include="AST\Processes\ActionPrefix.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Processes\BranchProcess.cs" />
     <Compile Include="AST\Processes\NilProcess.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -103,7 +107,7 @@
     <Compile Include="AST\ActionHandling\ActionRestrictions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Expressions.cs">
+    <Compile Include="AST\ExpressionList.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Compilation\TypeInfo.cs" />

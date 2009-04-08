@@ -10,8 +10,8 @@ namespace CCS.Parsing {
 //-----------------------------------------------------------------------------------
 public partial class Scanner {
 
-	const int maxT = 27;
-	const int noSym = 27;
+	const int maxT = 41;
+	const int noSym = 41;
 
 
 	static Scanner() {
@@ -25,19 +25,22 @@ public partial class Scanner {
 		start[40] = 17; 
 		start[44] = 18; 
 		start[41] = 19; 
-		start[61] = 20; 
-		start[43] = 21; 
-		start[124] = 22; 
-		start[46] = 23; 
-		start[91] = 24; 
-		start[47] = 25; 
-		start[93] = 26; 
-		start[92] = 27; 
-		start[123] = 28; 
-		start[125] = 29; 
-		start[45] = 30; 
-		start[42] = 31; 
-		start[37] = 32; 
+		start[61] = 37; 
+		start[43] = 20; 
+		start[124] = 21; 
+		start[46] = 22; 
+		start[91] = 23; 
+		start[47] = 24; 
+		start[93] = 25; 
+		start[92] = 26; 
+		start[123] = 27; 
+		start[125] = 28; 
+		start[33] = 30; 
+		start[62] = 38; 
+		start[60] = 39; 
+		start[45] = 34; 
+		start[42] = 35; 
+		start[37] = 36; 
 		start[Buffer.EOF] = -1;
 
 	}
@@ -87,6 +90,14 @@ public partial class Scanner {
 		switch (t.val) {
 			case "use": t.kind = 9; break;
 			case "0": t.kind = 17; break;
+			case "if": t.kind = 18; break;
+			case "then": t.kind = 19; break;
+			case "else": t.kind = 20; break;
+			case "or": t.kind = 27; break;
+			case "and": t.kind = 28; break;
+			case "xor": t.kind = 29; break;
+			case "true": t.kind = 39; break;
+			case "false": t.kind = 40; break;
 			default: break;
 		}
 	}
@@ -166,31 +177,49 @@ public partial class Scanner {
 			case 19:
 				{t.kind = 12; break;}
 			case 20:
-				{t.kind = 13; break;}
-			case 21:
 				{t.kind = 14; break;}
-			case 22:
+			case 21:
 				{t.kind = 15; break;}
-			case 23:
+			case 22:
 				{t.kind = 16; break;}
-			case 24:
-				{t.kind = 18; break;}
-			case 25:
-				{t.kind = 19; break;}
-			case 26:
-				{t.kind = 20; break;}
-			case 27:
+			case 23:
 				{t.kind = 21; break;}
-			case 28:
+			case 24:
 				{t.kind = 22; break;}
-			case 29:
+			case 25:
 				{t.kind = 23; break;}
-			case 30:
+			case 26:
 				{t.kind = 24; break;}
-			case 31:
+			case 27:
 				{t.kind = 25; break;}
-			case 32:
+			case 28:
 				{t.kind = 26; break;}
+			case 29:
+				{t.kind = 30; break;}
+			case 30:
+				if (ch == '=') {AddCh(); goto case 31;}
+				else {t.kind = noSym; break;}
+			case 31:
+				{t.kind = 31; break;}
+			case 32:
+				{t.kind = 33; break;}
+			case 33:
+				{t.kind = 35; break;}
+			case 34:
+				{t.kind = 36; break;}
+			case 35:
+				{t.kind = 37; break;}
+			case 36:
+				{t.kind = 38; break;}
+			case 37:
+				if (ch == '=') {AddCh(); goto case 29;}
+				else {t.kind = 13; break;}
+			case 38:
+				if (ch == '=') {AddCh(); goto case 32;}
+				else {t.kind = 32; break;}
+			case 39:
+				if (ch == '=') {AddCh(); goto case 33;}
+				else {t.kind = 34; break;}
 
 		}
 		t.val = new String(tval, 0, tlen);

@@ -1,5 +1,5 @@
 use PLR.Runtime.BuiltIns
 
-System = A(1) | B
-A(a) = _f_ . _send_(2) . _stop_ .0
-B = send(x) . 0 | f . :Println("SHould be 0: ", x) . stop . :Println("SHould be 2: ", x) . 0
+System = A(1) | B(2)
+A(y) = out . 0
+B(x) = if x + true then :Println("Was TRUE") . B(x-1)  else :Println("Was FALSE") . 0

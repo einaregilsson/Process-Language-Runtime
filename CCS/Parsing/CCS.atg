@@ -135,6 +135,8 @@ ActionPrefix<out Process proc>                          (. ActionPrefix ap = nul
         '0'                                             (. nextProc = new NilProcess(); SetPos(nextProc, t);.)
         |
         ProcessConstantInvoke<out pc>                   (. nextProc = pc; .)
+        |
+        BranchProcess<out nextProc>						
     )                                                   (. if (first == null) proc = nextProc; else {ap.Process = nextProc; proc = first;}; .)
 
     [													(. PreProcessActions ppa = null; .)
@@ -145,7 +147,17 @@ ActionPrefix<out Process proc>                          (. ActionPrefix ap = nul
     ]
 .
 
-ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; ArithmeticExpression exp = null;.)
+BranchProcess<out Process proc>							(. Expression exp = null; Process ifProc = null; Process elseProc = null; .)
+=
+	"if"
+	Expression<out exp>
+	"then"
+	Process<out ifProc>
+	"else"
+	Process<out elseProc>								(. proc = new BranchProcess(exp, ifProc, elseProc); .)
+.
+
+ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; Expression exp = null;.)
 =
     PROCNAME                                            (. pc = new ProcessConstant(t.val); SetPos(pc, t); .)
     [
@@ -170,7 +182,7 @@ Action<out Action act>                                  (. act = null; .)
 		')'
     ]													(. act = inAct; .)
     |
-    OUTACTION                                           (. OutAction outAct = new OutAction(t.val);  ArithmeticExpression exp; .) 
+    OUTACTION                                           (. OutAction outAct = new OutAction(t.val);  Expression exp; .) 
     [
 		'('
 			ArithmeticExpression<out exp>				(. outAct.AddExpression(exp); .)
@@ -194,7 +206,7 @@ Action<out Action act>                                  (. act = null; .)
     ')'													(. act = new Call(new MethodCallExpression(methodName, list.ToArray())); .)
 .
 
-CallParam<out Expression exp>							(. ArithmeticExpression aexp = null; exp = null;.)
+CallParam<out Expression exp>							(. Expression aexp = null; exp = null;.)
 =
 	ArithmeticExpression<out aexp>						(. exp = aexp; .)
 	|
@@ -240,7 +252,55 @@ Restriction<out ActionRestrictions ar>
     )        
 .
 
-ArithmeticExpression<out ArithmeticExpression aexp>		(. ArithmeticBinOp op; ArithmeticExpression right = null, left = null; .)
+Expression<out Expression exp>							(. Expression right = null, left = null; .)
+=
+    OrTerm<out left>									(. exp = left; .)
+    {
+		"or"
+        OrTerm<out right>								(. exp = new LogicalBinOpExpression(exp, right, LogicalBinOp.Or); CopyPos(exp, ((LogicalBinOpExpression)exp).Left,t);.)
+    }
+.
+
+OrTerm<out Expression exp>								(. Expression right = null, left = null; .)
+=
+    AndTerm<out left>									(. exp = left; .)
+    {
+		"and"
+        AndTerm<out right>								(. exp = new LogicalBinOpExpression(exp, right, LogicalBinOp.And); CopyPos(exp, ((LogicalBinOpExpression)exp).Left,t);.)
+    }
+.
+
+AndTerm<out Expression exp>								(. Expression right = null, left = null; .)
+=
+    RelationalTerm<out left>									(. exp = left; .)
+    {
+		"xor"
+        RelationalTerm<out right>								(. exp = new LogicalBinOpExpression(exp, right, LogicalBinOp.Xor); CopyPos(exp, ((LogicalBinOpExpression)exp).Left,t);.)
+    }
+.
+
+RelationalTerm<out Expression exp>						(. Expression right = null, left = null; RelationalBinOp op = RelationalBinOp.Equal;.)
+=
+    ArithmeticExpression<out left>									(. exp = left; .)
+    [
+		(
+		"=="											(. op = RelationalBinOp.Equal; .)
+		|
+		"!="											(. op = RelationalBinOp.NotEqual; .)
+		|
+		">"												(. op = RelationalBinOp.GreaterThan; .)
+		|
+		">="											(. op = RelationalBinOp.GreaterThanOrEqual; .)
+		|
+		"<"												(. op = RelationalBinOp.LessThan; .)
+		|
+		"<="											(. op = RelationalBinOp.LessThanOrEqual; .)
+		)
+        ArithmeticExpression<out right>					(. exp = new RelationalBinOpExpression(exp, right, op); CopyPos(exp, ((RelationalBinOpExpression)exp).Left,t);.)
+    ]
+.
+
+ArithmeticExpression<out Expression aexp>				(. ArithmeticBinOp op; Expression right = null, left = null; .)
 =
     PlusMinusTerm<out left>                             (. aexp = left; .)
     {
@@ -253,7 +313,7 @@ ArithmeticExpression<out ArithmeticExpression aexp>		(. ArithmeticBinOp op; Arit
     }
 .
 
-PlusMinusTerm<out ArithmeticExpression aexp>            (. ArithmeticBinOp op; ArithmeticExpression right = null, left = null; .)
+PlusMinusTerm<out Expression aexp>					(. ArithmeticBinOp op; Expression right = null, left = null; .)
 =
     UnaryMinusTerm<out left>                            (. aexp = left; .)
     {
@@ -268,7 +328,7 @@ PlusMinusTerm<out ArithmeticExpression aexp>            (. ArithmeticBinOp op; A
     }
 .
 
-UnaryMinusTerm<out ArithmeticExpression aexp>           (. bool isMinus = false; Token minusToken = null; aexp = null; .)
+UnaryMinusTerm<out Expression aexp>						(. bool isMinus = false; Token minusToken = null; aexp = null; .)
 =
     [
         '-'                                             (. isMinus = true; minusToken = t; .)
@@ -280,6 +340,10 @@ UnaryMinusTerm<out ArithmeticExpression aexp>           (. bool isMinus = false;
         NUMBER                                          (. aexp = new Number(int.Parse(t.val)); SetPos(aexp, t); .)
         |
         '0'                                             (. aexp = new Number(int.Parse(t.val)); SetPos(aexp, t);.)
+        |
+        "true"											(. aexp = new Bool(true); .)
+        |
+        "false"											(. aexp = new Bool(false); .)
         |
         LCASEIDENT                                      (. aexp = new Variable(t.val); SetPos(aexp, t); .)
     )

@@ -7,15 +7,12 @@ using PLR.Compilation;
 namespace PLR.AST.Expressions {
 
     public class UnaryMinus : ArithmeticExpression{
-        protected ArithmeticExpression _exp;
-        public ArithmeticExpression Expression { get { return _exp; } }
+        protected Expression _exp;
+        public Expression Expression { get { return _exp; } }
 
-        public UnaryMinus(ArithmeticExpression exp) {
+        public UnaryMinus(Expression exp) {
             _exp = exp;
             _children.Add(exp);
-        }
-        public override int Value {
-            get { return -this.Expression.Value; }
         }
         public override void Accept(AbstractVisitor visitor)
         {

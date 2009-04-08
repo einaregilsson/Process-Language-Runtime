@@ -204,7 +204,7 @@ namespace CCS.Formatters {
         }
 
         public virtual string Format(Number c) {
-            return SurroundWithParens(c.Value.ToString(), c.ParenCount);
+            return SurroundWithParens(c.ToString(), c.ParenCount);
         }
 
         public virtual string Format(Variable v) {

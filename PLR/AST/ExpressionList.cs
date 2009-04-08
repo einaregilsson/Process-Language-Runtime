@@ -7,12 +7,12 @@ using PLR.Compilation;
 namespace PLR.AST {
     public class ExpressionList : Node {
 
-        public void Add(ArithmeticExpression exp) {
+        public void Add(Expression exp) {
             _children.Add(exp);
         }
 
-        public new ArithmeticExpression this[int index] {
-            get { return (ArithmeticExpression)_children[index]; }
+        public new Expression this[int index] {
+            get { return (Expression)_children[index]; }
         }
 
         public override void Accept(AbstractVisitor visitor) {
