@@ -28,18 +28,21 @@ namespace PLR.AST.Processes {
             get { return false; } //Most processes won't need a try catch around them.
         }
 
-        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con, bool setGuidOnProc, LexicalInfo lexInfo) {
+        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con, bool setGuidOnProc, LexicalInfo lexInfo, bool loadVariables) {
             if (context.Type == null || context.ILGenerator == null) {
                 return; //Are at top level and so can't run the process
             }
             ILGenerator il = context.ILGenerator;
 
             LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldfld, context.Type.VariablesField);
+
+            if (context.Type.VariablesField != null && loadVariables) {
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, context.Type.VariablesField);
+            }
+
             il.Emit(OpCodes.Newobj, con);
             il.Emit(OpCodes.Stloc, loc);
-
             il.Emit(OpCodes.Ldloc, loc);
             il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
 
@@ -99,17 +102,21 @@ namespace PLR.AST.Processes {
             }
 
             if (context.Type.Constructor == null) { //Nested type which hasn't defined its constructor yet
-                context.Type.Constructor = context.Type.Builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new Type[] { context.CurrentMasterType.Variables });
-                context.Type.VariablesField = context.Type.Builder.DefineField("_variables", context.CurrentMasterType.Variables, FieldAttributes.Private);
-                ILGenerator ilCon = context.Type.Constructor.GetILGenerator();
-                ilCon.Emit(OpCodes.Ldarg_0);
-                ilCon.Emit(OpCodes.Call, typeof(ProcessBase).GetConstructor(new Type[] {}));
+                if (context.CurrentMasterType.Variables != null) {
+                    context.Type.Constructor = context.Type.Builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new Type[] { context.CurrentMasterType.Variables });
+                    context.Type.VariablesField = context.Type.Builder.DefineField("_variables", context.CurrentMasterType.Variables, FieldAttributes.Private);
+                    ILGenerator ilCon = context.Type.Constructor.GetILGenerator();
+                    ilCon.Emit(OpCodes.Ldarg_0);
+                    ilCon.Emit(OpCodes.Call, typeof(ProcessBase).GetConstructor(new Type[] { }));
 
-                //save the variables argument we got passed in
-                ilCon.Emit(OpCodes.Ldarg_1);
-                ilCon.Emit(OpCodes.Ldarg_0);
-                ilCon.Emit(OpCodes.Stfld, context.Type.VariablesField);
-                ilCon.Emit(OpCodes.Ret);
+                    //save the variables argument we got passed in
+                    ilCon.Emit(OpCodes.Ldarg_0);
+                    ilCon.Emit(OpCodes.Ldarg_1);
+                    ilCon.Emit(OpCodes.Stfld, context.Type.VariablesField);
+                    ilCon.Emit(OpCodes.Ret);
+                } else {
+                    context.Type.Constructor = context.Type.Builder.DefineDefaultConstructor(MethodAttributes.Public);
+                }
             }
             return context.Type.Constructor;
         }

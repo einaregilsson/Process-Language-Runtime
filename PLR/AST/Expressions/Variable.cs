@@ -56,8 +56,9 @@ namespace PLR.AST.Expressions {
             if (_local != null) {
                 context.ILGenerator.Emit(OpCodes.Ldloc, _local);
             } else {
-                FieldBuilder field = context.Type.GetField(_name);
+                FieldBuilder field = context.CurrentMasterType.GetField(_name);
                 context.ILGenerator.Emit(OpCodes.Ldarg_0);
+                context.ILGenerator.Emit(OpCodes.Ldfld, context.Type.VariablesField);
                 context.ILGenerator.Emit(OpCodes.Ldfld, field);
             }
         }

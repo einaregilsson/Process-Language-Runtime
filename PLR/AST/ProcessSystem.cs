@@ -77,7 +77,9 @@ namespace PLR.AST {
             foreach (ProcessDefinition procdef in this) {
                 context.CurrentMasterType = null; 
                 procdef.Compile(context);
-                context.CurrentMasterType.Variables.CreateType();
+                if (context.CurrentMasterType.Variables != null) {
+                    context.CurrentMasterType.Variables.CreateType();
+                }
                 context.CurrentMasterType = null;
             }
 
@@ -150,5 +152,15 @@ namespace PLR.AST {
     }
 }
 
+class Base { }
 
-
+class Test {
+    public Test(int x) {
+        vars = new Variables();
+        vars.member = x;
+    }
+    private Variables vars;
+    class Variables {
+        public int member;
+    }
+}

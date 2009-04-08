@@ -9,20 +9,50 @@ namespace PLR.Runtime {
         private ProcessBase _proc;
         private string _name;
         private bool _input;
-        public ChannelSyncAction(string name, ProcessBase p, bool input) {
+        private List<int> _values = new List<int>();
+        private int _paramCount = 0;
+
+        public ChannelSyncAction(string name, ProcessBase p, int paramCount, bool input) {
             _proc = p;
             _name = name;
             _input = input;
+            _paramCount = paramCount;
         }
+
+        public void AddValue(int value) {
+            _values.Add(value);
+        }
+
+        public int GetValue(int index) {
+            return _values[index];
+        }
+
         public bool CanSyncWith(IAction other) {
             if (!(other is ChannelSyncAction)) {
                 return false;
             }
             ChannelSyncAction otherAction = (ChannelSyncAction)other;
-            return otherAction._name == this._name && otherAction._input != this._input;
+            return otherAction._name == this._name 
+                && otherAction._input != this._input
+                && otherAction._paramCount == this._paramCount;
         }
+
+        public void Sync(IAction other) {
+            if (this._input) { //Only process in the input action
+                ChannelSyncAction cout = (ChannelSyncAction) other;
+                foreach (int value in cout._values) {
+                    this._values.Add(value);
+                }
+            }
+            //do nothing
+        }
+
         public override string ToString() {
-            return _input ? _name : "_" + _name + "_";
+            string str = _input ? _name : "_" + _name + "_";
+            if (_paramCount > 0) {
+                str += "[" + _paramCount + "]";
+            }
+            return str;
         }
 
         public string Name {

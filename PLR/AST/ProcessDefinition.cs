@@ -74,43 +74,48 @@ namespace PLR.AST {
             //Find all variables used in this process...
             VariableCollection varCollection = new VariableCollection();
             varCollection.Start(this);
+            bool hasVariables = varCollection.vars.Count > 0;
+            //If there are variables then define a type for them ...
+            if (hasVariables) {
+                TypeBuilder variables = type.DefineNestedType("Variables", TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.NestedFamily);
+                newTypeInfo.Variables = variables;
+                newTypeInfo.VariablesConstructor = variables.DefineDefaultConstructor(MethodAttributes.Assembly);
+                newTypeInfo.VariablesField = type.DefineField("_variables", newTypeInfo.Variables, FieldAttributes.Private);
 
-            //Define the variables type...
-            TypeBuilder variables = type.DefineNestedType("Variables", TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.NestedFamily);
-            newTypeInfo.Variables = variables;
-            newTypeInfo.VariablesConstructor = variables.DefineDefaultConstructor(MethodAttributes.Assembly);
-            newTypeInfo.VariablesField = type.DefineField("_variables", newTypeInfo.Variables, FieldAttributes.Private);
+                foreach (string variableName in varCollection.vars) {
+                    FieldBuilder field = variables.DefineField(variableName, typeof(int), FieldAttributes.Assembly);
+                    newTypeInfo.AddField(field);
+                }
 
-            foreach (string variableName in varCollection.vars) {
-                FieldBuilder field = variables.DefineField(variableName, typeof(int), FieldAttributes.Assembly);
-                newTypeInfo.AddField(field);
+                Type[] paramTypes = new Type[this.Variables.Count];
+                for (int i = 0; i < paramTypes.Length; i++) {
+                    paramTypes[i] = typeof(int);
+                }
+                constructor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, paramTypes);
+                ILGenerator ilCon = constructor.GetILGenerator();
+                ConstructorInfo conBase = typeof(ProcessBase).GetConstructor(new Type[] { });
+                ilCon.Emit(OpCodes.Ldarg_0);
+                ilCon.Emit(OpCodes.Call, conBase);
+
+                //Create a new variables object and save it to field
+                ilCon.Emit(OpCodes.Ldarg_0);
+                ilCon.Emit(OpCodes.Newobj, newTypeInfo.VariablesConstructor);
+                ilCon.Emit(OpCodes.Stfld, newTypeInfo.VariablesField);
+
+                //For every variable in the constructor, set it on the variables object
+                for (int i = 0; i < this.Variables.Count; i++) {
+                    Variable var = (Variable)this.Variables[i];
+                    ilCon.Emit(OpCodes.Ldarg_0);
+                    ilCon.Emit(OpCodes.Ldfld, newTypeInfo.VariablesField);
+                    ilCon.Emit(OpCodes.Ldarg, i + 1);
+                    ilCon.Emit(OpCodes.Stfld, newTypeInfo.GetField(var.Name));
+                }
+                ilCon.Emit(OpCodes.Ret);
+                newTypeInfo.Constructor = constructor;
+            } else {
+                newTypeInfo.Constructor = type.DefineDefaultConstructor(MethodAttributes.Public);
             }
-
-            Type[] paramTypes = new Type[this.Variables.Count];
-            for (int i = 0; i < paramTypes.Length; i++) {
-                paramTypes[i] = typeof(int);
-            }
-            constructor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, paramTypes);
-            ILGenerator ilCon = constructor.GetILGenerator();
-            ConstructorInfo conBase = typeof(ProcessBase).GetConstructor(new Type[] { });
-            ilCon.Emit(OpCodes.Ldarg_0);
-            ilCon.Emit(OpCodes.Call, conBase);
-
-            //Create a new variables object and save it to field
-            ilCon.Emit(OpCodes.Newobj, newTypeInfo.VariablesConstructor);
-            ilCon.Emit(OpCodes.Ldarg_0);
-            ilCon.Emit(OpCodes.Stfld, newTypeInfo.VariablesField);
             
-            //For every variable in the constructor, set it on the variables object
-            for (int i = 0; i < this.Variables.Count; i++) {
-                Variable var = (Variable)this.Variables[i];
-                ilCon.Emit(OpCodes.Ldarg, i + 1);
-                ilCon.Emit(OpCodes.Ldfld, newTypeInfo.VariablesField);
-                ilCon.Emit(OpCodes.Stfld, newTypeInfo.GetField(var.Name));
-            }
-            ilCon.Emit(OpCodes.Ret);
-
-            newTypeInfo.Constructor = constructor;
             context.AddType(newTypeInfo);
         }
 

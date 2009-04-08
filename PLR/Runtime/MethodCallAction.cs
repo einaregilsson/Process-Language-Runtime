@@ -24,7 +24,9 @@ namespace PLR.Runtime {
         public override string ToString() {
             return _displayName;
         }
-
+        public void Sync(IAction other) {
+            //do nothing
+        }
         public bool IsAsynchronous {
             get { return true; } //Meaning that you don't sync with another action
         }

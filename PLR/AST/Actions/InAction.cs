@@ -22,16 +22,34 @@ namespace PLR.AST.Actions {
             ILGenerator il = context.ILGenerator;
 
             EmitDebug("Preparing to sync now...", context);
-
+            LocalBuilder syncObject = il.DeclareLocal(typeof(ChannelSyncAction));
             il.Emit(OpCodes.Ldarg_0); //this
             il.Emit(OpCodes.Ldstr, Name);
             il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldc_I4, _children.Count);
             il.Emit(OpCodes.Ldc_I4_1);
-            il.Emit(OpCodes.Newobj, typeof(ChannelSyncAction).GetConstructor(new Type[] { typeof(string), typeof(ProcessBase), typeof(bool) }));
+            il.Emit(OpCodes.Newobj, typeof(ChannelSyncAction).GetConstructor(new Type[] { typeof(string), typeof(ProcessBase), typeof(int), typeof(bool) }));
+            il.Emit(OpCodes.Stloc, syncObject);
+            il.Emit(OpCodes.Ldloc, syncObject);
             il.Emit(OpCodes.Call, SyncMethod);
             context.MarkSequencePoint(this.LexicalInfo);
-            //Do nothing here after. In an action class that actually does something we would
-            //compile it here.
+
+            //Save values to variables
+            for (int i = 0; i < _children.Count; i++) {
+                Variable var = (Variable) _children[i];
+
+                //Load the variables field on the current process
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, context.Type.VariablesField);
+
+                //Get the value to assign to it...
+                il.Emit(OpCodes.Ldloc, syncObject);
+                il.Emit(OpCodes.Ldc_I4, i);
+                il.Emit(OpCodes.Call, typeof(ChannelSyncAction).GetMethod("GetValue"));
+
+                //...and assign it
+                il.Emit(OpCodes.Stfld, context.CurrentMasterType.GetField(var.Name));
+            }
         }
     }
 }

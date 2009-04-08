@@ -36,7 +36,7 @@ namespace PLR.AST.Processes {
                 
                 if (con != null) {
                     p.CompileNewProcessEnd(context);
-                    EmitRunProcess(context, con,false, p.LexicalInfo);
+                    EmitRunProcess(context, con,false, p.LexicalInfo, true);
                 }
             }
         }

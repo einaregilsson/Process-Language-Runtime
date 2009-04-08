@@ -1,3 +1,5 @@
-System = A(1) | B
-A(x) = a . 0
-B = 0
+use PLR.Runtime.BuiltIns
+
+System = A(4) | B''
+A(x) = _send_(x+1, x+3) . 0
+B'' = send(y,z) . (:Println("SHOULD BE 5: ", y). 0 | :Println("SHOULD BE7: ", z). 0 )  

@@ -52,7 +52,7 @@ namespace PLR.AST.Processes
             foreach (ArithmeticExpression exp in this.Expressions) {
                 exp.Compile(context);
             }
-            EmitRunProcess(context, context.GetType(this.FullName).Constructor, false, LexicalInfo);
+            EmitRunProcess(context, context.GetType(this.FullName).Constructor, false, LexicalInfo, false);
         }
 
         public override string ToString() {

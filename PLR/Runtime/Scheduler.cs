@@ -122,6 +122,13 @@ namespace PLR.Runtime {
             Match m = matches[new Random().Next(matches.Count)];
             Debug("Chose match");
             _trace.Add(m.a1);
+
+            //Now let them sync with each other
+            if (m.a2 != null && !m.a1.IsAsynchronous && !m.a2.IsAsynchronous) {
+                m.a1.Sync(m.a2);
+                m.a2.Sync(m.a1);
+            }
+
             List<ProcessBase> wakeUp = new List<ProcessBase>();
             List<Guid> wakeUpGuids = new List<Guid>();
             foreach (ProcessBase p in _activeProcs) {
