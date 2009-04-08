@@ -1,5 +1,5 @@
 use PLR.Runtime.BuiltIns
 
-System = A(4) | B''
-A(x) = _send_(x+1, x+3) . 0
-B'' = send(y,z) . (:Println("SHOULD BE 5: ", y). 0 | :Println("SHOULD BE7: ", z). 0 )  
+System = A(1) | B
+A(a) = _f_ . _send_(2) . _stop_ .0
+B = send(x) . 0 | f . :Println("SHould be 0: ", x) . stop . :Println("SHould be 2: ", x) . 0
