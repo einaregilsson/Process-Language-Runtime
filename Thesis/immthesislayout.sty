@@ -1,0 +1,82 @@
+%IMM PHD THESIS LAYOUT
+%Adopted from Henrik Aalborg Nielsen and Thomas Fabricius
+%Jan Larsen, IMM, DTU, Nov 2003
+%updated by Finn Kuno Christensen, fkc@imm.dtu.dk, Aug 15, 2008
+%%%%%%%%%%%%%%%%%%%%%%%   Page geometry
+
+ \addtolength{\parskip}{\baselineskip}
+ \setlength{\parindent}{0pt}
+ \pagestyle{myheadings}
+
+\setlength{\paperwidth}{176mm}  %b5
+\setlength{\paperheight}{250mm} %b5
+\setlength{\textheight}{185mm} % 540pt = 7.5inch = 190.5mm
+\setlength{\topmargin}{-5.4mm}
+\setlength{\headheight}{8mm}
+\setlength{\headsep}{7mm}
+\setlength{\footskip}{10.0mm}
+\setlength{\textwidth}{121.36mm}  % 129.36 mm  % width and margins must add to 176 mm:
+\setlength{\oddsidemargin}{1.24mm} % 1 inch + 1.24 mm = 26.64 mm inside
+\setlength{\evensidemargin}{-5.4mm} % 1 inch - 5.4 mm = 20 mm outside
+
+
+%%%%%%%%%%%%%%%%%%%%%%%   Headings
+
+\pagestyle{fancyplain}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\lhead[\fancyplain{}{\sffamily\bfseries\thepage}]%
+      {\fancyplain{}{\sffamily\bfseries\rightmark}}
+\rhead[\fancyplain{}{\sffamily\bfseries\leftmark}]%
+      {\fancyplain{}{\sffamily\bfseries\thepage}}
+\cfoot{}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%   Theorems
+
+\newtheorem{lemma}{Lemma}[chapter]
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{theorem}[lemma]{Theorem}
+\newtheorem{corollary}[lemma]{Corollary}
+{\theorembodyfont{\rmfamily}
+\newtheorem{definition}[lemma]{Definition}}
+\theoremheaderfont{\scshape\bfseries}
+\newenvironment{proof}{{\scshape Proof.}}{}
+\newcommand{\qed}{\hfill $\square$ \vspace{5mm}}
+\newtheorem{Exa}{Example}[chapter]
+
+%%%%%%%%%%%%%%%%%%%%%%%   Chapters
+
+\renewcommand{\chaptername}{C h a p t e r }
+\renewcommand{\appendixname}{A p p e n d i x }
+
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+   \ifnum \c@secnumdepth >\m@ne
+      \if@mainmatter
+        \large\scshape \@chapapp \space\space \Huge\upshape\thechapter
+        \par\nobreak
+        \vskip 20\p@
+      \fi
+    \fi
+    \interlinepenalty\@M
+    \flushleft\parbox{\textwidth}{\raggedleft \sffamily\Huge\bfseries  #1}
+     \par\nobreak
+     \vskip 15pt
+     \hrule height 0.4pt
+    \vskip 80\p@
+  }}
+
+\def\@makeschapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \interlinepenalty\@M
+%    \flushleft\parbox{\textwidth}{\raggedleft \sffamily\Huge\bfseries  #1}
+     \sffamily\huge\bfseries  #1
+
+     \par\nobreak
+     \vskip 15pt
+     \hrule height 0.4pt
+    \vskip 80\p@
+  }}

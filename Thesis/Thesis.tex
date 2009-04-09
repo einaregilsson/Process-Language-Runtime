@@ -1,0 +1,83 @@
+%  PHDTHESIS TEMPLATE FILE
+%  Adopted from Thomas Fabricius and Henrik Aalborg Nielsen
+%  Jan Larsen, IMM, DTU, Nov 2003 ver 1.0
+%  Updated by Finn Kuno Christensen, fkc@imm.dtu.dk Aug 15, 2008
+
+%  COMPILATION STEPS USING INVOLVING A PS FILE
+%\documentclass[10pt,twoside,dvips]{book}
+%  latex phdthesis.tex
+%  dvips -D600 -Pamz -Pcmz -j0 phdthesis.dvi -o phdthesis.ps
+%  ps2pdf -sPAPERSIZE=b5 phdthesis.ps phdthesis.pdf (or use Acrobat Distiller)
+
+%  COMPILATION STEP USING PDFLATEX
+\documentclass[10pt,twoside]{book}
+%  pdflatex phdthesis.tex
+
+
+%%%%%%%%%%% MODIFY THESE LINES ONLY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\thesisyear{2009} % Year thesis submitted
+\def\thesisnumber{70}  % Only number no year
+\def\thesisauthor{Einar Egilsson} % Thesis author
+\def\thesistitle{A Process Language Runtime for the .NET Platform} 
+\def\thesiskeywords{process algebra compiler .net}
+\def\thesisISBN{} %OBSOBS provide ISBN number for industrial phd students ONLY
+\def\thesisversion{print} %OBSOBS choose this for printed version send to printing
+%\def\thesisversion{net} %OBSOBS choose this for the net version for the web and publication database
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%% DO NOT MODIFY START %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{immphddef.sty}
+%%%%%%%%%%%%%%% DO NOT MODIFY END %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%PREFACE CHAPTERS INCLUDE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{Summary}
+\markboth{}{}
+\input{Preface}
+\markboth{}{}
+\input{Acknowledge}
+\markboth{}{}
+
+%%%%%%%PREFACE CHAPTERS INCLUDE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\newpage\mbox{}\newpage
+\chaptermark{Contents}
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+\sectionmark{Contents}
+\addtolength{\parskip}{-\baselineskip}
+\tableofcontents
+\addtolength{\parskip}{\baselineskip}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+
+\mainmatter
+% Chapter 1, 2, ...
+%%%%%%%MAIN CHAPTERS INCLUDE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{Chapter1}
+%\include{Chapter2}
+%\include{Chapter3}
+%\include{Chapter4}
+%\include{Chapter5}
+%\include{conclusion}
+
+\appendix
+
+%%%%%%%APPENDIX CHAPTERS INCLUDE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Appendix A, B, ...
+%\include{Appendix1}
+
+\backmatter
+
+\chaptermark{Bibliography}
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+\sectionmark{Bibliography}
+
+%%%%%%%BIBLIOGRAPHY INCLUDE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliography{Bibliography}    % Bibliography
+\bibliographystyle{plain}
+
+
+\end{document}

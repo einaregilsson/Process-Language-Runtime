@@ -1,0 +1,83 @@
+\def\thesisISSN{0909-3192}
+\def\ttitle{{\sf\textbf{\thesistitle}}}
+\def\thesisdef{IMM-PHD-\thesisyear-\thesisnumber}
+\usepackage{hyperref}
+\def\printversion{print}
+\ifx\thesisversion\printversion
+  \special{papersize=176mm,250mm}
+  \hypersetup{pdftitle={\thesistitle},
+              pdfauthor={\thesisauthor},
+              pdfsubject={\thesisdef},
+              pdfkeywords={\thesiskeywords},
+              breaklinks,
+              bookmarksopen,
+              bookmarksnumbered}
+\else
+  \hypersetup{pdftitle={\thesistitle},
+              pdfauthor={\thesisauthor},
+              pdfsubject={\thesisdef},
+              pdfkeywords={\thesiskeywords},
+              colorlinks,
+              linkcolor=blue,
+              breaklinks,
+              bookmarksopen,
+              bookmarksnumbered}
+\fi
+
+
+%%%%%%%%%%%%%% DO NOT MODIFY BELLOW START%%%%%%%%%%%%
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{fancyheadings}
+\usepackage{amsmath,amssymb,latexsym,epic,eepic,epsfig,graphics,psfrag}
+\usepackage{theorem}
+\usepackage{immthesislayout}
+
+\newcommand{\papertitle}{}
+\setcounter{tocdepth}{1} % 1 in final version 10 for debugging
+\setcounter{secnumdepth}{3} % subsubsections get a number when this is 3
+
+% PDF:
+%\usepackage[pdftitle={PARAMETRIC AND NON-PARAMETRIC SYSTEM MODELLING},
+%            pdfauthor={Henrik Aalborg Nielsen, IMM, DTU},
+%            breaklinks,
+%            bookmarksopen,
+%            bookmarksnumbered]{hyperref}
+%\hypersetup{pdftitle={\ttitle},
+%%            pdfsubject={\thesisdef},
+%            pdfkeywords={\thesiskeywords},
+%            breaklinks,
+%            bookmarksopen,
+%            bookmarksnumbered}
+
+\begin{document}
+\thispagestyle{empty}
+\vspace*{\fill}
+\begin{center}
+{\huge\ttitle}\\*[2.5cm]
+\Large\sf\thesisauthor\\*[4.5cm]
+\small\sf Kongens Lyngby \thesisyear\\
+\small\sf IMM-PHD-\thesisyear-\thesisnumber
+\end{center}
+\vspace*{\fill}
+\newpage
+\thispagestyle{empty}
+\vspace*{11cm}
+{\sf Technical University of Denmark}\\
+{\sf Informatics and Mathematical Modelling}\\
+{\sf Building 321, DK-2800 Kongens Lyngby, Denmark}\\
+{\sf Phone +45 45253351, Fax +45 45882673}\\
+{\sf reception@imm.dtu.dk}\\
+{\sf www.imm.dtu.dk}
+
+\vspace*{2.5cm}
+\def\empty{}
+\ifx\thesisISBN\empty
+  {\sf IMM-PHD: ISSN \thesisISSN}
+\else
+  {\sf IMM-PHD: ISSN \thesisISSN, ISBN \thesisISBN}
+\fi
+
+
+\frontmatter
+\pagenumbering{roman}
