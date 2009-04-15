@@ -9,7 +9,12 @@ using System.Diagnostics.SymbolStore;
 
 namespace PLR.AST {
 
+    public delegate void CompileEventHandler(CompileContext context);
+
     public class ProcessSystem : Node {
+
+        public event CompileEventHandler BeforeCompile;
+        public event CompileEventHandler AfterCompile;
 
         private List<String> _importedClasses = new List<string>();
 
@@ -54,6 +59,10 @@ namespace PLR.AST {
             context.Module = module;
             context.ImportedClasses = _importedClasses;
 
+            if (BeforeCompile != null) {
+                BeforeCompile(context);
+            }
+
             foreach (ProcessDefinition procdef in this) {
                 procdef.CompileSignature(module, context);
             }
@@ -82,7 +91,8 @@ namespace PLR.AST {
                 }
                 context.CurrentMasterType = null;
             }
-
+            TypeBuilder tb;
+            tb.DefineField("items", typeof(Dictionary<string>, List<Object>, FieldAttributes.Private | FieldAttributes.Static)
             List<LocalBuilder> initial = new List<LocalBuilder>();
             context.PushIL(mainMethod.GetILGenerator());
             foreach (ProcessDefinition procdef in this) {
@@ -102,6 +112,9 @@ namespace PLR.AST {
             context.ILGenerator.Emit(OpCodes.Ldc_I4_0);
             context.ILGenerator.Emit(OpCodes.Ret);
 
+            if (AfterCompile != null) {
+                AfterCompile(context);
+            }
             module.CreateGlobalFunctions();
             assembly.SetEntryPoint(mainMethod, PEFileKinds.ConsoleApplication);
             assembly.Save(filename);

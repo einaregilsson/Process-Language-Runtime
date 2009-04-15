@@ -5,7 +5,12 @@ from PLR.AST import *
 from PLR.AST.Actions import *
 from PLR.AST.Processes import *
 from PLR.Runtime import *
-
+from PLR.Compilation import *
+from System.Collections.Generic import *
+from System.Reflection import *
+from System.Reflection.Emit import *
+from System import Array, Type, Object
+import sys
 
 #token types
 LOCATION = 'LOCATION'
@@ -131,12 +136,17 @@ class ParseError(Exception):
     def __init__(self,msg):
         self.msg = msg
 
-class Tuple:
+class Tuple(Process):
     def __init__(self, location, items):
         self.location = location
         self.items = items
     def __str__(self):
         return '%s::<%s>' % (self.location, ', '.join(str(i) for i in self.items))
+    
+    def Accept(self, visitor):
+        visitor.Visit(self)
+    def Compile(self, context):
+        pass
 
 class In(Action):
     def __new__(cls):
@@ -144,6 +154,11 @@ class In(Action):
 
     def __str__(self):
         return 'inaction'
+    def Accept(self, visitor):
+        visitor.Visit(self)
+    def Compile(self, context):
+        pass
+    
         
 class Out(Action):
     def __new__(cls):
@@ -151,6 +166,10 @@ class Out(Action):
 
     def __str__(self):
         return 'out'
+    def Accept(self, visitor):
+        visitor.Visit(self)
+    def Compile(self, context):
+        pass
 
 class Read(Action):
     def __new__(cls):
@@ -158,6 +177,10 @@ class Read(Action):
 
     def __str__(self):
         return 'read'
+    def Accept(self, visitor):
+        visitor.Visit(self)
+    def Compile(self, context):
+        pass
 
 class Parser:
     def __init__(self, lexer):
@@ -175,13 +198,8 @@ class Parser:
         system = ProcessSystem()
         while self.la.type != EOF:
             try:
-                items = self.net()
-                for item in items:
-                    if type(item) == ActionPrefix:
-                        print "HI",item.Action
-                        print item
-                  
-                    
+                for procdef in self.net():
+                    system.Add(procdef)
             except ParseError, ex: #Try to recover
                 self.errors.append(ex.msg)
                 print ex.msg
@@ -189,6 +207,7 @@ class Parser:
                 #Try to resync to the next located item
                 while self.t.type not in (EOF, DOUBLEPIPE):
                     self.get()
+        return system
 
     def net(self):
         return self.list_of(self.located_item, DOUBLEPIPE)
@@ -209,9 +228,21 @@ class Parser:
         loc = self.t.val
         self.expect_t(DOUBLESEMI)
         if self.la.type == LANGLE:
-            return Tuple(loc, self.tuple())
+            proc = Tuple(loc, self.tuple())
+            for i in range(1,9999):
+                name = loc + '_Tuple_' + str(i)
+                if not name in self.procnames:
+                    self.procnames.append(name)
+                    return ProcessDefinition(proc, name, True)
         else:
-            return self.process()
+            proc = self.process()
+            for i in range(1,9999):
+                name = loc + str(i)
+                if not name in self.procnames:
+                    self.procnames.append(name)
+                    return ProcessDefinition(proc, name, True)
+                    
+            
         
     def tuple(self):
         return self.list_of(self.constant, COMMA, LANGLE, RANGLE)
@@ -307,19 +338,43 @@ class Parser:
         
         return items
 
-        
+
+
+def compile_tuplespaces(context):
+    print 'Compiling tuplespaces'
+    
+    tb = context.Module.DefineType("TupleSpaces", TypeAttributes.Public | TypeAttributes.Class)
+    
+    #The dictionary holding the 
+    field = tb.DefineField("items", type(Dictionary[str, List[Object]]), FieldAttributes.Private | FieldAttributes.Static)
+    
+    staticcon = tb.DefineConstructor(MethodAttributes.Static, CallingConventions.Standard, Array[Type](()))
+    il = staticcon.GetILGenerator()
+    loclist = il.DeclareLocal(type(List[Object]))
+    created_locations = []
+    for pd in system:
+        if type(pd.Process) == Tuple:
+            print 'Compiling tuple', pd.Process
+            
+
+    il.Emit(OpCodes.Ret)
+    tb.CreateType()
         
 if __name__ == '__main__':
     text = """
     Foo::<23, Foj, 3>
     || FAS::<Con1, Con2>
-    || John::read( !x23ASD)@J. in(1)@self . (out(x, y, John, 0)@a . 0) | read(a, F, 0)@x . 0 + out(1)@a .  0
+    || John::
+       read( !x23ASD)@J. in(1)@self . (out(x, y, John, 0)@a . 0) 
+       | 
+       read(a, F, 0)@x . 0 
+       + out(1)@a .  0
 
     """
     p = Parser(Lexer(text))
-    p.parse()
-#    tok = Token('begin','begin',21,3)
-#    while tok:
-#        print tok.val, ' type: ', tok.type, ' (%d,%d)' % (tok.line,tok.col)
-#        tok = l.lex()
+    system = p.parse()
+    options = CompileOptions.Parse(List[str]())
+    options.OutputFile = r'c:\ee\klaimtest.exe'
+    system.BeforeCompile += compile_tuplespaces
+    system.Compile(options)
  
