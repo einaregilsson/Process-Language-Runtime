@@ -15,6 +15,8 @@ namespace PLR.AST {
 
         public event CompileEventHandler BeforeCompile;
         public event CompileEventHandler AfterCompile;
+        public event CompileEventHandler MainMethodStart;
+        public event CompileEventHandler MainMethodEnd;
 
         private List<String> _importedClasses = new List<string>();
 
@@ -84,17 +86,18 @@ namespace PLR.AST {
             }
 
             foreach (ProcessDefinition procdef in this) {
-                context.CurrentMasterType = null; 
+                context.CurrentMasterType = null;
                 procdef.Compile(context);
                 if (context.CurrentMasterType.Variables != null) {
                     context.CurrentMasterType.Variables.CreateType();
                 }
                 context.CurrentMasterType = null;
             }
-            TypeBuilder tb;
-            tb.DefineField("items", typeof(Dictionary<string>, List<Object>, FieldAttributes.Private | FieldAttributes.Static)
             List<LocalBuilder> initial = new List<LocalBuilder>();
             context.PushIL(mainMethod.GetILGenerator());
+            if (MainMethodStart != null) {
+                MainMethodStart(context);
+            }
             foreach (ProcessDefinition procdef in this) {
                 if (procdef.EntryProc) {
                     TypeInfo startProc = context.GetType(procdef.FullName);
@@ -107,6 +110,10 @@ namespace PLR.AST {
             //Run Scheduler, who now knows all the new Processes
             context.ILGenerator.EmitWriteLine("Starting Scheduler");
             CallScheduler("Run", true, context);
+
+            if (MainMethodEnd!= null) {
+                MainMethodEnd(context);
+            }
 
             //return 0;
             context.ILGenerator.Emit(OpCodes.Ldc_I4_0);
@@ -160,7 +167,7 @@ namespace PLR.AST {
             ilStartup.Emit(OpCodes.Newobj, MethodResolver.GetConstructor(typeof(System.ResolveEventHandler)));
             ilStartup.Emit(OpCodes.Callvirt, MethodResolver.GetMethod(typeof(System.AppDomain), "add_AssemblyResolve"));
             ilStartup.Emit(OpCodes.Ret);
-            
+
         }
     }
 }

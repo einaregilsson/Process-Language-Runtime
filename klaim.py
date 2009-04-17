@@ -1,5 +1,7 @@
 import clr
 clr.AddReference('PLR.dll')
+clr.AddReference('KlaimRuntime.dll')
+import PLR.AST
 from PLR import *
 from PLR.AST import *
 from PLR.AST.Actions import *
@@ -9,8 +11,10 @@ from PLR.Compilation import *
 from System.Collections.Generic import *
 from System.Reflection import *
 from System.Reflection.Emit import *
-from System import Array, Type, Object
+from System import Array, Type, Object, String
+from KlaimRuntime import Locality,Net,Tuple
 import sys
+
 
 #token types
 LOCATION = 'LOCATION'
@@ -136,7 +140,7 @@ class ParseError(Exception):
     def __init__(self,msg):
         self.msg = msg
 
-class Tuple(Process):
+class LocatedTuple(Process):
     def __init__(self, location, items):
         self.location = location
         self.items = items
@@ -145,6 +149,7 @@ class Tuple(Process):
     
     def Accept(self, visitor):
         visitor.Visit(self)
+        
     def Compile(self, context):
         pass
 
@@ -189,17 +194,28 @@ class Parser:
         self.la = self.lexer.lex()
         self.errors = []
         self.procnames = []
+        self.tuples = []
         
     def get(self):
         self.t = self.la
         self.la = self.lexer.lex()
 
     def parse(self):
+        """
+        Returns a tuple with (system, tuples) where
+        net is an instance of ProcessSystem and tuples is a
+        (python) list of LocatedTuple instances
+        """
         system = ProcessSystem()
         while self.la.type != EOF:
             try:
-                for procdef in self.net():
-                    system.Add(procdef)
+                for item in self.net():
+                    if type(item) == LocatedTuple:
+                        self.tuples.append(item)
+                    else:
+                        print 'Adding1', item.GetType()
+                        print 'Adding2', item
+                        system.Add(item)
             except ParseError, ex: #Try to recover
                 self.errors.append(ex.msg)
                 print ex.msg
@@ -207,7 +223,7 @@ class Parser:
                 #Try to resync to the next located item
                 while self.t.type not in (EOF, DOUBLEPIPE):
                     self.get()
-        return system
+        return system, self.tuples
 
     def net(self):
         return self.list_of(self.located_item, DOUBLEPIPE)
@@ -228,22 +244,16 @@ class Parser:
         loc = self.t.val
         self.expect_t(DOUBLESEMI)
         if self.la.type == LANGLE:
-            proc = Tuple(loc, self.tuple())
-            for i in range(1,9999):
-                name = loc + '_Tuple_' + str(i)
-                if not name in self.procnames:
-                    self.procnames.append(name)
-                    return ProcessDefinition(proc, name, True)
+            print 'Returning tuple'
+            return LocatedTuple(loc, self.tuple())
         else:
             proc = self.process()
             for i in range(1,9999):
                 name = loc + str(i)
                 if not name in self.procnames:
                     self.procnames.append(name)
-                    return ProcessDefinition(proc, name, True)
-                    
-            
-        
+                    return PLR.AST.ProcessDefinition(proc, name, True)
+
     def tuple(self):
         return self.list_of(self.constant, COMMA, LANGLE, RANGLE)
     
@@ -321,7 +331,7 @@ class Parser:
         if self.t.type == LOCATION:
             return self.t.val
         elif self.t.type == NUMBER:
-            return self.t.val
+            return int(self.t.val)
 
     
     def list_of(self, func, seperator=COMMA, startTok=None, endTok=None):
@@ -339,28 +349,44 @@ class Parser:
         return items
 
 
-
-def compile_tuplespaces(context):
+def compile_tuplespaces(context, tuples):
     print 'Compiling tuplespaces'
-    
-    tb = context.Module.DefineType("TupleSpaces", TypeAttributes.Public | TypeAttributes.Class)
-    
-    #The dictionary holding the 
-    field = tb.DefineField("items", type(Dictionary[str, List[Object]]), FieldAttributes.Private | FieldAttributes.Static)
-    
-    staticcon = tb.DefineConstructor(MethodAttributes.Static, CallingConventions.Standard, Array[Type](()))
-    il = staticcon.GetILGenerator()
-    loclist = il.DeclareLocal(type(List[Object]))
-    created_locations = []
-    for pd in system:
-        if type(pd.Process) == Tuple:
-            print 'Compiling tuple', pd.Process
+    il = context.ILGenerator
+    tuples.sort(lambda x,y: x.location.__cmp__(y.location))
+    last = ''
+    loc = il.DeclareLocal(Locality.Type)
+    arr = il.DeclareLocal(Type.GetType("System.Object[]"))
+    for t in tuples:
+        if last != t.location:
+            il.Emit(OpCodes.Ldstr, t.location)
+            il.Emit(OpCodes.Call, Net.Type.GetMethod("AddLocality"))
+            il.Emit(OpCodes.Stloc, loc)
+        
+        il.Emit(OpCodes.Ldc_I4, len(t.items))
+        il.Emit(OpCodes.Newarr, Type.GetType("System.Object"))
+        il.Emit(OpCodes.Stloc, arr)
+        
+        for i,elem in enumerate(t.items):
+            il.Emit(OpCodes.Ldloc, arr)
+            il.Emit(OpCodes.Ldc_I4, i)
+            if type(elem) == int:
+                il.Emit(OpCodes.Ldc_I4, elem)
+                il.Emit(OpCodes.Box, Type.GetType("System.Int32"))
+            elif type(elem) == str:
+                il.Emit(OpCodes.Ldstr, elem)
             
-
-    il.Emit(OpCodes.Ret)
-    tb.CreateType()
+            il.Emit(OpCodes.Stelem_Ref)
+        
+        il.Emit(OpCodes.Ldloc, loc)
+        il.Emit(OpCodes.Ldloc, arr)
+        il.Emit(OpCodes.Call, Locality.Type.GetMethod("AddTuple"))
+            
+        
+    il.EmitWriteLine("YES; FINISHEd")
+        
         
 if __name__ == '__main__':
+    module_il = None
     text = """
     Foo::<23, Foj, 3>
     || FAS::<Con1, Con2>
@@ -372,9 +398,9 @@ if __name__ == '__main__':
 
     """
     p = Parser(Lexer(text))
-    system = p.parse()
+    system, tuples = p.parse()
     options = CompileOptions.Parse(List[str]())
-    options.OutputFile = r'c:\ee\klaimtest.exe'
-    system.BeforeCompile += compile_tuplespaces
+    options.OutputFile = r'c:\ee\MSC\klaimtest.exe'
+    system.MainMethodStart += lambda context: compile_tuplespaces(context, tuples)
     system.Compile(options)
  
