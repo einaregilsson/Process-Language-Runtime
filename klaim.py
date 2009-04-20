@@ -154,8 +154,9 @@ class LocatedTuple(Process):
         pass
 
 class In(Action):
-    def __new__(cls):
+    def __new__(cls, expressions):
         return Action.__new__(cls, 'in')
+        self.expressions = expressions
 
     def __str__(self):
         return 'inaction'
@@ -166,18 +167,23 @@ class In(Action):
     
         
 class Out(Action):
-    def __new__(cls):
+    def __new__(cls, expressions):
         return Action.__new__(cls, 'out')
+        self.expressions = expressions
 
     def __str__(self):
         return 'out'
+
     def Accept(self, visitor):
         visitor.Visit(self)
+
     def Compile(self, context):
         pass
+        
+        
 
 class Read(Action):
-    def __new__(cls):
+    def __new__(cls, expressions):
         return Action.__new__(cls, 'read')
 
     def __str__(self):

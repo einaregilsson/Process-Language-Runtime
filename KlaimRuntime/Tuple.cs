@@ -8,7 +8,6 @@ namespace KlaimRuntime {
 
         public Tuple(object[] items) {
             _items.AddRange(items);
-            object[] f = new object[] { 1, 4, 5, "foo" };
         }
 
         public static Type Type { get { return typeof(Tuple); } }
