@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CCS", "CCS\CCS.csproj", "{9A6B2AED-7E88-4EA4-B3F2-7E247EBAEA52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLR", "PLR\PLR.csproj", "{C2BC567A-4740-4224-9CBA-8C2B527EBF83}"

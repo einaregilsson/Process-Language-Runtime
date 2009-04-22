@@ -1,0 +1,39 @@
+\chapter{Introduction}
+
+In the last decade or so, programming languages have increasingly started to target virtual machines instead of specific physical machine architectures. This approach has a number of benefits. Software applications that work on multiple machine architectures are generally referred to as \textit{cross-platform} applications. 
+Many virtual machines have implementations on different machine architectures, which 
+It creates a layer of abstraction on top of the machine architecture, which allows a programming language author to target a virtual machine architecture and  
+
+\section{Thesis Objectives}
+
+This thesis presents the design and implementation of the Process Language Runtime, hereafter referred to as the PLR. The PLR consists of two main components. First, it contains an extensible abstract syntax tree, which models common idioms of process languages, and can compile itself to .NET bytecode. Secondly, it contains a runtime library that is used by process applications that have been compiled from the PLR syntax tree. 
+
+Integration with the .NET platform is also explored, e.g. how to allow process language applications to call code developed in other .NET languages and whether it is possible to use existing .NET development tools to aid in writing process language applications.
+
+Finally the thesis presents two case studies of process language implementations that were done using the PLR. The languages implemented were CCS (Calculus of Communicating Systems) and a subset of KLAIM (Kernel Language for Agents Interaction and Mobility).
+
+The work carried out consists of the following parts:
+
+\begin{itemize}
+  \item Design and implementation of the PLR abstract syntax tree and compiler.
+  \item Design and implementation of the runtime library.
+  \item Implementation of the process language CCS.
+  \item Implementation of the process language KLAIM.
+  \item Integration of the CCS language into Visual Studio, a state-of-the-art 
+  			integrated development environment for .NET development.
+\end{itemize}
+
+
+\section{Thesis Outline}
+
+The thesis consists of seven chapters. This introduction is the first chapter, the rest are as follows:
+
+Chapter 2 gives some background on process languages in general and their common properties, and some technical background on the .NET platform. The concepts presented there are useful for understanding the architecture of the PLR.\\
+Chapter 3 describes the Process Language Runtime, both the syntax tree and runtime library and shows how they are designed and implemented. \\
+Chapter 4 is a case study of the implementation of the CCS process language.\\
+Chapter 5 is another case study, this time of the implementation of the KLAIM language.\\
+Chapter 6 gives a quick overview of how the CCS language was integrated into Visual Studio 2008. \\
+Finally, Chapter 7 contains concluding remarks and ideas for further development of the PLR, including how some other common process languages could be implemented using the PLR.\\
+
+Appendix A ...
+Appendix B ...
