@@ -1,9 +1,185 @@
 \chapter{Background}
 
+	To fully understand the issues involved in creating the Process Language 
+	Runtime, a little background knowledge is required. First, Process 
+	languages are explained, their history, common traits and practical 
+	applications. Secondly, the .NET framework is presented and its technology
+	explained.
+
 \section{Process Languages}
 
-bla
+	bla
 
-\section{The .NET Platform}
+\section{The .NET Framework}
 
-bla
+\subsection{Overview and history}
+	The .NET Framework is a framework from Microsoft for writing software 
+	applications. It consists of a virtual machine that runs programs coded 
+	specifically for the framework and a large standard library for application 
+	developers to use when writing their applications. In addition, two 
+	programming languages are included in the default distribution of the 
+	framework, C\# and Visual Basic.NET. (A third language, J\#, was included in
+	earlier versions but has since been dropped).
+
+	The original name for .NET was Next Generation Windows Services (NGWS) and its
+	development started in the late 1990's at Microsoft. In late 2000 the first 
+	beta versions of .NET 1.0 were released, and the first official version of the
+	.NET framework, 1.0, was released on February 13th, 2002. As of this writing 
+	there have been five major releases of the framework, 1.0, 1.1, 2.0, 3.0 and 
+	3.5. With each new version additional features have been added, but not always 
+	in the way you would expect. The first three versions, 1.0, 1.1 and 2.0 all 
+	contained new versions of the virtual machine, new versions of the compiler 
+	for the standard languages and additional libraries. However, version 3.0 of 
+	the framework contained only new libraries but no new compilers or new version 
+	of the virtual machine. Version 3.5 then included new versions of C\# and 
+	Visual Basic.NET and some additional libraries, but again no change to the 
+	virtual machine. As a result, the version numbers of the different components 
+	of the framework have diverged so when we talk about version 3.5 of the 
+	framework, that includes version 3.5 of the libraries, version 2.0 of the 
+	virtual machine and version 3.0 of the C\# language. 
+
+\subsection{Common Language Infrastructure}
+
+	The Common Language Infrastructure (CLI) is an open specification developed by
+	Microsoft that describes an executable code and runtime environment. This is 
+	Microsoft's specification of the .NET framework, but it has been published 
+	under ECMA-335 and ISO/IEC 23271 and so anyone is free to write their own 
+	version that follows this specification. Two main alternate versions exist, 
+	Mono and DotGNU. Both of these are released under open source licenses and 
+	work on multiple operating systems, as opposed to Microsoft's .NET which only 
+	runs on the Windows family of operating systems. Microsoft has also released a 
+	shared source reference implementation of the CLI specification. None of these 
+	other implementations fully implement all the class libraries of the original 
+	.NET framework, and typically are about one version behind Microsoft's .NET 
+	framework.
+
+	The five main components described by the CLI specification are as follows:
+
+	\begin{enumerate}
+		
+		\item \textbf{The Common Type System (CTS):} a set of types and operations 
+		that are shared by all CLI-compliant programming languages.
+		
+		\item \textbf{Metadata:} Any CLI language can access code written in any 
+		other CLI language. To achieve this, information about program structure is 
+		language agnostic.
+	
+		\item \textbf{Common Language Specification (CLS):} A set of base rules to 
+		which any language targeting the CLI should conform in order to interoperate 
+		with other CLS-compliant languages. The CLS rules define a subset of the 
+		Common Type System.
+	
+		\item \textbf{Virtual Execution System (VES):} The VES is the component that
+		loads and executes CLI-compatible programs. 
+	
+		\item \textbf{Common Intermediate Language (CIL):} An intermediate language 
+		that is abstracted away from the platform hardware. Upon execution, the 
+		platform-specific VES will use a Just-in-time (JIT) compiler to compile the 
+		CIL to hardware specific assembly language. Common Intermediate Language is 
+		often referred to under the names MSIL (Microsoft Intermediate Language) or 
+		simply as .NET bytecode.
+
+	\end{enumerate}
+    
+\subsection{Languages}
+	
+	Two programming languages are included in the .NET default distribution. Those
+	are C\# and Visual Basic.NET. C\# derives its syntax from the C family of 
+	languages, and in its first version was almost identical to the Java 
+	programming language. Later versions have acquired a number of new features 
+	such as lambdas, anonymous delegates and generators. In theory all .NET 
+	languages are created equal; in practice C\# is first among equals, and the 
+	entire standard library is for instance written in C\#. 
+
+	Visual Basic.NET derives from the Basic family of languages. It has more 
+	verbose syntax than C\# and is the continuation of Microsoft's Visual Basic 6 
+	language. Visual Basic.NET has a number of differences from previous version 
+	of Visual Basic though, mainly to fit into the .NET mold. To ease the 
+	transition from Visual Basic 6 to Visual Basic.NET, Microsoft included a 
+	number of old Visual Basic functions with the .NET framework in the namespace 
+	Microsoft.VisualBasic. 
+	
+	In addition to these two main languages, there are dozens of other 
+	languages that have implementations targeting .NET. These include well 
+	established languages such as C++, Delphi, Lisp, Scheme, Smalltalk, Java 
+	(in J\#), Python, Cobol, Ruby and JavaScript as well as languages that have 
+	been built for .NET from the start, such as F\#, Nemerle and Boo.
+
+\subsection{Virtual machine}
+
+	The virtual machine, of the .NET framework is named the Common Language 
+	Runtime (CLR). It manages the runtime requirements of programs written for 
+	.NET and frees the programmer from having to consider specific machine 
+	architectures or CPU's, as far as the programmer is concerned the CLR is the 
+	(virtual) machine architecture that they are targeting. The CLR also provides 
+	other runtime services such as security, exception handling and memory 
+	management. Of these, perhaps the most important service provided is memory 
+	management, which frees the programmer from allocating and de-allocating 
+	memory at runtime. Some of the most common programming errors in languages 
+	without memory management, such as C++, have to do with failing to de-allocate 
+	memory, causing memory leaks, or accessing memory incorrectly which in turn 
+	causes segmentation faults. Programs written for .NET eschew this class of 
+	errors completely.
+	
+	The CLR executes programs that have been compiled to the Common Intermediate 
+	Language (CIL) format. It is a stack based virtual machine, which means it has
+	an evaluation stack where the CIL bytecodes are evaluated. An illustrative 
+	snippet of C\# code and it's corresponding CIL is shown in 
+	Figure \ref{fig:cil}. The CIL bytecodes generally fall into four categories:
+		
+	\begin{enumerate}
+		\item \textbf{Load items onto the stack}. These include bytecodes to load
+		integers, floating point numbers, strings, object references, local variables
+		or class fields onto the evaluation stack. These bytecodes take one argument
+		each, the item to be loaded onto the stack.
+		
+		\item \textbf{Store stack items into variables/fields}. These bytecodes take
+		the top item on the stack and store it in a local variable, global variable
+		or class member variable. They take one argument, which is a reference to the
+		variable to store in.
+		
+		\item \textbf{Call functions}. These take an argument, that is a reference to
+		the function to call, and then call it with the parameters that are currently 
+		on the evaluation stack.
+			
+		\item \textbf{Operate on stack items}. These bytecodes usually do nottake any
+		arguments, they simply use values on the stack and push results back onto the 
+		stack. Examples of these are bytecodes that add, multiply or divide the top 
+		two values on the stack, and then push the result back onto the stack.
+		
+	\end{enumerate}
+	
+	At the time of execution, the CLR generates native code for the particular 
+	machine architecture that it is running on from the CIL bytecodes, this is 
+	referred to as Just-in-time compiling, or JIT compiling. A more detailed 
+	explanation of that process is outside the scope of this paper, but detailed
+	information can be found in \ref{NEEDREF}.
+	
+\lstset{language=CSharp}
+\lstset{commentstyle=\textit}
+\begin{lstlisting}[frame=trbl]
+using System;
+namespace CodeGenDemo {
+    class Program {
+        static void Main(string[] args) {
+            Console.WriteLine("Hello world");
+        }
+    }
+}
+
+-------------------------------------------------
+.class private auto ansi beforefieldinit CodeGenDemo.Program
+       extends [mscorlib]System.Object
+{
+  .method private hidebysig static void  Main(string[] args) cil managed
+  {
+    .entrypoint
+    // Code size       20 (0x14)
+    .maxstack  8
+    IL_0000:  nop
+    IL_0001:  ldstr      "Hello world"
+    IL_0006:  call       void [mscorlib]System.Console::WriteLine(string)
+    IL_0013:  ret
+  } // end of method Program::Main
+\end{lstlisting}
+  
