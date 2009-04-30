@@ -8,7 +8,85 @@
 
 \section{Process Languages}
 
-	bla
+\subsection{Overview and history}
+
+	Process Languages, also known as Process Algebras or Process Calculi, are a
+	family of languages to formally model concurrent systems. These languages 
+	describe the systems at a high level of abstraction, as interactions, 
+	communications, and synchronizations between a collection of independent
+	processes. This is typically done using only a handful of constructs, many 
+	of which are shared between different process languages, albeit 
+	with different concrete syntax. These common constructs are explained 
+	further in Section~\ref{common_constructs}. Some of the more prominent 
+	process languages today include Calculus of Communicating Systems (CCS), 
+	Communicating Sequential Processes (CSP), $\pi$-calculus and Kernel Language 
+	for Agents Interaction and Mobility} (KLAIM).
+	
+	Algebraic laws have been defined for these languages that allow process 
+	descriptions or equations to be analyzed and manipulated, and permit formal 
+	reasoning about equivalences between different processes, using for instance 
+	bi-simulation. In this paper we do not focus on these algebraic properties 
+	but instead concern ourselves with their implementations as programming 
+	languages. For those interested, a good explanation of the algebra involved 
+	can be found in NEEDREF and NEEDREF. 
+	
+	MORE ABOUT HISTORY...
+		
+	
+\subsection{Common constructs}\label{common_constructs}
+	
+	\textbf{Parallel composition} is the key construct which separates process 
+	algebra from sequential modes of computation. With parallel composition, two 
+	or more processes can run independently of each other at the same time. 
+	Parallel composition is typically represented with the $|$ character, so for 
+	two parallel processes, $P$ and $Q$, we write $P\ |\ Q$ to indicate that 
+	they run in parallel.
+
+	\textbf{A null process} is a process that does nothing and cannot interact 
+	with any other processes. It has different representations in different 
+	algebras, common symbols for it include \textbf{nil}, \textbf{0} and 
+	\textbf{STOP}. The purpose of the null process is to be an anchor upon which 
+	more interesting processes can be generated. An usual pattern is for a 
+	process is to first perform one or more actions and then turn into the null 
+	process, which signifies that it has run its course.
+	
+	\textbf{Message passing through channels} is the way processes interact with 
+	each other. One process sends an outbound message on a particular named 
+	channel and another process accepts a message on the same named channel. An 
+	example of this, with syntax from the Calculus of Communicating Systems is:
+	
+			1. P = %coffee . 0
+			2. Q = %_coffee_ . 0
+			
+	In this example the process $P$ listens on the \textsf{coffee} channel while 
+	process Q sends on it. A process that is sending or receiving on a 
+	particular channel is blocked until another process performs the opposite 
+	operation on the channel. A synchronization happens between one sender and 
+	one receiver, if two processes had been ready to receive on the 
+	\textsf{coffee} channel at the same time then one of them would be chosen 
+	and the other would remain blocked. Channels are often given descriptive 
+	names to indicate their purpose, in the example above we read it as $P$ 
+	receives coffee from $Q$. However, values can also be passed along channels, 
+	and can then be bound to variables in the receiving process. An example of 
+	this is shown below.
+	
+			1. Teacher = $\overline{grade(12)}$
+			2. Student = $grade(x) . 0$
+	
+	In this example the \textsf{Teacher} process sends the value 12 on the 
+	\textsf{grade} channel. The \textsf{Student} process receives the message on 
+	the channel and binds the value to a variable $x$ which can then be used in 
+	the rest of the process.
+	
+	\textbf{Action prefixing} is how sequential processes are built up. When a process sends or receives on a channel it is blocked until an opposite process receives or sends on the same channel. For example if process $P$ did not exist, then
+
+	\textbf{Nondeterministic choice}
+
+	\textbf{Process constants}
+	
+\subsection{Implementations}
+	
+%In computer science, the process calculi (or process algebras) are a diverse %family of related approaches to formally modelling concurrent systems. %Process calculi provide a tool for the high-level description of %interactions, communications, and synchronizations between a collection of %independent agents or processes. They also provide algebraic laws that allow %process descriptions to be manipulated and analyzed, and permit formal %reasoning about equivalences between processes (e.g., using bisimulation). %Leading examples of process calculi include CSP, CCS, ACP, and LOTOS.[1] More %recent additions to the family include the ?-calculus, the ambient calculus, PEPA and the fusion calculus.
 
 \section{The .NET Framework}
 
