@@ -1,41 +1,96 @@
 \chapter{Introduction}
 
-In the last decade or so, programming languages have increasingly started to target virtual machines instead of specific physical machine architectures. This approach has a number of benefits. Many virtual machines have implementations on different machine architectures, which enables an application developer to write applications in a language that targets the virtual machine and getting the benefit of his application running on multiple machine architectures for free. Another benefit of the virtual machines is that code written in different languages can inter operate, allowing developers to write each part of their application in a language that suits it best. The two most prominent virtual machines used today are the Java Virtual Machine (JVM) and the Common Language Runtime (CLR). The JVM was originally created by Sun Microtechnologies but several implementations are now available by many vendors. The CLR was created by Microsoft for the Windows platform, but an open source version, Mono, which works on Unix and Linux platforms is also available. Both the JVM and CLR have a number of different languages that target them, and can therefore be used to build \textit{cross-platform} applications. 
+	In the last decade or so, programming languages have increasingly started to 
+	target virtual machines instead of specific physical machine architectures. 
+	This approach has a number of benefits. Many virtual machines have 
+	implementations on different machine architectures, which enables an 
+	application developer to write applications in a language that targets the 
+	virtual machine and getting the benefit of his application running on 
+	multiple machine architectures for free. Another benefit of the virtual 
+	machines is that code written in different languages can inter operate, 
+	allowing developers to write each part of their application in a language 
+	that suits it best. The two most prominent virtual machines used today are 
+	the Java Virtual Machine (JVM) and the Common Language Runtime (CLR). The 
+	JVM was originally created by Sun Microtechnologies but several 
+	implementations are now available by many vendors. The CLR was created by 
+	Microsoft for the Windows platform, but an open source version, Mono, which 
+	works on Unix and Linux platforms is also available. Both the JVM and CLR 
+	have a number of different languages that target them, and can therefore be 
+	used to build \textit{cross-platform} applications. 
 
-Process languages are a class of languages that are made up of distinct processes communicating with each other. Some examples of process languages are \textit(Calculus of Communicating Systems} (CCS), \textit(Communicating Sequential Processes} (CSP), $\pi$ \textit(calculus} and \textit(Kernel Language for Agents Interaction and Mobility} (KLAIM). These languages are mostly used in academia, but have also been used for modeling real world systems \TODO{FIND REF} and analyzing them. The process languages mentioned here have a number of traits in common, including action prefixing, non-deterministic choice and parallel composition. This leads to the assumption that maybe some of these common traits can be abstracted away into a common framework, so that each implementation of a process language does not have to implement them separately.
+	Process languages are a class of languages that are made up of distinct 
+	processes communicating with each other. Some examples of process languages 
+	are \textit{Calculus of Communicating Systems} (CCS), \textit{Communicating 
+	Sequential Processes} (CSP), $\pi$ \textit{calculus} and \textit{Kernel 
+	Language for Agents Interaction and Mobility} (KLAIM). The process languages 
+	mentioned here have a number of traits in common, including action 
+	prefixing, non-deterministic choice and parallel composition. This leads to 
+	the assumption that maybe some of these common traits can be abstracted away 
+	into a common framework, so that each implementation of a process language 
+	does not have to implement them separately.
 
-Implementing a process language, and making it target a popular virtual machine such as the CLR is an interesting proposition. A number of issues can be explored. How well does the instruction set of the virtual machine fit the execution model of the process language? Is there benefit in having access to the large standard library that comes with the CLR? Is it feasible to write parts of a process language application in another language that targets the virtual machine, for instance numerical functions? A number of advanced tools and integrated development environments exist for CLR and JVM languages, can process languages make use of them? 
+	Implementing a process language, and making it target a popular virtual 
+	machine such as the CLR is an interesting proposition. A number of issues 
+	can be explored. How well does the instruction set of the virtual machine 
+	fit the execution model of the process language? Is there benefit in having 
+	access to the large standard library that comes with the CLR? Is it feasible 
+	to write parts of a process language application in another language that 
+	targets the virtual machine, for instance numerical functions? A number of 
+	advanced tools and integrated development environments exist for CLR and JVM 
+	languages, can process languages make use of them? 
 
 \section{Thesis Objectives}
 
-This thesis presents the design and implementation of the Process Language Runtime, hereafter referred to as the PLR. The PLR consists of two main components. First, it contains an extensible abstract syntax tree, which models common idioms of process languages, and can compile itself to .NET bytecode. Secondly, it contains a runtime library that is used by process applications that have been compiled from the PLR syntax tree. 
+	This thesis presents the design and implementation of the \textit{Process 
+	Language Runtime}, hereafter referred to as the PLR. The PLR consists of two 
+	main components. First, it contains an extensible abstract syntax tree, 
+	which models common idioms of process languages, and can compile itself to 
+	.NET bytecode. Secondly, it contains a runtime library that is used by 
+	process applications that have been compiled from the PLR syntax tree. 
 
-Integration with the .NET platform is also explored, e.g. how to allow process language applications to call code developed in other .NET languages and whether it is possible to use existing .NET development tools to aid in writing process language applications.
+	Integration with the .NET platform is also explored, e.g. how to allow 
+	process language applications to call code developed in other .NET languages 
+	and whether it is possible to use existing .NET development tools to aid in 
+	writing process language applications.
 
-Finally the thesis presents two case studies of process language implementations that were done using the PLR. The languages implemented were CCS (Calculus of Communicating Systems) and a subset of KLAIM (Kernel Language for Agents Interaction and Mobility).
+	Finally the thesis presents two case studies of process language 
+	implementations that were done using the PLR. The languages implemented were 
+	CCS (Calculus of Communicating Systems) and a subset of KLAIM (Kernel 
+	Language for Agents Interaction and Mobility).
 
-The work carried out consists of the following parts:
+	The work carried out consists of the following parts:
 
-\begin{itemize}
-  \item Design and implementation of the PLR abstract syntax tree and compiler.
-  \item Design and implementation of the runtime library.
-  \item Implementation of the process language CCS.
-  \item Implementation of the process language KLAIM.
-  \item Integration of the CCS language into Visual Studio, a state-of-the-art 
-  			integrated development environment for .NET development.
-\end{itemize}
+	\begin{itemize}
+  	\item Design and implementation of the PLR abstract syntax tree and 
+  				compiler.
+  	\item Design and implementation of the runtime library.
+  	\item Implementation of the process language CCS.
+  	\item Implementation of the process language KLAIM.
+  	\item Integration of the CCS language into Visual Studio, a 
+  				state-of-the-art integrated development environment for .NET 
+  				development.
+	\end{itemize}
 
 
 \section{Thesis Outline}
 
-The thesis consists of seven chapters. This introduction is the first chapter, the rest are as follows:
+	The thesis consists of seven chapters. This introduction is the first 
+	chapter, the rest are as follows:
 
-Chapter 2 gives some background on process languages in general and their common properties, and some technical background on the .NET platform. The concepts presented there are useful for understanding the architecture of the PLR.\\
-Chapter 3 describes the Process Language Runtime, both the syntax tree and runtime library and shows how they are designed and implemented. \\
-Chapter 4 is a case study of the implementation of the CCS process language.\\
-Chapter 5 is another case study, this time of the implementation of the KLAIM language.\\
-Chapter 6 gives a quick overview of how the CCS language was integrated into Visual Studio 2008. \\
-Finally, Chapter 7 contains concluding remarks and ideas for further development of the PLR, including how some other common process languages could be implemented using the PLR.\\
+	Chapter 2 gives some background on process languages in general and their 
+	common properties, and some technical background on the .NET platform. The 
+	concepts presented there are useful for understanding the architecture of 
+	the PLR.\\
+	Chapter 3 describes the Process Language Runtime, both the syntax tree and 
+	runtime library and shows how they are designed and implemented. \\
+	Chapter 4 is a case study of the implementation of the CCS process 
+	language.\\
+	Chapter 5 is another case study, this time of the implementation of the 
+	KLAIM language.\\
+	Chapter 6 gives a quick overview of how the CCS language was integrated into 
+	Visual Studio 2008. \\
+	Finally, Chapter 7 contains concluding remarks and ideas for further 
+	development of the PLR, including how some other common process languages 	
+	could be implemented using the PLR.\\
 
-Appendix A ...
-Appendix B ...
+	\TODO{Appendix?}
