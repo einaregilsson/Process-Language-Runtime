@@ -1,3 +1,71 @@
 \chapter{Process Language Runtime}
 
-\section{First Section}
+	This chapter presents the design and implementation of the Process Language 
+	Runtime, an extensible compiler backend and a runtime library for running 	
+	process languages on the .NET platform. 
+
+\section{Inspiration}
+
+	The inspiration for the Process Language Runtime comes from the Dynamic 
+	Language Runtime \TODO{NEED REF} (DLR), a framework from Microsoft for 	
+	developing dynamic languages on top of the Common Language Runtime. Since 
+	the .NET Common Intermediate Language is statically typed it is ill-suited
+	for dynamic languages such as Python, Ruby or JavaScript. To clarify, 
+	statically typed languages are languages where the type of a variable is 
+	known at compile time and the type of a variable never changes, while in a 
+	dynamically typed language a single variable can contain objects of 	
+	different types at different times during program execution. The idea of 
+	having a common abstract syntax tree for different languages comes from the 
+	DLR. However, the DLR was not directly used for this project since its 
+	abstract syntax tree is mainly concerned with traditional constructs for 
+	imperative programming languages and constructs to support dynamic typing, 
+	while the purpose of this project is to provide constructs common to process 
+	languages, and dynamic typing is not an issue we are concerned with.
+
+\section{Overview}
+
+	The PLR is a single .NET assembly, named PLR.dll. This assembly contains the 
+	abstract syntax tree and associated helper objects as well as all the 
+	classes used at runtime. The PLR does not contain any lexer or parser and 
+	generally has no notion of any concrete syntax. Creating a lexer and parser 
+	is the responsibility of individual language implementations, the PLR takes 
+	over once an input file has been parsed and used to construct a PLR abstract 
+	syntax tree. 
+	
+	It is important to note that the PLR does not, nor is it meant 
+	to, support all constructs of all process languages. Creating a superset of 
+	all existing process languages has never been the goal, instead the goal is 
+	to provide a common subset of the most common constructs found in these 
+	languages and to make it easy to extend with specific new constructs needed 
+	for specific languages. To enable this, the classes and interfaces in the 
+	PLR have been engineered to make them easy to subclass and implement.
+	
+	As the PLR contains classes needed at runtime it must be distributed with 
+	any compiled process language application. However, an option is present in 
+	the compilation stage that allows the PLR assembly to be embedded in the 
+	final compiled executable program, and can optionally embed any additional 
+	runtime libraries that specific languages require. This allows a process 
+	language program to be distributed as a single file without any external 
+	dependencies other than the .NET framework itself.
+
+	The PLR itself is written in the C\# programming language using Visual 
+	Studio 2008 as the development environment. It has a dependency on the NUnit 
+	unit test framework, however this dependency is only needed when running 
+	internal unit tests and so does not need to be distributed with the PLR 
+	assembly. The source code for the PLR is licensed under the General Public 
+	License (GPL) v3.0.
+	
+\section{Abstract Syntax Tree}
+
+	The PLR abstract syntax tree is the component that generates CIL 
+	bytecode to run a process language application. Once an abstract syntax tree 
+	has been constructed, a call to a \method{Compile} method on the tree's root 
+	node with the appropriate parameters will create an executable .NET 
+	assembly. 
+	
+	The architecture of the abstract syntax tree is based on Object Oriented 
+	principles, namely that an object contains data and methods to operate on 
+	that data. As such, each node in the abstract syntax tree knows how to 
+	compile itself, 
+
+\section{Runtime Library}
