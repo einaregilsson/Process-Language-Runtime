@@ -66,17 +66,17 @@
 	\end{align*}	
 	\end{Exa}
 				
-	In Example~\ref{ex:simple_procs} above the process \proc{P} listens on the \channel{coffee} channel while 
-	process Q sends on it. A process that is sending or receiving on a 
-	particular channel is blocked until another process performs the opposite 
-	operation on the channel. A synchronization happens between one sender and 
-	one receiver, if two processes had been ready to receive on the 
-	\channel{coffee} channel at the same time then one of them would be chosen 
-	and the other would remain blocked. Channels are often given descriptive 
-	names to indicate their purpose, in the example above we read it as \proc{P} 
-	receives coffee from \proc{Q}. However, values can also be passed along channels, 
-	and can then be bound to variables in the receiving process. An example of 
-	this is shown in Example~\ref{ex:value_passing} below.
+	In Example~\ref{ex:simple_procs} above the process \proc{P} listens on the 
+	\channel{coffee} channel while process Q sends on it. A process that is 
+	sending or receiving on a particular channel is blocked until another process
+	performs the opposite operation on the channel. A synchronization happens 
+	between one sender and one receiver, if two processes had been ready to 
+	receive on the \channel{coffee} channel at the same time then one of them 
+	would be chosen and the other would remain blocked. Channels are often given 
+	descriptive names to indicate their purpose, in the example above we read it 
+	as \proc{P} receives coffee from \proc{Q}. However, values can also be passed 
+	along channels, and can then be bound to variables in the receiving process. 
+	An example of this is shown in Example~\ref{ex:value_passing} below.
 	
 	\begin{Exa}\label{ex:value_passing}
 	\begin{align*}
@@ -90,11 +90,31 @@
 	the channel and binds the value to a variable $x$ which can then be used in 
 	the continuation of the process.
 	
-	\textbf{Action prefixing} is how sequential processes are built up. It 
-	prefixes a process with an action, meaning that first an action is performed 
-	and then the process continues as the prefixed process. The syntax for this is generally a dot between the action and the following process. An example of action prefixing is \channel{a} \ccsdot \proc{P}, here action \channel{a} is performed and then the process continues as \proc{P}. \proc{P} itself could also be an action prefixed process, it is straightforward to see how this can be expanded into a series of actions, e.g. $\channel{a} \ccsdot \channel{b} \ccsdot \out{c} \ccsdot \proc{P}$. The final process \proc{P} could either be the \textit{nil process} or a \textit{process constant}, which is further explained below.
+	\textbf{Action prefixing} is how sequential processes are built up. A process 
+	is prefixed with an action, meaning that first an action is performed and 
+	then the process continues as the prefixed process. The syntax for this is 
+	generally a dot between the action and the following process. An example of 
+	action prefixing is \channel{a} \ccsdot \proc{P}, here action \channel{a} is 
+	performed and then the process continues as \proc{P}. \proc{P} itself could 
+	also be an action prefixed process, it is straightforward to see how this can 
+	be expanded into a series of actions, e.g. 
+	$\channel{a} \ccsdot \channel{b} \ccsdot \out{c} \ccsdot \proc{P}$. The final 
+	process \proc{P} could either be the \textit{nil process} or a 
+	\textit{process constant}, which is further explained below.
 
-	\textbf{Process constants} are labels given to particular processes to identify them. In Example~\ref{ex:value_passing} we saw two examples of process constants, \proc{Teacher} and \proc{Student}. These constants can then be used in process descriptions to indicate that a given process turns into another process. In Example~\ref{ex:process_constants} we see that a \proc{CoffeeMachine} process first accepts a \channel{coin}, then outputs a \channel{coffee} and then turns back into a \proc{CoffeeMachine} process. This can be expanded into an endless series of $\channel{coin} \ccsdot \channel{\out{coffee}} \ccsdot \channel{coin} \ccsdot \channel{\out{coffee}}$. Recursive process definitions like these are used instead of looping constructs which process languages generally do not have.  Of course, the $\proc{CoffeeMachine}$ process could just as well have turned into any other process at the end, it does not have to only turn into itself.
+	\textbf{Process constants} are labels given to particular processes to 
+	identify them. In Example~\ref{ex:value_passing} we saw two examples of 
+	process constants, \proc{Teacher} and \proc{Student}. These constants can 
+	then be used in process descriptions to indicate that a given process turns 
+	into another process. In Example~\ref{ex:process_constants} we see that a 
+	\proc{CoffeeMachine} process first accepts a \channel{coin}, then outputs a 
+	\channel{coffee} and then turns back into a \proc{CoffeeMachine} process. This 
+	can be expanded into an endless series of 
+	$coin \ccsdot \out{coffee} \ccsdot coin \ccsdot \out{coffee} \ccsdot coin \ccsdot \out{coffee}$ 
+	etc. Recursive process definitions like these are used instead of looping 
+	constructs which process languages generally do not have.  Of course, the 
+	\proc{CoffeeMachine} process could just as well have turned into any other 
+	process at the end, it does not have to only turn into itself.
 	
 	\begin{Exa}\label{ex:process_constants}
 	\begin{align*}
@@ -102,7 +122,15 @@
 	\end{align*}	
 	\end{Exa}
 
-	\textbf{Nondeterministic choice} is a method for processes to choose between two or more actions that the process can perform. The process is free to choose arbitrarily which action to take. Example~\ref{ex:non_determinism} shows how process \proc{P} can perform one of actions \channel{a}, \channel{b} or \channel{c}. The choice is not made until at least one of the channels has a corresponding process outputting on it that the choosing process can synchronize with. There is no guarantee that the probability between choices is fair, a recursive process might choose \channel{a} every time, or might make each choice exactly 33\% of the time.
+	\textbf{Nondeterministic choice} is a method for processes to choose between 
+	two or more actions that the process can perform. The process is free to 
+	choose arbitrarily which action to take. Example~\ref{ex:non_determinism} 
+	shows how process \proc{P} can perform one of actions \channel{a}, \channel{b} 
+	or \channel{c}. The choice is not made until at least one of the channels has 
+	a corresponding process outputting on it that the choosing process can 
+	synchronize with. There is no guarantee that the probability between choices 
+	is fair, a recursive process might choose \channel{a} every time, or might 
+	make each choice exactly 33\% of the time.
 	
 	\begin{Exa}\label{ex:process_constants}
 	\begin{align*}
@@ -111,15 +139,29 @@
 	\end{Exa}
 	
 
-	\textbf{Restriction} hides channel events from the outside world. This can be used to simulate a machine that has internal workings which are restricted, and a public interface which external processes can synchronize with. Example~\ref{ex:restriction} shows a 
+	\textbf{Restriction} hides channel events within a process from the outside 
+	world. This can be used to simulate a machine that has internal workings which 
+	are restricted, and a public interface which external processes can 
+	synchronize with. Example~\ref{ex:restriction} shows a 
 	
 	\begin{Exa}\label{ex:restriction}
 	\begin{align*}
+			PizzaPlace \defeq & (Salesman | Baker) \\\{order,pizza} \\
+			
 			P \defeq & a \ccsdot 0 + b \ccsdot 0 + c \ccsdot 0
 	\end{align*}	
 	\end{Exa}
 
-	\textbf{Re-labelling} is a way to create general processes and make them more specific by substituting their channel names with other channel names. Consider for example the \proc{CoffeeMachine} process in Example~\ref{ex:process_constants}. We can see that this is really a specific version of a vending machine. To enable re-use for different types of vending machines we could create a generic \proc{VendingMachine} process that dispenses items, and create specific vending machines by re-labelling those items to specific products. A re-worked example of a \proc{CoffeeMachine} is shown in Example~\ref{ex:relabelling} where \channel{item} is re-labelled to \channel{coffee}.
+	\textbf{Re-labelling} is a way to create general processes and make them more 
+	specific by substituting their channel names with other channel names. 
+	Consider for example the \proc{CoffeeMachine} process in 
+	Example~\ref{ex:process_constants}. We can see that this is really a specific 
+	version of a vending machine. To enable re-use for different types of vending 
+	machines we could create a generic \proc{VendingMachine} process that 
+	dispenses items, and create specific vending machines by re-labelling those 
+	items to specific products. A re-worked example of a \proc{CoffeeMachine} is 
+	shown in Example~\ref{ex:relabelling} where \channel{item} is re-labelled to 
+	\channel{coffee}.
 	
 	\begin{Exa}\label{ex:relabelling}
 	\begin{align*}
@@ -128,6 +170,7 @@
 	\end{align*}	
 	\end{Exa}
 	
+
 \subsection{Implementations}
 
 
