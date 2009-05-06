@@ -159,17 +159,53 @@
  	\textsf{ExpressionList} is a convenience class to hold a list of 
  	\textsf{Expression} instances.
  	
-
-
 \subsection{Integration with other languages}
 
 \subsection{Extensibility}
 
 \subsection{Code generation}
+	
+	To generate a valid .NET assembly the PLR uses a set of classes that are a 
+	part of the .NET framework Base Class Library. These classes are located in 
+	the \textit{System.Reflection.Emit} namespace. Before explaining more about 
+	these classes it is worth going over how a .NET assembly is structured. A 
+	.NET \textit{assembly} is an executable file (.exe) or a dynamic link 
+	library (.dll). The assembly contains one more \textit{modules}, typically 
+	just one. Each module contains one or more \textit{types} (or classes). 
+	Types have \textit{fields}, \textit{constructors} and \textit{methods}. At 
+	the lowest level, constructors and methods contain CIL bytecodes. 
+	Figure~\ref{fig:assembly} shows the structure.
+	
+	\TODO{Figure with assembly structure}
+	
+	The classes in System.Reflection.Emit namespace match the structure of an 
+	assembly. There is an \textsf{AssemblyBuilder}, \textsf{ModuleBuilder}, 
+	\textsf{TypeBuilder}, \textsf{FieldBuilder}, \textsf{ConstructorBuilder} and 
+	a \textsf{MethodBuilder}. These are instantiated by giving them names and 
+	other properties as parameters. The \textsf{ConstructorBuilder} and 
+	\textsf{MethodBuilder} have a \textsf{GetILGenerator} method that returns an 
+	object of type \textsf{ILGenerator}. That object has direct access to the 
+	bytecode stream of the method being created, and contains various overloads 
+	of an \textsf{Emit} method that emits bytecodes and their associated 
+	arguments. An \textsf{OpCodes} class contains constants for all possible 
+	bytecodes that can be emitted by the \textsf{ILGenerator}.
+	
+	The nodes of the syntax tree gain access to these classes through a 
+	\textsf{CompileContext} class which is part of the PLR, and is a parameter 
+	to the \textsf{Compile} method implemented by all nodes. The 
+	\textsf{CompileContext} class has a number of useful properties that the 
+	nodes can access. It exposes the \textsf{TypeBuilder} object of the type 
+	currently being built, the \textsf{ILGenerator} object of the method or 
+	constructor being built and a symbol table for variables currently in scope. 
+	The node can then emit its bytecodes, create new variables or otherwise 
+	alter the \textsf{CompileContext} before passing it on to its child nodes 
+	\textsf{Compile} methods. Essentially this is a form of distributed 
+	compiling, no one node has a complete picture of what is being compiled, 
+	each node only has enough information to add its own code to the correct 
+	type or method.
 
+\subsection{Debugging support}
 	
 	
-	The class hierarchy of the abstract syntax tree is shown in 
-	Figure~\ref{fig:class_hierarchy}. 
-
+	
 \section{Runtime Library}
