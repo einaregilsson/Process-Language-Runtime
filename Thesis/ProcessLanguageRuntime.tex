@@ -62,10 +62,114 @@
 	has been constructed, a call to a \method{Compile} method on the tree's root 
 	node with the appropriate parameters will create an executable .NET 
 	assembly. 
-	
+
+\subsection{Architecture}
+
 	The architecture of the abstract syntax tree is based on Object Oriented 
 	principles, namely that an object contains data and methods to operate on 
 	that data. As such, each node in the abstract syntax tree knows how to 
-	compile itself, 
+	compile itself, there is no compiler class, the whole syntax tree is the 
+	compiler. Every node in the syntax tree inherits from an abstract 
+	\textsf{Node} base class which has an abstract \textsf{Compile} 
+	method. Concrete node classes override the \method{Compile} method and in it 
+	emit the appropriate byte codes for the language construct that the node 
+	represents. 
+	
+	The compilation itself is recursive, calling the \method{Compile} method 
+	on the root node of the tree will cause it to call the \method{Compile} 
+	method of its child nodes, who in turn call \method{Compile} on their child 
+	nodes and thus the compilation propagates throughout the entire tree. The 
+	reason for choosing this architecture was to make the syntax tree easily 
+	extendable by language implementors, who can add new nodes to represent new 
+	constructs. 
+	
+	Concrete nodes typically do not inherit directly from the \textsf{Node} base 
+	class, instead they inherit from one of five intermediate classes, 
+	\textsf{Action}, \textsf{Process}, \textsf{Expression}, 
+	\textsf{ActionRestrictions} or \textsf{PreProcessActions}. Below is a short 
+	overview of what each of these classes represents.
+	
+	\textbf{Action} represents an action taken by the 
+	process. This can for instance be sending on a channel, receiving on a 
+	channel or calling an arbitrary method. Concrete descendants of this class 
+	typically have either no child nodes of their own, or a list of 
+	\textsf{Expression} nodes, representing parameters to a method call or 
+	values passed through a channel.
+
+	\textbf{Process} is the base class for processes. Its descendants include an 
+	\textsf{ActionPrefix} class, a \textsf{NonDeterministicChoice} class and a 
+	\textsf{ParallelComposition} class. Implementing a new language construct 
+	such as replication could be done be creating a new descendant of this 
+	class. Child nodes of \textsf{Process} classes vary, the 
+	\textsf{ActionPrefix} class for example has one \textsf{Action} child node 
+	representing the action about to be performed and one \textsf{Process} child 
+	node representing the process that the current process turns into after 
+	performing the action. Processes that are a composition of other processes 
+	such as \textsf{ParallelComposition} and \textsf{NonDeterministicChoice} 
+	have a list of other \textsf{Process} instances as childnodes.
+	
+	\textbf{Expression} represents an expression such as an arithmetic 
+	expression, numeric or string constant, a method call or the value of a 
+	variable.	Expressions compile in such a way that once they have been 
+	evaluated a single value, the result of the expression, is at the top of the 
+	evaluation stack. This means that a node that has an expression as a child 
+	node can simply call the \method{Compile} method on the expression and then 
+	emit bytecodes that operate on its result, without caring whether the 
+	expression is a huge expression tree or a single constant value. An example 
+	of this is the \textsf{ArithmeticExpression} node. In its \textsf{Compile} 
+	method it first calls the \method{Compile} method of its left child, then 
+	its right child and then emits an \textsf{Add},\textsf{Sub},\textsf{Mul} or 
+	\textsf{Div} bytecode. The child nodes of \textsf{Expression} nodes are 
+	invariably \textsf{Expression} nodes themselves.
+
+ 	\textbf{ActionRestrictions} represents a function that restricts actions 
+ 	within a process from synchronizing with other actions outside the process. 
+ 	This is an implementation of the \textit{restriction} process language 
+ 	construct described in Section~\ref{common_constructs}. It currently has two 
+ 	concrete descendants. One is \textsf{ChannelRestrictions} which restricts 
+ 	channels by name, provided that the names of channels to restrict are known 
+ 	at compile time. The other is \textsf{CustomRestrictions}, that calls a .NET 
+ 	method at runtime for every action and returns \textbf{true} it it should be 
+ 	restricted. The method can be written in any language available for the .NET 
+ 	framework, the only requirements are that it takes an \textsf{Action} object 
+ 	from the PLR runtime library as a parameter and returns a boolean value.
+	 
+ 	\textbf{PreProcessActions} represents a function that is called for every 
+ 	action that is performed in a process and returns another action. This is 
+ 	used to implement the \textit{re-labelling} process language construct 
+ 	described in Section~\ref{common_constructs}. Simple re-labelling of 
+ 	channels with names known at compile time is done with a 
+ 	\textsf{RelabelActions} class. It has the names to re-label as child nodes 
+ 	and compiles down to a method that takes in an \textsf{Action} runtime class 
+ 	and performs simple string substitution on its name. More complicated 
+ 	pre-processing of actions can be achieved with another descendant class, 
+ 	\textsf{CustomPreprocess}. That class compiles down to a method call to a 
+ 	.NET method that takes an \textsf{Action} as a parameter and returns an 
+ 	\textsf{Action} as well. This method can be written in any language 
+ 	available for .NET.
+ 	
+ 	Besides all the descendant classes of those five main classes, there are a 
+ 	few classes that inherit directly from the \textsf{Node} class. 
+ 	\textsf{ProcessSystem} is the root node of the entire syntax tree and has a 
+ 	more complicated \textsf{Compile} method than most other nodes, since it 
+ 	takes care of setting up the necessary context for the compilation and 
+ 	creating the actual compiled file, giving it a name and so forth. 
+ 	\textsf{ProcessDefinition} is a simple class that just has a 
+ 	\textsf{Process} child node and a name for the process. Finally, 
+ 	\textsf{ExpressionList} is a convenience class to hold a list of 
+ 	\textsf{Expression} instances.
+ 	
+
+
+\subsection{Integration with other languages}
+
+\subsection{Extensibility}
+
+\subsection{Code generation}
+
+	
+	
+	The class hierarchy of the abstract syntax tree is shown in 
+	Figure~\ref{fig:class_hierarchy}. 
 
 \section{Runtime Library}
