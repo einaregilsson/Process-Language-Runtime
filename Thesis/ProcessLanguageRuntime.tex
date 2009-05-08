@@ -322,11 +322,7 @@
  	will then automatically emit a sequence point before every \textit{action} 
  	taken by a process.
 
-\subsection{CIL Structure of a Process Language Application}\label{cil_structure}
-	
 
-\subsection{Integration with other languages}
- 	
 	
 \section{Runtime Library}
 
@@ -341,12 +337,13 @@
 	It contains methods used to interact with the \textsf{Scheduler},
 	for instance method to synchronize on channels, methods for startup and
 	termination as well as methods to suspend and resume the process thread.
-	Since processes are built up into a tree-like structure at runtime it
-	also contains a field for its parent \textsf{ProcessBase} instance, as
-	well as a list of \textsf{ProcessBase} instances which are its child nodes
-	in the tree. Finally, it contains a list of \textsf{IAction} instances,
-	this list will hold all actions that occur in the process instance or any of 
-	its subprocesses and are restricted by the instances restriction clause.
+	Since processes are built up into a tree-like structure at runtime (further 
+	explained in Section~\ref{cil_structure}) it also contains a field for its 
+	parent \textsf{ProcessBase} instance, as well as a list of 
+	\textsf{ProcessBase} instances which are its child nodes in the tree. Finally, 
+	it contains a list of \textsf{IAction} instances, this list will hold all 
+	actions that occur in the process instance or any of its subprocesses and are 
+	restricted by the instances restriction clause.
 	
 	\textbf{BuiltIns} is a small static class that contains utility methods
 	that can be called by processes, such as to print to the console.
@@ -436,5 +433,57 @@
 	of the program.
 	 
 
-	
+\section{CIL Structure of a Process Language Application}\label{cil_structure}
 
+	A process language application is in many ways different from an application
+	written in a traditional programming language. One of the goals of this 
+	project was to investigate how well process languages are suited to the .NET
+	virtual machine. We now look at how a process language system looks 
+	once it has been compiled to the Common Intermediate Language.
+	
+	One of the hardest decisions during the design of the PLR was whether or not to
+	represent each process as a separate thread. Writing multi-threaded code is 
+	hard,	and it is subject to subtle errors, race conditions and other problems
+	that are easily avoided when using only a single thread. However, a single
+	threaded implementation would be forced to represent the processes as data 
+	structures, rather than as independent programs in their own right. That 
+	approach, that the processes are datastructures and the program is a single
+	thread operating on those datastructures is certainly worthwhile, and in fact 
+	an early prototype was implemented as an interpreter that did just that. It
+	even makes certain things easier, such as the visualizing the state of the 
+	processes after each round. However, using multiple threads allowed for 
+	compiling each process relatively independently of other processes, and 
+	conceptually seemed closer to the semantics of process algebra. Another
+	benefit of the multi-threaded approach was that it made emitting debug symbols
+	fairly simple, while doing the same in a single threaded way would have
+	been problematic. For these reasons the multi-threaded approach was taken.
+	
+	Each process in process algebra maps to a class in CIL. The top level 
+	processes, those that are defined as named process constants, are compiled
+	to classes named after the process constant. A top level class can have
+	multiple inner classes however, and each of those can itself have multiple
+	inner classes. This happens for instance when a process starts by performing
+	an action and then turns into a process that is a parallel composition of 
+	other processes. In that case each of those parallel processes is an inner
+	class of the original top level process. The same thing happens when a 
+	named process makes a non-deterministic choice; each of the choices is its
+	own inner class. The reason for making these inner classes was that in a
+	fairly large system the number of classes quickly becomes large,
+	and instead of polluting the top level namespace with dozens of generated 
+	class	names, they are confined within their owning process. It is also
+	easier to understand what each process represents, the class name
+	\textsf{Teacher+Parallel1} represents the first parallel process within
+	the \textsf{Teacher} process, which is a parallel composition process.
+	
+	Restrictions and re-labellings map to methods in CIL. The methods do not
+	have to be member methods of a process class, there is an extra layer
+	of indirection to allow for calling methods in external assemblies. The
+	\textsf{ProcessBase} class has two methods, \textsf{GetPreProcess} and 
+	\textsf{GetRestrict}. These methods return delegates (otherwise known as
+	function pointers) to a preprocess function (such as a relabelling function)
+	and a restriction function, respectively. The base class version of
+	\textsf{GetPreProcess} and \textsf{GetRestrict} return function pointers to
+	methods that do not alter or restrict any actions. Concrete process classes
+	can override these methods and return function pointers to other methods,
+	either methods in the process class itself, or methods in some external
+	assembly.
