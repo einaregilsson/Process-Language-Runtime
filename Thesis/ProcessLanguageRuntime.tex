@@ -163,6 +163,9 @@
 
 \subsection{Extensibility}
 
+\subsection{CIL Structure of a Process Language Application}\label{cil_structure}
+
+
 \subsection{Code generation}
 	
 	To generate a valid .NET assembly the PLR uses a set of classes that are a 
@@ -206,6 +209,183 @@
 
 \subsection{Debugging support}
 	
-	
+	One of the benefits of targeting a common virtual machine such as the CLR is
+	is that both a free command line and graphical debugger exist that can be used
+	for any programming language that compiles down to the Common Intermediate
+	Language format. The \textit{System.Reflection.Emit} API offers functionality 
+	to emit the necessary debugging symbols to be able to use these debuggers.
+ 	Emitting debug symbols consists of the following five steps:
+ 	
+ 	\begin{enumerate}
+ 		\item When the \textsf{ModuleBuilder} objects is defined with a call to the 
+ 		\textsf{DefineDynamicModule} method on the \textsf{AssemblyBuilder} object, a
+ 		parameter named \textsf{emitSymbols} should be passed as \textsf{true}.
+ 		\begin{verbatim}
+ 		assembly.DefineDynamicModule(filename, filename, true);
+ 		\end{verbatim}
+ 		
+		\item An item of the type \textsf{ISymbolDocumentWriter} needs to be defined. 
+		This is done with a call to a \textsf{DefineDocument} method on the 
+		\textsf{ModuleBuilder} object which returns a \textsf{ISymbolDocumentWriter} 
+		object. The parameters to this method call include the name of the source 
+		file that is being compiled, this is neccessary so that the debugger can 
+		prompt for the source file when debugging the compiled file. The 
+		\textsf{ISymbolDocumentWriter} object is passed with the \textsf{CompileContext}
+		to all nodes during compilation.
+
+		\item Local variables in methods are created with a \textsf{LocalBuilder} 
+		object. In a non debug build these locals are not stored by name in the 
+		compiled file, but simply given a number and referred to by that number.
+		To be able to map variables in the compiled file to variable names in the
+		source file a method, \textsf{SetLocalSymInfo} is called on the 
+		\textsf{LocalBuilder} object. The method takes the name of the variable as
+		a parameter and stores that information for later use by the debugger.
+		
+		\item The method \textsf{SetUserEntryPoint} must be called on the 
+		\textsf{ModuleBuilder} object to enable the debugger to know what the entry
+		method of the assembly is. The method takes a \textsf{MethodBuilder} object
+		as a parameter.
+		
+		\item The most important part of emitting the debug symbols is marking 
+		\textit{sequence points} in the CIL bytestream. A sequence point is a point 
+		in the bytecode that tells the debugger to stop at that point during code
+		execution and highlight a particular section in the source code file. To be
+		able to do this the sequence point contains information about a start position
+		and end position in the source file, given as line and column numbers. A 
+		sequence point is marked with a call to a \textsf{MarkSequencePoint} method
+		on an \textsf{ILGenerator} object, the methods parameters are an instance
+		of \textsf{ISymbolDocumentWriter} and four integers, startLine, startColumn,
+		endLine and endColumn. Figure~\ref{fig:sequence_points} shows a few lines
+		of CIL bytecode interspersed with sequence points. (Note: the CIL file
+		format does not store sequence points in exactly this manner, the figure
+		is simply meant to clarify the concept). It is worth noting that the CIL has 
+		no notion of statements, expressions or other programming language constructs,
+		it is perfectly legal to insert a sequence point in the middle of an expression
+		or anywhere else in the bytecode. It is completely up to the programmer to
+		insert sequence points at meaningful points in the bytestream according to
+		the semantics of the language being implemented.
+		
+ 	\end{enumerate}
+ 	
+ 	The PLR handles these five steps, so an implementation of a language that uses
+ 	the PLR as its backend compiler does not need to concern itself with them directly. 
+ 	However, since the PLR does not handle parsing of source files it can not 
+ 	determine itself the line and column numbers needed for marking sequence points.
+ 	For that purpose, every node in the PLR abstract syntax tree has an instance of
+ 	a class named \textsf{LexicalInfo}. This class is simply a wrapper around the
+ 	four integers that a sequence point needs, startLine, startColumn, endLine and
+ 	endColumn. This information is easily available during parsing and so the 
+ 	individual language parsers should store this information for each node. The PLR
+ 	will then automatically emit a sequence point before every \textit{action} 
+ 	taken by a process.
+ 	
 	
 \section{Runtime Library}
+
+	The PLR has a small runtime library consisting of nine classes. Applications
+	compiled using the PLR must have access to this library at runtime in order
+	to execute successfully. Figure~\ref{fig:runtime_library} shows a class 
+	diagram of the runtime library. Below is an overview of each of the
+	nine classes.
+
+	\textbf{ProcessBase} is an abstract base class for any compiled processes.
+	It contains methods used to interact with the \textsf{Scheduler},
+	for instance method to synchronize on channels, methods for startup and
+	termination as well as methods to suspend and resume the process thread.
+	Since processes are built up into a tree-like structure at runtime it
+	also contains a field for its parent \textsf{ProcessBase} instance, as
+	well as a list of \textsf{ProcessBase} instances which are its child nodes
+	in the tree. Finally, it contains a list of \textsf{IAction} instances,
+	this list will hold all actions that occur in the process instance or any of 
+	its subprocesses and are restricted by the instances restriction clause.
+	
+	\textbf{BuiltIns} is a small static class that contains utility methods
+	that can be called by processes, such as to print to the console.
+	
+	\textbf{IAction} is an interface that all runtime actions must implement.
+	It contains four methods. \textsf{ProcessID} returns the id of the
+	process performing the action, \textsf{IsAsynchronous} returns true if
+	the action can be executed without synchronizing with another action, 
+	this applies for instance to arbitrary method calls to .NET methods.
+	\textsf{CanSyncWith(IAction other)} determines whether the action can be 
+	synced with another action, in the case of asynchronous actions this
+	method always returns false. Finally, \textsf{Sync(IAction other)} is 
+	called on those actions that have been chosen for execution and is used
+	for example to pass values from one process to another through channels.
+
+	\textbf{ChannelSyncAction} is a class representing synchronization on a
+	channel. It contains the channel name, the id of the process performing
+	the action and information about whether the process is attempting to send
+	or receive on the channel. In the case of a send operation it can optionally
+	contain a list of values that are being sent, and in the case of a receive
+	operation it can contain a list of variables that should be bound to the 
+	values being sent from the other side. The \textsf{ChannelSyncAction}
+	implements the \textsf{IAction} interface as all runtime actions must, it is
+	a synchronous action and its \textsf{CanSyncWith} method will only return 
+	true for other \textsf{ChannelSyncAction} instance that have the same
+	channel name, are performing the opposing operation and have the same
+	number of values being passed through the channel. When two actions are
+	synchronized, the \textsf{Sync(IAction other)} method on both the actions
+	are called with the other actions as a parameter. In the case of channel 
+	synchronizations the action instance which represents the receiving end
+	of the operation will bind its variables to the values passed through
+	the channel in its \textsf{Sync} method, the sending action will do nothing
+	in its own \textsf{Sync} method.
+	
+	\textbf{MethodCallAction} is a runtime action which can be used to call
+	an arbitrary .NET method, either a built-in method from the .NET base
+	class library or a method from any .NET assembly. It is an asynchronous 
+	action and as such does not need to synchronize with another process to be 
+	executed. Currently	the PLR provides support for calling static methods 
+	that have integers or	strings as parameters. This allows for instance most
+	of the methods from the \textsf{System.Math} class to be accessible. To
+	gain access to instance methods, for example the \textsf{NextInt} method
+	of the \textsf{System.Random} class, it is necessary to write static wrappers
+	around the methods.
+
+	\textbf{Logger} is a utility class for handling process output to the screen.
+	Its main feature is assigning a different color to each process to 
+	easily distinguish between them in the console output.
+
+	\textbf{GlobalScope} is a small class whose only purpose is to be a 
+	repository of possible actions that are not restricted by any process. As
+	explained in Section~\ref{cil_structure}, candidate actions are propagated up 
+	the process tree, and at each process it is checked whether the process 
+	restricts them, if so they are stored within that process so that they do
+	not synchronize with actions outside the process. In the case where no
+	process restricts the action and it can synchronize with any other action
+	that is not otherwise restricted then the action is stored in the global scope,
+	while it waits to see whether it was chosen for execution.
+	
+	\textbf{ProcessKilledException} is an exception class used when processes
+	are killed. As an example, when a process is a candidate in non deterministic
+	choice and is not chosen then it must be killed. To bypass all the subsequent
+	actions of the process, a \textsf{ProcessKilledException} is thrown and then
+	caught at the end of the processes code. There the process will unregister
+	itself from the \textsf{Scheduler}, print a message to the console and then
+	terminate.
+	
+	\textbf{Scheduler} is the real execution engine of the PLR. It follows the
+	\textit{Singleton} \TODO{NEEDREF} design pattern so it is trivial for all
+	processes in the application to gain access to the same \textsf{Scheduler}
+	instance. When processes are activated they register themselves with the 
+	scheduler, which keeps a list of active processes. The scheduler then monitors
+	the processes and waits until all processes have generated all their candidate
+	actions and are waiting for an action to be executed so they can continue.
+	At that point the scheduler goes through all the possible actions, figures
+	out which actions can sync with each other and then randomly chooses an
+	action to execute. It then executes the action and wakes up the processes
+	involved in the action so that they can resume execution. It also terminates
+	certain processes (or rather instructs them to terminate themselves). These
+	are generally candidates of non deterministic choice who were not chosen. 
+	Once the scheduler has finished one such round it again waits until all 
+	the processes it woke up are again suspended and then chooses the next
+	action to execute, and so on. Example~\ref{ex:scheduler} shows the workings
+	of the scheduler in pseudocode. Other responsibilities of the scheduler are
+	everything to do with thread locking and synchronization, and keeping track of
+	the \textit{trace}, that is the list of actions executed during the duration
+	of the program.
+	 
+
+	
+
