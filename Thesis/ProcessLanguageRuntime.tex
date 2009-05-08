@@ -159,12 +159,58 @@
  	\textsf{ExpressionList} is a convenience class to hold a list of 
  	\textsf{Expression} instances.
  	
-\subsection{Integration with other languages}
-
 \subsection{Extensibility}
-
-\subsection{CIL Structure of a Process Language Application}\label{cil_structure}
-
+	
+	As stated before, one of the goals of the PLR is extensibility, allowing
+	for language implementors to add features and constructs not included in
+	the PLR itself. There are three main methods of extending the PLR. Firstly,
+	language implementors can add new nodes to the abstract syntax tree. These
+	nodes just have to implement the \textsf{Compile} method and then they can
+	be seamlessly integrated with the built in PLR nodes. Of course it is also
+	possible to inherit from one of the existing nodes and thereby re-using some
+	of the compilation work they do, and simply adding extra code before or after
+	the base classes compilation step. 
+	
+	Secondly, the root node of the abstract	syntax tree, \textsf{ProcessSystem} 
+	exposes the following four events. 
+	
+	\begin{enumerate}
+		\item \textsf{BeforeCompile} occurs before the PLR has performed any 
+		compilation. At this point only the \textsf{AssemblyBuilder} and 
+		\textsf{ModuleBuilder} have been defined, no types or methods exist yet.
+		
+		\item \textsf{AfterCompile} occurs after the PLR has finished all its
+		compilation but before it creates the executable file. At this point
+		subscribers to this event can access any types or methods created during
+		compilation.
+		
+		\item \textsf{MainMethodStart} occurs just after the main method of the
+		application has been defined but before any bytecodes have been emitted
+		into it. Subscribers of this event can then inject their own bytecodes at the
+		beginning of the main method if they wish.
+		
+		\item \textsf{MainMethodEnd} occurs after all bytecodes of the main method
+		have been emitted, except for the final \textsf{Ret} instruction. Again, 
+		subscribers of this event can inject their own bytecodes at this point.
+	\end{enumerate}
+	
+	All these events have the same signature, they require a \textsf{CompileEventHandler}
+	delegate, which takes a \textsf{CompileContext} as a parameter. The event
+	subscribers then use the compile context to create types, methods and emit
+	bytecodes at different points in the compilation process.
+	
+	Finally, the third way to extend the PLR is to write supporting code in
+	another .NET language, writing a seperate runtime library. The KLAIM implementation
+	described in Chapter~\ref{ch:klaim} takes this approach. When a language
+	implementation requires large amounts of supporting code it is inconvenient
+	and error prone to generate all that code by emitting CIL bytecode at 
+	compilation time. By creating a runtime library instead, language implementors 
+	can get the benefit of programming languages and tools such as C\# and Visual 
+	Studio when writing the common, re-usable parts of their languages. Then, at
+	compilation time, they can simply emit bytecodes to call code in the runtime
+	library. This is also the approach taken by the PLR itself, which has runtime
+	classes written in C\# and emits bytecodes during compilation that interact
+	with these classes.	
 
 \subsection{Code generation}
 	
@@ -219,10 +265,7 @@
  	\begin{enumerate}
  		\item When the \textsf{ModuleBuilder} objects is defined with a call to the 
  		\textsf{DefineDynamicModule} method on the \textsf{AssemblyBuilder} object, a
- 		parameter named \textsf{emitSymbols} should be passed as \textsf{true}.
- 		\begin{verbatim}
- 		assembly.DefineDynamicModule(filename, filename, true);
- 		\end{verbatim}
+ 		parameter named \textsf{emitSymbols} should be passed as \textbf{true}.
  		
 		\item An item of the type \textsf{ISymbolDocumentWriter} needs to be defined. 
 		This is done with a call to a \textsf{DefineDocument} method on the 
@@ -278,11 +321,17 @@
  	individual language parsers should store this information for each node. The PLR
  	will then automatically emit a sequence point before every \textit{action} 
  	taken by a process.
+
+\subsection{CIL Structure of a Process Language Application}\label{cil_structure}
+	
+
+\subsection{Integration with other languages}
  	
 	
 \section{Runtime Library}
 
-	The PLR has a small runtime library consisting of nine classes. Applications
+	The PLR has a small runtime library consisting of nine classes. These classes
+	reside in the \textsf{PLR.Runtime} namespace. Applications
 	compiled using the PLR must have access to this library at runtime in order
 	to execute successfully. Figure~\ref{fig:runtime_library} shows a class 
 	diagram of the runtime library. Below is an overview of each of the
