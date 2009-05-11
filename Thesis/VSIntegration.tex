@@ -1,3 +1,154 @@
-\chapter{Integrated Development Environment support}
+\chapter{Integrated Development Environment}
 
-\section{First Section}
+	One of the biggest differences between academic programming languages and 
+	industrial programming languages is the level of tool support. Academic 
+	languages traditionally are edited in text editors and compiled with command 
+	line tools, while industrial languages usually have integrated development 
+	environments (IDE's). These environments offer a wide range of features such 
+	as syntax highlighting, instant visual warnings about syntax errors, 
+	background compilation, automatic listing of available methods and variables 
+	(IntelliSense), built in debuggers and refactoring. One of the goals of this 
+	project was to explore how well the CCS language could be integrated into 
+	one of these environments and how it could benefit from the features they 
+	have to offer. This chapter presents the results of this exploration. 
+	
+\section{Choice of Integrated Development Environment}
+	
+	When choosing which IDE would be most suitable for CCS two environments 
+	stood out. First there is Microsoft's Visual Studio which is the most 
+	popular environment for .NET development. Visual Studio versions are 
+	released alongside new version of the .NET framework itself and each new 
+	version takes full advantage of and supports all the new features in the 
+	.NET framework. The latest version as of this writing is Visual Studio 2008 
+	which supports the .NET framework 3.5. Visual Studio has an extensibility 
+	API based on COM technology, an older technology for interaction between 
+	programs written in different programming languages. Languages are 
+	integrated by creating \textit{language services}, the Visual Studio program 
+	itself is simply a host for these services. The languages that come with 
+	Visual Studio, C\# and Visual Basic.NET have their own language services 
+	that do not have any special access to Visual Studio, this implies that a 
+	language service for a new language can be made to offer all the same 
+	features as those supported by the built in languages.
+	
+	The second candidate for a CCS development environment was SharpDevelop, an 
+	open source IDE written entirely in C\#. SharpDevelop is very similar to 
+	Visual Studio and offers many of the same features. Its extensibility API is 
+	entirely in .NET and is in many ways cleaner and clearer than Visual 
+	Studio's API. It also has the benefit of being open source software, so it 
+	is easy to get a clearer picture of its architecture, and view the source 
+	for other language services. The architecture of SharpDevelop itself has 
+	even been the subject of a book, \cite{sharpdevelop}. The drawbacks
+	are that its debugger is inferior to Visual Studio's, the application itself
+	is slower, and it is not as well known as Visual Studio.
+	
+	After researching both environments, Visual Studio 2008 was chosen as the one
+	to implement CCS's language service in. This was based primarily on the fact
+	that Visual Studio is the IDE of choice for most .NET developers, it is fast 
+	and offers great debugging support. While the standard versions of Visual 
+	Studio are not free, it is possible to download only the Visual Studio shell 
+	and distribute it for free, the shell is the Visual Studio program itself 
+	without any language services. This makes it possible to offer the CCS 
+	development environment free of charge to anyone who wishes to use it.
+
+\section{Building a language service}
+	
+	\subsection{Language Service basics}	
+	The COM extensibility API for Visual Studio is fairly complicated and 
+	unfriendly to use. With the Visual Studio SDK (Software Development Kit) 
+	Microsoft has included a system called the Managed Babel System 
+	\cite{babel}. This is a wrapper around the Visual Studio COM API 
+	specifically meant to simplify writing language services in managed 
+	languages such as C\#. It implements most of the tedious boilerplate code 
+	necessary to create the language service. The first step in creating a 
+	language service is registering it with Visual Studio. For this the 
+	programmer has to supply a language name, a file extension for the language 
+	and a globally unique identifier (GUID). After the language service has been 
+	registered with Visual Studio it will call into the language service 
+	whenever a file with the registered extensions is opened in the Visual 
+	Studio text editor. The additional features of the language service are 
+	described in the following sections.
+	
+	\subsection{Syntax highlighting and visual syntax warnings}
+	Syntax highlighting is when different tokens in a language are given 
+	different color to help differentiate them when looking at code. This
+	is very helpful when looking at code to quickly sense the structure and
+	identify problems, and has been a standard feature of development 
+	environments as well as most advanced text editors for many years. In many
+	common text editors this is simply implemented as lists of tokens and 
+	colors for them. Visual Studio however requires a full lexer and parser for
+	a language in order to provide syntax highlighting. This also enables it to
+	give error messages for syntax errors in the code before compiling. These
+	are shown both as text error messages in an error message window, as well
+	as red curvy lines under the places in code where the syntax errors occurs.
+	This makes it extremely easy to look at a page of code and determine whether
+	it is syntactically correct.
+	
+	The Managed Babel System ships with two programs called MPLex.exe and 
+	MPPG.exe. These are .NET implementations of the well known parser generator 
+	tools Lex and YACC. These tools take as input a \textsf{lexer.lex} file and
+	\textsf{parser.y} file. The lexer file defines the tokens of the language
+	with regular expressions, and the parser file describes the syntax of the
+	language in extended Backus-Naur form, or EBNF. From these input files 
+	MPLex.exe and MPPG.exe generate C\# code for a lexer and a parser for the 
+	language. A more detailed explanation of Lex and YACC is outside the scope 
+	of this paper but a useful book on the subject is \cite{lexyacc}. 
+	The generated lexer and parser are called repeatedly in the background while
+	code is being edited and any syntax errors are highlighted and displayed to
+	the user. Colors for different tokens are defined in a special 
+	\textsf{Configuration} class which is a part of the language service.
+
+	When implementing the CCS compiler a EBNF definition was defined for the
+	parser generator Coco/R. Porting that definition to Lex/YACC was not 
+	complicated to do, as the underlying principles are the same. The tokens of 
+	CCS were divided into six distinct classes, and were colored as follows
+	
+	\begin{itemize}
+		\item Process constants - Blue
+		\item Synchronization on channels	- Red
+		\item Method calls - Bluegreen
+		\item Comments - Green
+		\item Strings - Maroon
+		\item Operators - Black
+	\end{itemize}
+	
+	\subsection{IntelliSense}
+	\TODO{Implement and describe intellisense}
+
+	\subsection{CCS Project and item templates}
+	To enable a user to create new CCS projects inside Visual Studio it was 
+	necessary to create templates for these files. This was done by creating 
+	three files:
+	
+	\begin{itemize}
+		\item \textbf{CCSProject.vstemplate} is a xml file that describes the 
+		project type. It contains the name of the project type, unique identifier 
+		for it and various parameters such as whether a new project should be 
+		created in a new folder. This is the file Visual Studio uses to create an 
+		item for CCS in the \textit{New project} dialog.
+		
+		\item \textbf{project.ccsproj} is a template for new CCS projects. It 
+		contains information about debug and release configurations, the name of 
+		included CCS sourc files, which assemblies should be referenced by default 
+		as well as references to the build tasks to execute to compile CCS 
+		projects. Build tasks are further explained in Section~\ref{msbuild}.
+		
+		\item \textbf{Program.ccs} is a template for CCS source files. It contains
+		nothing but a small comment explaining that CCS code should go here. 
+	
+	\end{itemize}
+	
+	These three files are put in a zip archive which is stored in a subfolder of
+	the Visual Studio main folder. Once this has been done the user can select 
+	\textit{CCS Project} as a project type when creating new projects in Visual 
+	Studio. For more complex languages an item template could also be created to
+	allow users to add additional source files to the program. Since the current
+	CCS compiler only supports compiling a single source file this feature was 
+	not added, when a user initially creates a new project he gets one source 
+	file named \textsf{program.ccs} added automatically, all source code must go
+	inside that file.
+
+	\subsection{Build support}\label{msbuild}
+	
+	
+	\section{Summary}
+	

@@ -186,31 +186,32 @@
 		
 		\item \textsf{MainMethodStart} occurs just after the main method of the
 		application has been defined but before any bytecodes have been emitted
-		into it. Subscribers of this event can then inject their own bytecodes at the
-		beginning of the main method if they wish.
+		into it. Subscribers of this event can then inject their own bytecodes at 
+		the beginning of the main method if they wish.
 		
 		\item \textsf{MainMethodEnd} occurs after all bytecodes of the main method
 		have been emitted, except for the final \textsf{Ret} instruction. Again, 
 		subscribers of this event can inject their own bytecodes at this point.
 	\end{enumerate}
 	
-	All these events have the same signature, they require a \textsf{CompileEventHandler}
-	delegate, which takes a \textsf{CompileContext} as a parameter. The event
-	subscribers then use the compile context to create types, methods and emit
-	bytecodes at different points in the compilation process.
+	All these events have the same signature, they require a 
+	\textsf{CompileEventHandler} delegate, which takes a \textsf{CompileContext} 
+	as a parameter. The event subscribers then use the compile context to create 
+	types, methods and emit bytecodes at different points in the compilation 
+	process.
 	
 	Finally, the third way to extend the PLR is to write supporting code in
-	another .NET language, writing a seperate runtime library. The KLAIM implementation
-	described in Chapter~\ref{ch:klaim} takes this approach. When a language
-	implementation requires large amounts of supporting code it is inconvenient
-	and error prone to generate all that code by emitting CIL bytecode at 
-	compilation time. By creating a runtime library instead, language implementors 
-	can get the benefit of programming languages and tools such as C\# and Visual 
-	Studio when writing the common, re-usable parts of their languages. Then, at
-	compilation time, they can simply emit bytecodes to call code in the runtime
-	library. This is also the approach taken by the PLR itself, which has runtime
-	classes written in C\# and emits bytecodes during compilation that interact
-	with these classes.	
+	another .NET language, writing a seperate runtime library. The KLAIM 
+	implementation described in Chapter~\ref{ch:klaim} takes this approach. When 
+	a language implementation requires large amounts of supporting code it is 
+	inconvenient and error prone to generate all that code by emitting CIL 
+	bytecode at compilation time. By creating a runtime library instead, 
+	language implementors can get the benefit of programming languages and tools 
+	such as C\# and Visual Studio when writing the common, re-usable parts of 
+	their languages. Then, at compilation time, they can simply emit bytecodes 
+	to call code in the runtime library. This is also the approach taken by the 
+	PLR itself, which has runtime classes written in C\# and emits bytecodes 
+	during compilation that interact with these classes.	
 
 \subsection{Code generation}
 	
@@ -256,25 +257,26 @@
 \subsection{Debugging support}
 	
 	One of the benefits of targeting a common virtual machine such as the CLR is
-	is that both a free command line and graphical debugger exist that can be used
-	for any programming language that compiles down to the Common Intermediate
-	Language format. The \textit{System.Reflection.Emit} API offers functionality 
-	to emit the necessary debugging symbols to be able to use these debuggers.
- 	Emitting debug symbols consists of the following five steps:
+	is that both a free command line and graphical debugger exist that can be 
+	used for any programming language that compiles down to the Common 
+	Intermediate Language format. The \textit{System.Reflection.Emit} API offers 
+	functionality to emit the necessary debugging symbols to be able to use 
+	these debuggers. Emitting debug symbols consists of the following five steps:
  	
  	\begin{enumerate}
- 		\item When the \textsf{ModuleBuilder} objects is defined with a call to the 
- 		\textsf{DefineDynamicModule} method on the \textsf{AssemblyBuilder} object, a
- 		parameter named \textsf{emitSymbols} should be passed as \textbf{true}.
+ 		\item When the \textsf{ModuleBuilder} objects is defined with a call to 
+ 		the \textsf{DefineDynamicModule} method on the \textsf{AssemblyBuilder} 
+ 		object, a parameter named \textsf{emitSymbols} should be passed as 
+ 		\textbf{true}.
  		
-		\item An item of the type \textsf{ISymbolDocumentWriter} needs to be defined. 
-		This is done with a call to a \textsf{DefineDocument} method on the 
-		\textsf{ModuleBuilder} object which returns a \textsf{ISymbolDocumentWriter} 
-		object. The parameters to this method call include the name of the source 
-		file that is being compiled, this is neccessary so that the debugger can 
-		prompt for the source file when debugging the compiled file. The 
-		\textsf{ISymbolDocumentWriter} object is passed with the \textsf{CompileContext}
-		to all nodes during compilation.
+		\item An item of the type \textsf{ISymbolDocumentWriter} needs to be 
+		defined. This is done with a call to a \textsf{DefineDocument} method on 
+		the \textsf{ModuleBuilder} object which returns a 
+		\textsf{ISymbolDocumentWriter} object. The parameters to this method call 
+		include the name of the source file that is being compiled, this is 
+		neccessary so that the debugger can prompt for the source file when 
+		debugging the compiled file. The \textsf{ISymbolDocumentWriter} object is 
+		passed with the \textsf{CompileContext} to all nodes during compilation.
 
 		\item Local variables in methods are created with a \textsf{LocalBuilder} 
 		object. In a non debug build these locals are not stored by name in the 
@@ -290,48 +292,48 @@
 		as a parameter.
 		
 		\item The most important part of emitting the debug symbols is marking 
-		\textit{sequence points} in the CIL bytestream. A sequence point is a point 
-		in the bytecode that tells the debugger to stop at that point during code
-		execution and highlight a particular section in the source code file. To be
-		able to do this the sequence point contains information about a start position
-		and end position in the source file, given as line and column numbers. A 
-		sequence point is marked with a call to a \textsf{MarkSequencePoint} method
-		on an \textsf{ILGenerator} object, the methods parameters are an instance
-		of \textsf{ISymbolDocumentWriter} and four integers, startLine, startColumn,
-		endLine and endColumn. Figure~\ref{fig:sequence_points} shows a few lines
-		of CIL bytecode interspersed with sequence points. (Note: the CIL file
-		format does not store sequence points in exactly this manner, the figure
-		is simply meant to clarify the concept). It is worth noting that the CIL has 
-		no notion of statements, expressions or other programming language constructs,
-		it is perfectly legal to insert a sequence point in the middle of an expression
+		\textit{sequence points} in the CIL bytestream. A sequence point is a 
+		point in the bytecode that tells the debugger to stop at that point during 
+		code execution and highlight a particular section in the source code file. 
+		To be able to do this the sequence point contains information about a 
+		start position and end position in the source file, given as line and 
+		column numbers. A sequence point is marked with a call to a 
+		\textsf{MarkSequencePoint} method on an \textsf{ILGenerator} object, the 
+		methods parameters are an instance of \textsf{ISymbolDocumentWriter} and 
+		four integers, startLine, startColumn, endLine and endColumn. 
+		Figure~\ref{fig:sequence_points} shows a few lines of CIL bytecode 
+		interspersed with sequence points. (Note: the CIL file format does not 
+		store sequence points in exactly this manner, the figure is simply meant 
+		to clarify the concept). It is worth noting that the CIL has no notion of 
+		statements, expressions or other programming language constructs, it is 
+		perfectly legal to insert a sequence point in the middle of an expression
 		or anywhere else in the bytecode. It is completely up to the programmer to
 		insert sequence points at meaningful points in the bytestream according to
 		the semantics of the language being implemented.
 		
  	\end{enumerate}
  	
- 	The PLR handles these five steps, so an implementation of a language that uses
- 	the PLR as its backend compiler does not need to concern itself with them directly. 
- 	However, since the PLR does not handle parsing of source files it can not 
- 	determine itself the line and column numbers needed for marking sequence points.
- 	For that purpose, every node in the PLR abstract syntax tree has an instance of
- 	a class named \textsf{LexicalInfo}. This class is simply a wrapper around the
- 	four integers that a sequence point needs, startLine, startColumn, endLine and
- 	endColumn. This information is easily available during parsing and so the 
- 	individual language parsers should store this information for each node. The PLR
- 	will then automatically emit a sequence point before every \textit{action} 
- 	taken by a process.
+ 	The PLR handles these five steps, so an implementation of a language that 
+ 	uses the PLR as its backend compiler does not need to concern itself with 
+ 	them directly. However, since the PLR does not handle parsing of source 
+ 	files it can not determine itself the line and column numbers needed for 
+ 	marking sequence points. For that purpose, every node in the PLR abstract 
+ 	syntax tree has an instance of a class named \textsf{LexicalInfo}. This 
+ 	class is simply a wrapper around the four integers that a sequence point 
+ 	needs, startLine, startColumn, endLine and endColumn. This information is 
+ 	easily available during parsing and so the individual language parsers 
+ 	should store this information for each node. The PLR will then automatically 
+ 	emit a sequence point before every \textit{action} taken by a process.
 
 
 	
 \section{Runtime Library}
 
 	The PLR has a small runtime library consisting of nine classes. These classes
-	reside in the \textsf{PLR.Runtime} namespace. Applications
-	compiled using the PLR must have access to this library at runtime in order
-	to execute successfully. Figure~\ref{fig:runtime_library} shows a class 
-	diagram of the runtime library. Below is an overview of each of the
-	nine classes.
+	reside in the \textsf{PLR.Runtime} namespace. Applications compiled using 
+	the PLR must have access to this library at runtime in order to execute 
+	successfully. Figure~\ref{fig:runtime_library} shows a class diagram of the 
+	runtime library. Below is an overview of each of the nine classes.
 
 	\textbf{ProcessBase} is an abstract base class for any compiled processes.
 	It contains methods used to interact with the \textsf{Scheduler},
@@ -340,10 +342,10 @@
 	Since processes are built up into a tree-like structure at runtime (further 
 	explained in Section~\ref{cil_structure}) it also contains a field for its 
 	parent \textsf{ProcessBase} instance, as well as a list of 
-	\textsf{ProcessBase} instances which are its child nodes in the tree. Finally, 
-	it contains a list of \textsf{IAction} instances, this list will hold all 
-	actions that occur in the process instance or any of its subprocesses and are 
-	restricted by the instances restriction clause.
+	\textsf{ProcessBase} instances which are its child nodes in the tree. 
+	Finally, it contains a list of \textsf{IAction} instances, this list will 
+	hold all actions that occur in the process instance or any of its 
+	subprocesses and are restricted by the instances restriction clause.
 	
 	\textbf{BuiltIns} is a small static class that contains utility methods
 	that can be called by processes, such as to print to the console.
@@ -395,13 +397,13 @@
 
 	\textbf{GlobalScope} is a small class whose only purpose is to be a 
 	repository of possible actions that are not restricted by any process. As
-	explained in Section~\ref{cil_structure}, candidate actions are propagated up 
-	the process tree, and at each process it is checked whether the process 
+	explained in Section~\ref{cil_structure}, candidate actions are propagated 
+	up the process tree, and at each process it is checked whether the process 
 	restricts them, if so they are stored within that process so that they do
 	not synchronize with actions outside the process. In the case where no
 	process restricts the action and it can synchronize with any other action
-	that is not otherwise restricted then the action is stored in the global scope,
-	while it waits to see whether it was chosen for execution.
+	that is not otherwise restricted then the action is stored in the global 
+	scope, while it waits to see whether it was chosen for execution.
 	
 	\textbf{ProcessKilledException} is an exception class used when processes
 	are killed. As an example, when a process is a candidate in non deterministic
@@ -415,48 +417,49 @@
 	\textit{Singleton} \TODO{NEEDREF} design pattern so it is trivial for all
 	processes in the application to gain access to the same \textsf{Scheduler}
 	instance. When processes are activated they register themselves with the 
-	scheduler, which keeps a list of active processes. The scheduler then monitors
-	the processes and waits until all processes have generated all their candidate
-	actions and are waiting for an action to be executed so they can continue.
-	At that point the scheduler goes through all the possible actions, figures
-	out which actions can sync with each other and then randomly chooses an
-	action to execute. It then executes the action and wakes up the processes
-	involved in the action so that they can resume execution. It also terminates
-	certain processes (or rather instructs them to terminate themselves). These
-	are generally candidates of non deterministic choice who were not chosen. 
-	Once the scheduler has finished one such round it again waits until all 
-	the processes it woke up are again suspended and then chooses the next
-	action to execute, and so on. Example~\ref{ex:scheduler} shows the workings
-	of the scheduler in pseudocode. Other responsibilities of the scheduler are
-	everything to do with thread locking and synchronization, and keeping track of
-	the \textit{trace}, that is the list of actions executed during the duration
-	of the program.
+	scheduler, which keeps a list of active processes. The scheduler then 
+	monitors the processes and waits until all processes have generated all 
+	their candidate actions and are waiting for an action to be executed so they 
+	can continue. At that point the scheduler goes through all the possible 
+	actions, figures out which actions can sync with each other and then 
+	randomly chooses an action to execute. It then executes the action and wakes 
+	up the processes involved in the action so that they can resume execution. 
+	It also terminates certain processes (or rather instructs them to terminate 
+	themselves). These are generally candidates of non deterministic choice who 
+	were not chosen. Once the scheduler has finished one such round it again 
+	waits until all the processes it woke up are again suspended and then 
+	chooses the next action to execute, and so on. Example~\ref{ex:scheduler} 
+	shows the workings of the scheduler in pseudocode. Other responsibilities of 
+	the scheduler are everything to do with thread locking and synchronization, 
+	and keeping track of the \textit{trace}, that is the list of actions 
+	executed during the duration of the program.
 	 
 
 \section{CIL Structure of a Process Language Application}\label{cil_structure}
 
 	A process language application is in many ways different from an application
-	written in a traditional programming language. One of the goals of this 
+	written in a traditional programming language. One of the goals of this  
 	project was to investigate how well process languages are suited to the .NET
-	virtual machine. We now look at how a process language system looks 
-	once it has been compiled to the Common Intermediate Language.
+	virtual machine. We now look at how a process language system looks once it 
+	has been compiled to the Common Intermediate Language.
 	
-	One of the hardest decisions during the design of the PLR was whether or not to
-	represent each process as a separate thread. Writing multi-threaded code is 
-	hard,	and it is subject to subtle errors, race conditions and other problems
-	that are easily avoided when using only a single thread. However, a single
-	threaded implementation would be forced to represent the processes as data 
-	structures, rather than as independent programs in their own right. That 
-	approach, that the processes are datastructures and the program is a single
-	thread operating on those datastructures is certainly worthwhile, and in fact 
-	an early prototype was implemented as an interpreter that did just that. It
-	even makes certain things easier, such as the visualizing the state of the 
-	processes after each round. However, using multiple threads allowed for 
-	compiling each process relatively independently of other processes, and 
+	One of the hardest decisions during the design of the PLR was whether or not 
+	to represent each process as a separate thread. Writing multi-threaded code 
+	is hard, and it is subject to subtle errors, race conditions and other 
+	problems that are easily avoided when using only a single thread. However, a 
+	single threaded implementation would be forced to represent the processes as 
+	data structures, rather than as independent programs in their own right. 
+	That approach, that the processes are datastructures and the program is a 
+	single thread operating on those datastructures is certainly worthwhile, and 
+	in fact an early prototype was implemented as an interpreter that did just 
+	that. It even makes certain things easier, such as the visualizing the state 
+	of the processes after each round. However, using multiple threads allowed 
+	for compiling each process relatively independently of other processes, and 
 	conceptually seemed closer to the semantics of process algebra. Another
-	benefit of the multi-threaded approach was that it made emitting debug symbols
-	fairly simple, while doing the same in a single threaded way would have
-	been problematic. For these reasons the multi-threaded approach was taken.
+	benefit of the multi-threaded approach was that it made emitting debug 
+	symbols fairly simple, while doing the same in a single threaded way would 
+	have been problematic. For these reasons the multi-threaded approach was 
+	taken.
 	
 	Each process in process algebra maps to a class in CIL. The top level 
 	processes, those that are defined as named process constants, are compiled
