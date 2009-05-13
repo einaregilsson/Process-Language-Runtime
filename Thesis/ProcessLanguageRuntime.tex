@@ -159,6 +159,127 @@
  	\textsf{ExpressionList} is a convenience class to hold a list of 
  	\textsf{Expression} instances.
  	
+	We now look at a simple example of a coffee machine, CM. The coffee machine 
+	accepts a coin as input, then outputs coffee and then makes a non 
+	deterministic choice between turning into itself again or turning into a 
+	process representing a failure of the coffee machine, CMFAIL. The CMFAIL 
+	process accepts a coin and then turns into the nil process without ever
+	returning coffee for the inserted coin.
+
+	\begin{Exa}
+	\label{ex:coffee_machine_syntax}
+	\begin{align*}
+			\mathrm{CM} \defeq & coin \ccsdot \out{coffee} \ccsdot (\mathrm{CM}+\mathrm{CMFAIL})\\
+			\mathrm{CM} \defeq & coin \ccsdot \mathrm{0}
+	\end{align*}	
+	\end{Exa}
+
+	The syntax tree for the processes in Example~\ref{ex:coffee_machine_syntax} 
+	is shown in Figure~\ref{fig:syntax_tree_example}. The names shown in 
+	boldface are the names of the node classes, while the text in 
+	parentheses shows properties of the nodes. Note that although this 
+	particular tree is strictly binary it does not mean that all PLR trees
+	are binary trees. \textsf{ProcessSystem}, \textsf{ParallelComposition} and 
+	\textsf{NonDeterministicChoice} nodes can all have 1-n child nodes.
+	
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.7]{syntax_tree_example.jpg}
+		\caption{PLR abstract syntax tree}
+		\label{fig:syntax_tree_example}
+	\end{figure}
+ 	
+
+\subsection{Visitors and Formatters (NEED BETTER TITLE)}
+	
+	There are many reasons why a language implementation might need to process 
+	the abstract syntax tree in some way before compilation. An example might be 
+	optimization; to fold constant expressions or prune branches of the tree 
+	that are sure to never be executed. To support scenarios like this, the PLR 
+	makes use of the \textit{Visitor} design pattern. The pattern is a way of 
+	separating an algorithm from an object structure upon which it operates. As 
+	a result, new operations can be added to existing object structures without 
+	modifying those structures. A visitor interface contains one \textsf{Visit} 
+	method for each of the classes in the object structure, each class in the 
+	object structure then contains an \textsf{Accept} method that takes the 
+	visitor interface as a parameter and does nothing 
+	except call the visitor's \textsf{Visit} method with itself as a parameter. 
+  This technique, calling the objects \textsf{Visit} methods that immediately
+  calls the visitors \textsf{Accept} methods is known as \textit{double 
+  dispatch}. This essentially mimics virtual method overloading, but the added
+  benefit is that the methods can be defined outside the object structure, 
+  making it easy to plug in different implementations of the visitor as needed.
+  The visitor class can then contain different implementations of traversing
+  the object structure and calling the \textsf{Accept} method on each node in
+  the object structure. A more detailed explanation of the \textit{Visitor} 
+  pattern and its benefits can be found in \cite{design_patterns, visitor}.
+
+	\lstset{language=CSharp, caption=Examples of Visit and Accept methods}
+	\lstset{commentstyle=\textit}
+	\begin{lstlisting}[frame=trbl]
+  
+  //Each node in the tree contains this method
+  public override void Accept(AbstractVisitor visitor) {
+      visitor.Visit(this);
+  }
+  
+  //The Visit method for ActionPrefix node in a subclass
+  //of AbstractVisitor. 
+  public override void Visit(ActionPrefix node) {
+      //...process the ActionPrefix node here
+  }
+  
+	\end{lstlisting}
+  
+  The PLR contains an \textsf{AbstractVisitor} class which is the base class
+  of all visitor implementations. This was implemented as an abstract class
+  rather than an interface for convenience reasons; the 
+  \textsf{AbstractVisitor} provides empty implementations of the \textsf{Visit}
+  method for each of the nodes in the abstract syntax tree, subclasses only
+  need to override the \textsf{Visit} methods for nodes which they
+  are interested in processing. Depth first traversal is a very common method
+  of working with tree structures, to account for that common case the 
+  \textsf{AbstractVisitor} contains a \textsf{VisitRecursive(Node node)} 
+  method which performs a depth first recursive traversal of the tree, calling 
+  each nodes \textsf{Accept} method along the way. A  boolean property on the 
+  \textsf{AbstractVisitor} named \textsf{ChildNodesFirst} controls whether the 
+  parent or child nodes \textsf{Accept} methods are called first during the 
+  traversal.  
+  
+  Process algebras are the subject of many academic papers, and it is likely 
+  that future users of the PLR might be in the process of writing research 
+  papers themselves. For that reason it could be quite useful to be able to 
+  get a text representation of the abstract syntax tree, formatted in the
+  LaTeX typesetting format (it certainly has been very useful for this 
+  author!). The PLR contains three different formatter classes that generate 
+  text representations of the syntax tree in different formats. 
+  
+  \begin{itemize}
+  	\item \textsf{BaseFormatter} generates unformatted process algebra text, 
+  	using the common symbols for constructs like non deterministic choice and 
+  	parallel composition. 
+  	
+  	\item \textsf{LaTeXFormatter} generates LaTeX source, suitable for copying 
+  	directly into a LaTeX document.
+  	
+  	\item \textsf{HTMLFormatter} generates HTML formatted text, suitable for 
+  	displaying on the web.
+  \end{itemize}
+  
+  The concrete syntax used by all of these formatters is that of CCS, however, 
+  since many of the common process algebras use the same symbols for things 
+  such as parallel composition and non deterministic choice, formatters for 
+  other languages could be implemented simply by inheriting from one of the 
+  three aforementioned classes and overriding the formatting methods only for 
+  those constructs whose syntax differs from CCS syntax.
+  
+  The formatter classes are all implemented using the \textsf{Visitor} 
+  pattern. The benefits of the pattern here are obvious, it is easy to add new 
+  formats at a later date without having to alter anything in the syntax tree
+  itself, all code for a particular format is kept in one place and formatter
+  classes do not need to implement tree traversal algorithms themselves.
+
 \subsection{Extensibility}
 	
 	As stated before, one of the goals of the PLR is extensibility, allowing
@@ -225,8 +346,13 @@
 	Types have \textit{fields}, \textit{constructors} and \textit{methods}. At 
 	the lowest level, constructors and methods contain CIL bytecodes. 
 	Figure~\ref{fig:assembly} shows the structure.
-	
-	\TODO{Figure with assembly structure}
+
+	\begin{figure}[h!]
+		\centering
+		\includegraphics{assembly2.jpg}
+		\caption{The structure of a CIL assembly}
+		\label{fig:assembly}
+	\end{figure}
 	
 	The classes in System.Reflection.Emit namespace match the structure of an 
 	assembly. There is an \textsf{AssemblyBuilder}, \textsf{ModuleBuilder}, 

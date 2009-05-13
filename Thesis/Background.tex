@@ -86,8 +86,8 @@
 	\begin{Exa}
 	\label{ex:simple_procs}
 	\begin{align*}
-			P \defeq & coffee \ccsdot 0 \\
-			Q \defeq & \out{coffee} \ccsdot 0 
+			\mathrm{P} \defeq & coffee \ccsdot 0 \\
+			\mathrm{Q} \defeq & \out{coffee} \ccsdot 0 
 	\end{align*}	
 	\end{Exa}
 				
@@ -105,8 +105,8 @@
 	
 	\begin{Exa}\label{ex:value_passing}
 	\begin{align*}
-			Teacher \defeq & \out{grade(12)} \ccsdot 0 \\
-			Student \defeq & grade(x) \ccsdot 0 
+			\mathrm{Teacher} \defeq & \out{grade(12)} \ccsdot 0 \\
+			\mathrm{Student} \defeq & grade(x) \ccsdot 0 
 	\end{align*}	
 	\end{Exa}
 
@@ -143,7 +143,7 @@
 	
 	\begin{Exa}\label{ex:process_constants}
 	\begin{align*}
-			CoffeeMachine \defeq & coin \ccsdot \out{coffee} \ccsdot CoffeeMachine 
+			\mathrm{CoffeeMachine} \defeq & coin \ccsdot \out{coffee} \ccsdot \mathrm{CoffeeMachine} 
 	\end{align*}	
 	\end{Exa}
 
@@ -159,7 +159,7 @@
 		
 	\begin{Exa}\label{ex:process_constants}
 	\begin{align*}
-			P \defeq & a \ccsdot 0 + b \ccsdot 0 + c \ccsdot 0
+			\mathrm{P} \defeq & a \ccsdot 0 + b \ccsdot 0 + c \ccsdot 0
 	\end{align*}	
 	\end{Exa}
 	
@@ -174,7 +174,7 @@
 	
 	\begin{Exa}\label{ex:restriction}
 	\begin{align*}
-			P \defeq & (a \ccsdot 0 \paral \out{a} \ccsdot \out{b} \ccsdot 0)  			
+			\mathrm{P} \defeq & (a \ccsdot 0 \paral \out{a} \ccsdot \out{b} \ccsdot 0)  			
 	\end{align*}	
 	\end{Exa}
 
@@ -191,8 +191,8 @@
 	
 	\begin{Exa}\label{ex:relabelling}
 	\begin{align*}
-			VendingMachine \defeq & coin \ccsdot \out{item} \ccsdot VendingMachine \\
-			CoffeeMachine \defeq & VendingMachine_{[coffee/item]}
+			\mathrm{VendingMachine} \defeq & coin \ccsdot \out{item} \ccsdot \mathrm{VendingMachine} \\
+			\mathrm{CoffeeMachine} \defeq & \mathrm{VendingMachine}_{[coffee/item]}
 	\end{align*}	
 	\end{Exa}
 	

@@ -23,6 +23,5 @@ namespace PLR.AST.ActionHandling {
             il.Emit(OpCodes.Ret);
             context.Type.Builder.DefineMethodOverride(getRestrict, baseGetRestrict);
         }
-
     }
 }
