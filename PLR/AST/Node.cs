@@ -18,6 +18,12 @@ namespace PLR.AST {
             get { return _lexInfo; }
         }
 
+        private Node _parent;
+        public Node Parent {
+            get { return _parent; }
+            set { _parent = value; }
+        }
+
         protected int _parenCount;
         public int ParenCount
         {
@@ -38,8 +44,7 @@ namespace PLR.AST {
         }
 
         public Node this[int index]{
-            get
-            {
+            get {
                 return _children[index];
             }
         }

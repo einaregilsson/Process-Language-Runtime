@@ -54,6 +54,7 @@
     <Compile Include="AST\Actions\OutAction.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\ExpressionFolder.cs" />
     <Compile Include="AST\Expressions\ArithmeticBinOpExpression.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -131,6 +132,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runtime\Scheduler.cs" />
     <Compile Include="Util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

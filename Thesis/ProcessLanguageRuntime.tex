@@ -191,7 +191,7 @@
 	\end{figure}
  	
 
-\subsection{Visitors and Formatters (NEED BETTER TITLE)}
+\subsection{Processing the syntax tree before compilation}
 	
 	There are many reasons why a language implementation might need to process 
 	the abstract syntax tree in some way before compilation. An example might be 
@@ -211,26 +211,23 @@
   benefit is that the methods can be defined outside the object structure, 
   making it easy to plug in different implementations of the visitor as needed.
   The visitor class can then contain different implementations of traversing
-  the object structure and calling the \textsf{Accept} method on each node in
-  the object structure. A more detailed explanation of the \textit{Visitor} 
-  pattern and its benefits can be found in \cite{design_patterns, visitor}.
+  the object structure while calling the \textsf{Accept} method on each of its 
+  nodes. A more detailed explanation of the \textit{Visitor} pattern and its 
+	benefits can be found in \cite{design_patterns, visitor}.
 
-	\lstset{language=CSharp, caption=Examples of Visit and Accept methods}
-	\lstset{commentstyle=\textit}
-	\begin{lstlisting}[frame=trbl]
+	\begin{lstlisting}[caption=Examples of Visit and Accept methods]
   
-  //Each node in the tree contains this method
-  public override void Accept(AbstractVisitor visitor) {
-      visitor.Visit(this);
-  }
+//Each node in the tree contains this method
+public override void Accept(AbstractVisitor visitor) {
+  visitor.Visit(this);
+}
   
-  //The Visit method for ActionPrefix node in a subclass
-  //of AbstractVisitor. 
-  public override void Visit(ActionPrefix node) {
-      //...process the ActionPrefix node here
-  }
-  
-	\end{lstlisting}
+//The Visit method for ActionPrefix node in a subclass
+//of AbstractVisitor. 
+public override void Visit(ActionPrefix node) {
+  //...process the ActionPrefix node here
+}
+\end{lstlisting}
   
   The PLR contains an \textsf{AbstractVisitor} class which is the base class
   of all visitor implementations. This was implemented as an abstract class
@@ -279,6 +276,56 @@
   formats at a later date without having to alter anything in the syntax tree
   itself, all code for a particular format is kept in one place and formatter
   classes do not need to implement tree traversal algorithms themselves.
+
+	Listing~\ref{lst:expression_folder} shows another example of how the 
+	\textit{Visitor} pattern can be useful. It is a class that takes binary 
+	expressions that contain constants on both the left and right hand side, 
+	calculates their results and replaces the \textsf{ArithmeticBinOpExpression} 
+	node (which contains two child nodes) with a single \textsf{Number} node 
+	containing the result of the expression. The code listing shows the entire 
+	\textsf{ExpressionFolder} class, all it needs to do is inherit from 
+	\textsf{AbstractVisitor} and override the \textsf{Visit} method that takes 
+	\textsf{ArithmeticBinOpExpression} as a parameter. The visitor is executed 
+	by calling \texttt{folder.VisitRecursive(tree)} where \texttt{folder} is an 
+	instance of \textsf{ExpressionFolder} and \texttt{tree} is any \textsf{Node} 
+	in the syntax tree, usually the root. Note that the folding 
+	only happens if both the left and right node are \textsf{Number} nodes, 
+	however, the fact that the tree is traversed depth first and child nodes are 
+	visited before parent nodes ensures that even deeply nested expressions
+	are folded as much as possible. The leafs are visited first and folded if 
+	possible, by the time the upper level nodes in the expression tree are 
+	visited they will have \textsf{Number} nodes as children where previously 
+	were \textsf{ArithmeticBinOpExpression} nodes, and thus they can be replaced 
+	as well. (Of course this example is fairly contrived, it is hard to think of
+	a legitimate reason for writing down a large expression where all elements
+	are constants. It does however show how the \textsf{Visitor} pattern can
+	be used to implement classes that alter the syntax tree with a minimal 
+	amount of code).
+	
+	\begin{lstlisting}[caption=Expression folder implemented using Visitor pattern, label=lst:expression_folder]
+class ExpressionFolder : AbstractVisitor{
+
+  public override void Visit(ArithmeticBinOpExpression exp) {
+    if (exp.Left is Number && exp.Right is Number) {
+      int result = 0, leftVal, rightVal;
+      leftVal = ((Number)exp.Left).Value;
+      rightVal = ((Number)exp.Right).Value;
+		
+      if (exp.Op == ArithmeticBinOp.Plus) {
+        result = rightVal + leftVal;
+      } else if (exp.Op == ArithmeticBinOp.Minus) {
+        result = rightVal - leftVal;
+      } else if (exp.Op == ArithmeticBinOp.Multiply) {
+        result = rightVal * leftVal;
+      } else if (exp.Op == ArithmeticBinOp.Divide) {
+        result = rightVal / leftVal;
+      }
+      int pos = exp.Parent.ChildNodes.IndexOf(exp);
+      exp.Parent.ChildNodes[pos] = new Number(result);
+    }
+  }
+}
+\end{lstlisting}
 
 \subsection{Extensibility}
 	
@@ -427,7 +474,7 @@
 		\textsf{MarkSequencePoint} method on an \textsf{ILGenerator} object, the 
 		methods parameters are an instance of \textsf{ISymbolDocumentWriter} and 
 		four integers, startLine, startColumn, endLine and endColumn. 
-		Figure~\ref{fig:sequence_points} shows a few lines of CIL bytecode 
+		Listing~\ref{lst:sequence_points} shows a few lines of CIL bytecode 
 		interspersed with sequence points. (Note: the CIL file format does not 
 		store sequence points in exactly this manner, the figure is simply meant 
 		to clarify the concept). It is worth noting that the CIL has no notion of 
@@ -451,6 +498,27 @@
  	should store this information for each node. The PLR will then automatically 
  	emit a sequence point before every \textit{action} taken by a process.
 
+	\begin{lstlisting}[caption=CIL bytecode with sequence points, label=lst:sequence_points] 
+.method private hidebysig static void  Main() cil managed
+{
+  .entrypoint
+  // Code size       22 (0x16)
+  .maxstack  8
+  IL_0000:  nop
+//debugger stops, highlights line 12, col 9-36
+/*@\textbf{[SEQUENCEPOINT (12, 9, 12, 36)]}@*/
+  IL_0001:  ldstr      "Hello"
+  IL_0006:  call       void Program::WriteLine(string)
+  IL_000b:  nop
+//debugger stops, highlights line 13, col 9-26
+/*@\textbf{[SEQUENCEPOINT (12, 9, 12, 36)]}@*/
+  IL_000c:  ldc.i4.s   27
+  IL_000e:  ldc.i4.4
+  IL_000f:  call       void Program::Power(int32, int32)
+  IL_0014:  nop
+  IL_0015:  ret
+} // end of method Program::Main
+  \end{lstlisting}
 
 	
 \section{Runtime Library}
@@ -460,6 +528,13 @@
 	the PLR must have access to this library at runtime in order to execute 
 	successfully. Figure~\ref{fig:runtime_library} shows a class diagram of the 
 	runtime library. Below is an overview of each of the nine classes.
+
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.5]{RuntimeLibrary.png}
+		\caption{PLR runtime library classes}
+		\label{fig:runtime_library}
+	\end{figure}
 
 	\textbf{ProcessBase} is an abstract base class for any compiled processes.
 	It contains methods used to interact with the \textsf{Scheduler},
@@ -540,26 +615,66 @@
 	terminate.
 	
 	\textbf{Scheduler} is the real execution engine of the PLR. It follows the
-	\textit{Singleton} \TODO{NEEDREF} design pattern so it is trivial for all
-	processes in the application to gain access to the same \textsf{Scheduler}
-	instance. When processes are activated they register themselves with the 
-	scheduler, which keeps a list of active processes. The scheduler then 
-	monitors the processes and waits until all processes have generated all 
-	their candidate actions and are waiting for an action to be executed so they 
-	can continue. At that point the scheduler goes through all the possible 
-	actions, figures out which actions can sync with each other and then 
-	randomly chooses an action to execute. It then executes the action and wakes 
-	up the processes involved in the action so that they can resume execution. 
-	It also terminates certain processes (or rather instructs them to terminate 
-	themselves). These are generally candidates of non deterministic choice who 
-	were not chosen. Once the scheduler has finished one such round it again 
-	waits until all the processes it woke up are again suspended and then 
-	chooses the next action to execute, and so on. Example~\ref{ex:scheduler} 
-	shows the workings of the scheduler in pseudocode. Other responsibilities of 
-	the scheduler are everything to do with thread locking and synchronization, 
-	and keeping track of the \textit{trace}, that is the list of actions 
-	executed during the duration of the program.
+	\textit{Singleton} \cite{design_patterns} design pattern so it is trivial 
+	for all	processes in the application to gain access to the same 
+	\textsf{Scheduler} instance. When processes are activated they register 
+	themselves with the scheduler, which keeps a list of active processes. The 
+	scheduler then monitors the processes and waits until all processes have 
+	generated all their candidate actions and are waiting for an action to be 
+	executed so they can continue. At that point the scheduler goes through all 
+	the possible actions, figures out which actions can sync with each other and 
+	then randomly chooses an action to execute. It then executes the action and 
+	wakes up the processes involved in the action so that they can resume 
+	execution. It also terminates certain processes (or rather instructs them to 
+	terminate themselves). These are generally candidates of non deterministic 
+	choice who were not chosen. Once the scheduler has finished one such round 
+	it again waits until all the processes it woke up are again suspended and 
+	then chooses the next action to execute, and so on. 
+	Listing~\ref{lst:scheduler} shows the workings of the scheduler in 
+	pseudocode. Other responsibilities of the scheduler are everything to do 
+	with thread locking and synchronization, and keeping track of the 
+	\textit{trace}, that is the list of actions executed during the duration of 
+	the program.
 	 
+	\begin{lstlisting}[caption=The scheduler algorithm, label=lst:scheduler]
+// active_procs contains all the running processes
+
+do forever:
+  all_blocked = true
+  
+  for every process p in active_procs
+    if state(p) != STATE_BLOCKED
+      all_blocked = false
+    
+  if all_blocked = true
+    //Find matches...      
+    candidate_matches = []
+    for every process p in active_procs:
+      //p.restricted_actions contains those actions
+      //being performed within p that are restricted 
+      //by p and so can not go into the global_scope 
+      //and sync with any other action
+      for every action a in p.restricted_actions
+        for every action b in p.restricted_actions
+          if a can sync with b
+            candidate_matches.add( (a,b) )
+		
+    for every action x in global_scope
+      for every action y in global_scope
+        if x can sync with y
+          candidate_matches.add( (x,y) )
+    
+    if length(candidate_matches) = 0
+    	DEADLOCK, program finishes
+    else
+      set match = random(candidate_matches)
+      execute(match)
+      wake up processes that had actions in the match
+      kill processes that were not selected 
+        in non deterministic choice
+	
+	\end{lstlisting}
+	
 
 \section{CIL Structure of a Process Language Application}\label{cil_structure}
 
@@ -616,3 +731,6 @@
 	can override these methods and return function pointers to other methods,
 	either methods in the process class itself, or methods in some external
 	assembly.
+
+
+	\TODO{Show some examples of CCS code => resulting .NET assembly}

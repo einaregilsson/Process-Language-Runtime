@@ -26,61 +26,61 @@ namespace PLR.AST.Formatters {
         }
 
         //ActionHandling
-        public virtual void Visit(ActionRestrictions restrictions) { }
-        public virtual void Visit(ChannelRestrictions restrictions) { }
-        public virtual void Visit(CustomPreprocess preprocess) { }
-        public virtual void Visit(CustomRestrictions restrictinos) { }
-        public virtual void Visit(PreProcessActions actions) { }
-        public virtual void Visit(RelabelActions actions) { }
+        public override void Visit(ActionRestrictions restrictions) { }
+        public override void Visit(ChannelRestrictions restrictions) { }
+        public override void Visit(CustomPreprocess preprocess) { }
+        public override void Visit(CustomRestrictions restrictinos) { }
+        public override void Visit(PreProcessActions actions) { }
+        public override void Visit(RelabelActions actions) { }
 
         //Actions
-        public virtual void Visit(Action act) { }
+        public override void Visit(Action act) { }
         
-        public virtual void Visit(Call call) { 
+        public override void Visit(Call call) { 
         }
 
-        public virtual void Visit(InAction act) {
+        public override void Visit(InAction act) {
             CurrentList.Add(act.Name);
         }
 
-        public virtual void Visit(OutAction act) {
+        public override void Visit(OutAction act) {
             CurrentList.Add(act.Name);
         }
 
         //Expressions
-        public virtual void Visit(ArithmeticBinOpExpression node) { }
-        public virtual void Visit(ArithmeticExpression node) { }
-        public virtual void Visit(Bool node) { }
-        public virtual void Visit(BooleanExpression node) { }
-        public virtual void Visit(Expression node) { }
-        public virtual void Visit(LogicalBinOpExpression node) { }
-        public virtual void Visit(MethodCallExpression node) { }
-        public virtual void Visit(MethodInvokeBase node) { }
-        public virtual void Visit(NewObject node) { }
-        public virtual void Visit(Number node) { }
-        public virtual void Visit(PLRString node) { }
-        public virtual void Visit(RelationalBinOpExpression node) { }
-        public virtual void Visit(ThisPointer node) { }
-        public virtual void Visit(TypedNull node) { }
-        public virtual void Visit(UnaryMinus node) { }
+        public override void Visit(ArithmeticBinOpExpression node) { }
+        public override void Visit(ArithmeticExpression node) { }
+        public override void Visit(Bool node) { }
+        public override void Visit(BooleanExpression node) { }
+        public override void Visit(Expression node) { }
+        public override void Visit(LogicalBinOpExpression node) { }
+        public override void Visit(MethodCallExpression node) { }
+        public override void Visit(MethodInvokeBase node) { }
+        public override void Visit(NewObject node) { }
+        public override void Visit(Number node) { }
+        public override void Visit(PLRString node) { }
+        public override void Visit(RelationalBinOpExpression node) { }
+        public override void Visit(ThisPointer node) { }
+        public override void Visit(TypedNull node) { }
+        public override void Visit(UnaryMinus node) { }
         
-        public virtual void Visit(Variable node) { 
+        public override void Visit(Variable node) { 
         
         }
 
         //Processes
-        public virtual void Visit(ActionPrefix node) { }
-        public virtual void Visit(BranchProcess node) { }
-        public virtual void Visit(NilProcess node) { }
-        public virtual void Visit(NonDeterministicChoice node) { }
-        public virtual void Visit(ParallelComposition node) { }
-        public virtual void Visit(Process node) { }
-        public virtual void Visit(ProcessConstant node) { }
+        public override void Visit(ActionPrefix node) { }
+        public override void Visit(BranchProcess node) { }
+        public override void Visit(NilProcess node) { }
+        public override void Visit(NonDeterministicChoice node) { }
+        public override void Visit(ParallelComposition node) { }
+        public override void Visit(Process node) { }
+        public override void Visit(ProcessConstant node) { }
 
         //Root namespace nodes
-        public virtual void Visit(ProcessSystem node) { }
-        public virtual void Visit(ExpressionList node) { }
-        public virtual void Visit(ProcessDefinition node) { }
-        public virtual void Visit(Node node) { }
+        public override void Visit(ProcessSystem node) { }
+        public override void Visit(ExpressionList node) { }
+        public override void Visit(ProcessDefinition node) { }
+        public override void Visit(Node node) { }
     }
 }

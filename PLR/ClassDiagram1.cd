@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="PLR.Runtime.GlobalScope">
+    <Position X="6" Y="0.5" Width="1.5" />
+    <Members>
+      <Field Name="_actions" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Runtime\GlobalScope.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PLR.Runtime.BuiltIns">
+    <Position X="6" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>Runtime\BuiltIns.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PLR.Runtime.ChannelSyncAction" BaseTypeListCollapsed="true">
+    <Position X="2.25" Y="0.5" Width="1.75" />
+    <Members>
+      <Field Name="_input" Hidden="true" />
+      <Field Name="_name" Hidden="true" />
+      <Field Name="_paramCount" Hidden="true" />
+      <Field Name="_proc" Hidden="true" />
+      <Field Name="_values" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>CAAAIAAAIAMAAACEAQABAAQAAAAAEAAAAAAAAAAAACA=</HashCode>
+      <FileName>Runtime\ChannelSyncAction.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PLR.Runtime.Logger">
+    <Position X="6" Y="3.5" Width="1.5" />
+    <Members>
+      <Field Name="_availableColors" Hidden="true" />
+      <Field Name="_prefixes" Hidden="true" />
+      <Field Name="_threadColors" Hidden="true" />
+      <Field Name="lockString" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAACAIAAAAAAAIIAAAAIAAAAIAABAAAAAAAAAAAAMAA=</HashCode>
+      <FileName>Runtime\Logger.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PLR.Runtime.MethodCallAction" BaseTypeListCollapsed="true">
+    <Position X="4.25" Y="2.75" Width="1.5" />
+    <Members>
+      <Field Name="_displayName" Hidden="true" />
+      <Field Name="_proc" Hidden="true" />
+      <Property Name="IsAsynchronous" Hidden="true" />
+      <Property Name="ProcessID" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAEAAACEAAAAAAQAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Runtime\MethodCallAction.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PLR.Runtime.ProcessBase">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <Members>
+      <Field Name="_chosenAction" Hidden="true" />
+      <Field Name="_id" Hidden="true" />
+      <Field Name="_localActions" Hidden="true" />
+      <Field Name="_parent" Hidden="true" />
+      <Field Name="_procThread" Hidden="true" />
+      <Field Name="_setID" Hidden="true" />
+      <Field Name="_subProcs" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>ACAICAAAAQAAiICkEIBBQAAQARAAAIAARgQBBAFAAAI=</HashCode>
+      <FileName>Runtime\ProcessBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PLR.Runtime.ProcessKilledException">
+    <Position X="4.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Runtime\ProcessKilledException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PLR.Runtime.Scheduler">
+    <Position X="2.25" Y="3.5" Width="1.75" />
+    <Members>
+      <Field Name="_activeProcs" Hidden="true" />
+      <Field Name="_instance" Hidden="true" />
+      <Field Name="_trace" Hidden="true" />
+    </Members>
+    <NestedTypes>
+      <Class Name="PLR.Runtime.Scheduler.Match" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Runtime\Scheduler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AEAEAAAAIABAAIAEAAABAAAAAAAAAAAAQAAAAAAAIAI=</HashCode>
+      <FileName>Runtime\Scheduler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="PLR.Runtime.IAction">
+    <Position X="4.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAACAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Runtime\IAction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

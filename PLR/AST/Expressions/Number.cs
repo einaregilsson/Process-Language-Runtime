@@ -15,6 +15,14 @@ namespace PLR.AST.Expressions {
             visitor.Visit(this);
         }
 
+        public void Print(string s) { }
+        public void junk() {
+            Print("Printing string");
+            Print("Print expr: " + (3 + 2 / 4));
+        }
+        public int Value {
+            get { return _number; }
+        }
         public override string ToString() {
             return _number.ToString();
         }
