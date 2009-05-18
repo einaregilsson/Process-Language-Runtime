@@ -33,6 +33,62 @@
 \newcommand{\proc}[1]{\textsf{#1}}
 \newcommand{\channel}[1]{\textsf{#1}}
 
+
+\newcommand{\Mdrm}{$\texttt{mp3}_\texttt{DRM}$}
+\newcommand{\Mdrmfree}{$\texttt{mp3}_\texttt{DRMFREE}$}
+\newcommand{\Cbob}{$\texttt{computer}_\texttt{bob}$}
+\newcommand{\Calice}{$\texttt{computer}_\texttt{alice}$}
+\newcommand{\Drmbob}{$l_{{Store\alpha DRM}\_{Bob}}$}
+\newcommand{\Storea}{$\texttt{store}_{\alpha}$}
+
+\newcommand{\netpar}{\mid\mid}
+\newcommand{\val}[1]{\langle\,#1\,\rangle}
+\newcommand{\aspect}[1]{\{#1\}}
+\newcommand{\defn}[3]{[#1(#2)\triangleq#3]}
+
+\newcommand{\ppar}{\mid}
+\newcommand{\Let}{{\bf let}}
+\newcommand{\Letin}{{\bf in}}
+
+\newcommand{\Out}[2]{{\bf out}({#1})@{\it #2}}
+\newcommand{\In}[2]{{\bf in}({#1})@{\it #2}}
+\newcommand{\Read}[2]{{\bf read}({#1})@{\it #2}}
+\newcommand{\Eval}[2]{{\bf eval}({#1})@{\it #2}}
+\newcommand{\Newloc}[1]{{\bf newloc}({\it #1})}
+\newcommand{\nil}{{\sf 0}}
+\newcommand{\aspectk}[3]{#1[#2::#3]}
+\newcommand{\Casek}[2]{{\bf case}({#1}) #2}
+
+\newcommand{\YZl}{l}
+\newcommand{\Judgek}[3]{#2 \rightarrow #3}
+
+\newcommand{\Lnt}{\ell^\lambda}
+\newcommand{\Ln}{\ell}
+\newcommand{\Lct}{\ell^\lambda}
+\newcommand{\Lc}{\ell}
+\newcommand{\Lbt}{\ell^\lambda}
+\newcommand{\Lb}{\ell}
+\newcommand{\Lat}{\ell^\lambda}
+\newcommand{\La}{\ell}
+\newcommand{\Lett}{\ell'^\lambda}
+\newcommand{\Le}{\ell'}
+
+\newcommand{\Lbk}[1]{\ell_{b_{#1}}}
+
+\newcommand{\veck}[1]{\overrightarrow{#1}}
+
+\newenvironment{ARRAY}[1]{%
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}c@{}c@{}c}
+  \hline
+  &&\\[-5pt]
+  &\begin{math}\begin{array}{@{} #1 @{}}
+}
+{ \end{array}\end{math}&\\
+  &&\\[-5pt]
+  \hline
+  \end{tabular*}
+}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%% DO NOT MODIFY START %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
