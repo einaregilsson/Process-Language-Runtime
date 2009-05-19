@@ -498,6 +498,7 @@ class ExpressionFolder : AbstractVisitor{
  	should store this information for each node. The PLR will then automatically 
  	emit a sequence point before every \textit{action} taken by a process.
 
+	\begin{figure}
 	\begin{lstlisting}[caption=CIL bytecode with sequence points, label=lst:sequence_points] 
 .method private hidebysig static void  Main() cil managed
 {
@@ -519,7 +520,7 @@ class ExpressionFolder : AbstractVisitor{
   IL_0015:  ret
 } // end of method Program::Main
   \end{lstlisting}
-
+	\end{figure}
 	
 \section{Runtime Library}
 
@@ -631,10 +632,9 @@ class ExpressionFolder : AbstractVisitor{
 	it again waits until all the processes it woke up are again suspended and 
 	then chooses the next action to execute, and so on. 
 	Listing~\ref{lst:scheduler} shows the workings of the scheduler in 
-	pseudocode. Other responsibilities of the scheduler are everything to do 
-	with thread locking and synchronization, and keeping track of the 
-	\textit{trace}, that is the list of actions executed during the duration of 
-	the program.
+	pseudocode. Other responsibilities of the scheduler are thread locking and 
+	synchronization, and keeping track of the \textit{trace}, that is the list 
+	of actions executed during the duration of the program.
 	 
 	\begin{lstlisting}[caption=The scheduler algorithm, label=lst:scheduler]
 // active_procs contains all the running processes

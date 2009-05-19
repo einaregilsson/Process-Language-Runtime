@@ -72,11 +72,9 @@
 \newcommand{\La}{\ell}
 \newcommand{\Lett}{\ell'^\lambda}
 \newcommand{\Le}{\ell'}
-
-\newcommand{\Lbk}[1]{\ell_{b_{#1}}}
-
-\newcommand{\veck}[1]{\overrightarrow{#1}}
-
+\newcommand{\infarrow}[1]{\stackrel{#1}{\rightarrow}}
+\newcommand{\Inference}[2]{\begin{array}{@{}c@{}}#1\\[0em]\hline\\[-0.9em]#2\\
+\end{array}}
 \newenvironment{ARRAY}[1]{%
   \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}c@{}c@{}c}
   \hline
@@ -88,6 +86,11 @@
   \hline
   \end{tabular*}
 }
+
+\newcommand{\Lbk}[1]{\ell_{b_{#1}}}
+
+\newcommand{\veck}[1]{\overrightarrow{#1}}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -6,30 +6,98 @@ In this chapter we look at the Calculus of Communicating System process language
 
 \section{Formal syntax and semantics}\label{sec:ccs_syntax}
 
-The collection $P$ of CCS expressions is given by the following grammar
-
-\begin{math}
-	P,Q ::= K \bigm\vert \alpha.P \bigm\vert \sum_{i \in I} P_i \bigm\vert P \mid Q \bigm\vert P[f] \bigm\vert P\ \backslash\ L
-\end{math}
-
-where
+CCS can be described by the following syntax.
 
 \begin{itemize}
-	\item $K$ is a process name in $\mathcal{K}$,
-	\item $\alpha$ is an action in \textsf{Act},
-	\item $I$ is a possibly infinite index set,
-	\item $f$ : \textsf{Act} $\rightarrow$ \textsf{Act} is a \textit{relabelling function} satisfying the constraints
+		\item Let $\mathcal{A}$ be the set of \textit{channel names}, we use 
+		$\alpha$ as a typical member of this set in demonstrations.
 	
-	\begin{tabular{r c l}
-	f(\tau) & = & \tau, \\
-	f(\overline{a})& = & \overline{f(a)} for each label a, \\
-	\end {tabular}
-	\item $L$ is a set of labels from $\mathcal{L}$
-	\begin{math}
+		\item $\overline{\mathcal{A}} := \{\overline{a}\mid a \in \mathcal{A}\}$
+		denotes the set of co-names. For each channel name there is a
+		corresponding co-name. Channel name represents input, co-name represents 
+		output.
 	
-	\end{math}
+		\item Let $\mathcal{L} := \mathcal{A} \cup \overline{\mathcal{A}}$ be the 
+		set of \textit{labels}.
+		
+		\item \textsf{Act} $:= \mathcal{L} \cup {\tau}$ is the set of 
+		\textit{actions}, where $\tau$ denotes the silent (or unobservable) action.
+		
+		\item Let $\mathcal{K}$ be a set of process identifiers.
+		
+		\item The set $\mathcal{P}$ of process expressions is defined by the 
+		following syntax:
+
+		\begin{tabular}{r c l l}
+			$P$ & ::= & 0 & (Nil process)\\
+			    & $\mid$ & $\alpha$ . $P$ & (Action prefixing) \\
+			    & $\mid$ & $K$ & (Invoking a process)\\
+			    & $\mid$ & $P \mid\ Q$ & (Parallel composition)\\
+			    & $\mid$ & $P$ + $Q$ & (Nondeterministic choice)\\
+			    & $\mid$ & $P$[$f$] & (Relabelling)\\
+			    & $\mid$ & $P \backslash\ L$ & (Restriction)
+		\end{tabular}
+		
+		where 
+		
+		\begin{itemize}
+			\item $P,Q$ are processes in $\mathcal{P}$
+			\item $\alpha$ is an action in \textsf{Act}
+			\item $K$ is a process name from $\mathcal{K}$
+			\item $f$ : \textsf{Act} $\rightarrow$ \textsf{Act} is a relabelling 
+			function satisfying the constraints $f(\tau) = \tau$ and 
+			$f(\overline{a}) = \overline{f(a)}$ for each label \textit{a}.
+			\item $L$ is a set of labels from $\mathcal{L}$
+		\end{itemize} 
+		
+		\item We assume that the behavior of each process name $K \in \mathcal{K}$ 
+		is given by a defining equation
+		
+		\begin{center}$K \defeq P$\end{center}
+		
+		where $P \in \mathcal{P}$.
+
+	\end{itemize}
+	To avoid the use of too many parantheses in writing CCS expressions 
+	the convention is used that operators have decreasing binding strength in 
+	the following order: restriction and relabelling (the tightest binding), 
+	action prefixing, parallel composition and summation. For example, the 
+	expression $a.0 \mid b.P\ \backslash\ L + c.0$ stands for
+		
+	\begin{center}$((a.0) \mid (b.(P\ \backslash\ L))) + (c.0)$\end{center}
+		
+	For an informal description of each of the constructs(action-prefixing, 
+	parallel composition, non-deterministic choice, restrictino and relabelling) 
+	we refer to Section~\ref{sec:common_constructs} where such a description was 
+	already given. For a formal description, Table~\ref{tab:ccs_sos} shows the 
+	structural operational semantics of CCS.
+
+
+\begin{table}[t]
+\begin{ARRAY}{c}
+%%Out
+	\mathrm{ACT}\ \ \ \Inference{                              }
+	                            {\alpha.P \infarrow{\alpha} P} \vspace{10pt}\\
+	\mathrm{SUM}_j\ \ \ \Inference{P_j \infarrow{\alpha} P_j'}
+	                              {\sum_{i\in I}P_i \infarrow{\alpha} P_j'}\ \ \mathrm{where}\ j \in I\vspace{10pt}\\
+	\mathrm{COM1}\ \ \ \Inference{P \infarrow{\alpha} P'}
+	                             {P \mid Q \infarrow{\alpha} P' \mid Q} \vspace{10pt}\\
+	\mathrm{COM2}\ \ \ \Inference{Q \infarrow{\alpha} Q'}
+	                             {P \mid Q \infarrow{\alpha} P \mid Q'} \vspace{10pt}\\
+	\mathrm{COM3}\ \ \ \Inference{P \infarrow{\alpha} P'\ \ \ \ Q \infarrow{\alpha} Q'}
+	                             {P \mid Q \infarrow{\tau} P' \mid Q'} \vspace{10pt}\\
+	\mathrm{RES}\ \ \ \Inference{P \infarrow{\alpha} P'}
+	                              {P\ \backslash\ L \infarrow{\alpha} P'\  \backslash\ L}\ \ \mathrm{where}\ \alpha, \overline{\alpha} \notin L\vspace{10pt}\\
+	\mathrm{REL}\ \ \ \Inference{P \infarrow{\alpha} P'}
+	                             {P[f] \infarrow{f(\alpha)} P'[f]} \vspace{10pt}\\
+	\mathrm{CON}\ \ \ \Inference{P \infarrow{\alpha} P'}
+	                             {K \infarrow{\alpha} P'}\ \ \mathrm{where}\ K \defeq P
+
+\end{ARRAY}
+\caption{CCS Structural Operational Semantics}
+\label{tab:ccs_sos}
+\end{table}
 	
-\end{itemize}
 
 \section{Value passing syntax and semantics}\label{ccs_value_syntax}
 
@@ -41,6 +109,7 @@ where
 	the CCS implementation. There are only a handful of classes used, below is a 
 	short summary of each one.
 
+\subsection{Class overview}
 	\begin{itemize}
 	
 	\item \textsf{Program} is the entry point into the compiler. It contains a 
@@ -49,7 +118,12 @@ where
 	\textsf{Parser} object. It then calls the parser's \textsf{Parse} method, 
 	receives a PLR \textsf{ProcessSystem} node and calls \textsf{Compile} on it. 
 	
-	\item \textsf{Scanner} is the lexer class whose responsibility it is to tokenize a CCS source code file into valid CCS terminals. Listing~\ref{lst:ccsterminals} shows the more complicated terminals of CCS defined by regular expressions. The simpler terminals, who are just string constants, are given directly in quotes in the parser definition.
+	\item \textsf{Scanner} is the lexer class whose responsibility it is to 
+	tokenize a CCS source code file into valid CCS terminals. 
+	Listing~\ref{lst:ccsterminals} shows the more complicated terminals of CCS 
+	defined by regular expressions. The simpler terminals, who are just string 
+	constants, are given directly in quotes in the parser definition. The 
+	scanner is implemented as a finite state automaton.
 	
   \item \textsf{Parser} is a recursive-descent parser for CCS. It uses the 
   tokens generated by \textsf{Scanner} and applies a number of 
@@ -58,7 +132,7 @@ where
   parser constructs a PLR abstract syntax tree as it parses, if the parsing is 
   without errors the syntax tree can then be compiled. Both the 
   \textsf{Parser} and \textsf{Scanner} are generated by the parser generator 
-  Coco/R \cite{cocor}. It takes as input a EBNF specification of the language 
+  Coco/R \cite{cocor}. It takes as input an EBNF specification of the language 
   interspersed with C\# source code and from that it generates the 
   \textsf{Scanner} and \textsf{Parser} classes. 
 	
@@ -156,26 +230,44 @@ UnaryMinusTerm =
 	\end{lstlisting}
 	\end{figure}
 	
-	Section~\ref{sec:ccs_syntax} shows the formal syntax for CCS, it however does not account for integrating with the .NET environment to allow arbitrary method calls to be made as actions and .NET methods to be used as relabelling functions and/or restriction functions. The complete allowed syntax can be seen in Listing~\ref{lst:ccs_ebnf}, but to quickly summarize the changes from formal CCS, they are as follows:
+\subsection{Extensions to CCS syntax}
+
+	Section~\ref{sec:ccs_syntax} shows the formal syntax for CCS, it however 
+	does not account for integrating with the .NET environment to allow 
+	arbitrary method calls to be made as actions and .NET methods to be used as 
+	relabelling functions and/or restriction functions. The EBNF specification 
+	for the parser which shows all allowed syntax can be seen in 
+	Listing~\ref{lst:ccs_ebnf}, but to quickly summarize the changes from formal 
+	CCS, they are as follows:
 	
 	\begin{itemize}
 		
 		\item A CCS source code file can start with one or more \texttt{use} 
 		statements, which consist of the token \texttt{use} followed by the fully 
-		qualified name of a .NET class. This class can be in the .NET core 
-		library, \texttt{mscorlib}, or in any arbitrary .NET assembly. During 
-		compilation the filenames of assemblies containing classes used in the 
-		source code must be passed to the compiler so that it knows where to look 
-		for classnames found in \texttt{use} statements.
+		qualified name of a .NET class. E.g.
+		
+		\begin{center}\texttt{use System.Console\ \ \ \ \ \ \ \ \ \ \ \ \\\texttt{use MyCustomNamespace.MyClass}}\end{center}
+		
+		These referenced classes can be in the .NET core library, 
+		\texttt{mscorlib}, or in any arbitrary .NET assembly. During compilation 
+		the filenames of assemblies containing classes used in the source code 
+		must be passed to the compiler so that it knows where to look for 
+		classnames found in \texttt{use} statements.
 	
 		\item Actions can be calls to .NET methods in addition to synchronization 
 		and value passing on channels. A .NET method call consists of a colon 
 		followed by the method name and parantheses around expressions passed as 
-		parameters to the method, e.g. \texttt{:Power(2, 3*2)}. At compile time 
-		the PLR resolves which class the method belongs to by looking at the 
-		classes imported with \texttt{use} statements and inspecting their 
-		methods. If more than one imported class has a candidate method an 
-		exception is thrown.
+		parameters to the method, e.g. 
+		
+		\begin{center}\texttt{P = :Print(``Hello world'') . 0}\end{center}
+		
+		At compile time the PLR resolves which class the method belongs to by 
+		looking at the classes imported with \texttt{use} statements and 
+		inspecting their methods. If more than one imported class has a candidate 
+		method an exception is thrown. The methods must be static, if instance 
+		methods are to be used it is necessary to write a static wrapper method 
+		around them that creates an instance of the object in question and calls 
+		the instance method.
 		
 		\item Relabelling functions can be specified as .NET methods in addition 
 		to be constant replacements. To use a .NET method for relabelling its name 
@@ -185,8 +277,9 @@ UnaryMinusTerm =
 		be a method that takes a single parameter, an instance of the 
 		\textsf{IAction} interface from the PLR runtime library.
 		
-		\item Restrctions functions can be specified as .NET methods in much the 
+		\item Restrictions functions can be specified as .NET methods in much the 
 		same way as relabelling functions and must resolve to a method that takes 
 		a \textsf{IAction} instance as a parameter. An example of a process which 
 		uses a .NET method for restriction could be \texttt{(a . 0) \ :MyRestrict}.
+
 	\end{itemize}
