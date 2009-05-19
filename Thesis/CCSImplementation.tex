@@ -1,6 +1,6 @@
 \chapter{CCS Implementation}
 
-In this chapter we look at the Calculus of Communicating System process language, its history, formal syntax and semantics, and its implementation with the PLR as the back end compiler. CCS was the first language implemented using the PLR, and it was implemented at the same time as the PLR was being designed. For that reason the PLR contains all the main constructs of CCS so that the CCS specific parts of the implementation are fairly small and mostly have to do with the front end, that is the lexer and parser. A description of a another language, one that extends the PLR further, is found in Chapter~\ref{ch:klaim}.
+In this chapter we look at the Calculus of Communicating System process language, its history, formal syntax and semantics, and its implementation with the PLR as the back end compiler. The version of CCS defined here is equivalent to the one defined in \cite{reactive}, other variants sometimes have slightly different syntax (e.g. use \textsf{nil} instead of 0). CCS was the first language implemented using the PLR, and it was implemented at the same time as the PLR was being designed. For that reason the PLR contains all the main constructs of CCS so that the CCS specific parts of the implementation are fairly small and mostly have to do with the front end, that is the lexer and parser. A description of a another language, one that extends the PLR further, is found in Chapter~\ref{ch:klaim}.
 
 \section{History}
 
@@ -32,10 +32,10 @@ CCS can be described by the following syntax.
 			$P$ & ::= & 0 & (Nil process)\\
 			    & $\mid$ & $\alpha$ . $P$ & (Action prefixing) \\
 			    & $\mid$ & $K$ & (Invoking a process)\\
-			    & $\mid$ & $P \mid\ Q$ & (Parallel composition)\\
+			    & $\mid$ & $P \mid Q$ & (Parallel composition)\\
 			    & $\mid$ & $P$ + $Q$ & (Nondeterministic choice)\\
 			    & $\mid$ & $P$[$f$] & (Relabelling)\\
-			    & $\mid$ & $P \backslash\ L$ & (Restriction)
+			    & $\mid$ & $P\ \backslash\ L$ & (Restriction)
 		\end{tabular}
 		
 		where 
@@ -94,12 +94,91 @@ CCS can be described by the following syntax.
 	                             {K \infarrow{\alpha} P'}\ \ \mathrm{where}\ K \defeq P
 
 \end{ARRAY}
-\caption{CCS Structural Operational Semantics}
+\caption{CCS structural operational semantics}
 \label{tab:ccs_sos}
 \end{table}
-	
 
-\section{Value passing syntax and semantics}\label{ccs_value_syntax}
+\section{Value passing CCS}\label{ccs_value_syntax}
+	
+	The syntax and semantics given in Section~\ref{sec:ccs_syntax} above are 
+	those for so-called \textit{pure} CCS, in which communication is pure 
+	synchronization and involves no exchange of data. A more practical approach 
+	would be to allow processes to send and receive data when communicating on 
+	channels, this is a great convenience when modelling certain types of 
+	processes. R. Milner, the originator of CCS introduced an extension to CCS 
+	in \cite{milner89}, \textit{value-passing CCS}. In the same book he proved 
+	that while the extension was convenient, it was theoretically unnecessary. 
+	Value-passing CCS introduced three main things which contribute to 
+	efficently modelling systems that handle data.
+	
+	\begin{enumerate}
+		\item Data can be sent and received through channels during 
+		synchronization. On the receiving end the data is bound to a variable 
+		name. Below we see the value 5 being passed from process $Q$ to process 
+		$P$ through the channel \textit{a}.
+
+		\begin{Exa}
+			\begin{align*}
+				\mathrm{P} \defeq & a(x) \ccsdot 0 \\
+				\mathrm{Q} \defeq & \out{a(5)} \ccsdot 0 
+			\end{align*}	
+		\end{Exa}
+		
+	 	The output action can contain variable names, constant values or  
+	 	arithmetic expressions, e.g. $\overline{a(x+y/4)}$. The input action can 
+	 	only contain variable names to bind to the incoming value(s).
+		
+		\item Process constants can be parameterized. When a process turns into a 
+		parameterized process, it passes a value to that process, which in turn 
+		binds the value to the variables specified in the process definition. 
+		Example~\ref{ex:ccs_parameterized_pc} shows a process $P$ that syncs on 
+		channel \textit{a}, then turns into process $Q$ and passes it the value 4. 
+		When process $Q$ starts it has the value 4 bound to the name $x$ and tries 
+		to pass that to some other process through the $b$ channel.
+
+		\begin{Exa}
+			\label{ex:ccs_parameterized_pc}
+			\begin{align*}
+				\mathrm{P} \defeq & a \ccsdot \mathrm{Q(4)} \\
+				\mathrm{Q(x)} \defeq & \out{b(x)} \ccsdot 0 
+			\end{align*}	
+		\end{Exa}
+		
+		\item A conditional expressions is introduced into the language. It takes 
+		the form \textbf{if} bexp \textbf{then} $P$ \textbf{else} $Q$. 
+		Example~\ref{ex:ccs_if} shows a process $P$ which checks whether the value 
+		of variable $x$ is less than 2, if so it turns into process $Q$, otherwise 
+		it turns into the nil process and terminates.
+
+		\begin{Exa}
+			\label{ex:ccs_if}
+			\begin{align*}
+				\mathrm{P(x)} \defeq \mathbf{if}\ x < 2\ \mathbf{then}\ Q\  \mathbf{else}\ 0 
+			\end{align*}	
+		\end{Exa}
+	\end{enumerate}
+	
+	The structural operational semantics for these additions to the language are given in Table~\ref{tab:ccs_value_pass_sos}.	
+
+\begin{table}[t]
+	\begin{ARRAY}{c}
+		\mathrm{INP}\ \ \ \Inference{                              }
+	                            {a(x).P \infarrow{a(n)} P[n/x]} \vspace{10pt}\\
+	\mathrm{OUTP}\ \ \ \Inference{                              }
+	                            {\overline{a}(e).P \infarrow{\overline{a(n)}} P}\ \ n \mathrm{\ \ is\ the\ result\ of\ evaluating}\ e. \vspace{10pt}\\
+		\mathrm{COND1}\ \ \ \Inference{P \infarrow{\alpha} P'}
+	                            {\mathbf{if}\ bexp\ \mathbf{then}\ P\  \mathbf{else}\ Q \infarrow{\alpha} P'}\ \ \mathrm{bexp\ is\ true} \vspace{10pt}\\
+		\mathrm{COND2}\ \ \ \Inference{Q \infarrow{\alpha} Q'}
+	                            {\mathbf{if}\ bexp\ \mathbf{then}\ P\  \mathbf{else}\ Q \infarrow{\alpha} Q'}\ \ \mathrm{bexp\ is\ false} \vspace{10pt}\\
+
+		\mathrm{PCONST}\ \ \ \Inference{P[v_1/x_1,...,v_n/x_n] \infarrow{\alpha} P'}
+	 {\mathrm{A}(e_1,...,e_n)\infarrow{\alpha}P'}\ \mathrm{A}(x_1,...,x_n) \defeq P\ \mathrm{and\ each}\ e_i\ \mathrm{has\ value}\ v_i\vspace{10pt}\\
+	                            
+	\end{ARRAY}
+	\caption{Value-passing CCS structural operational semantics}
+	\label{tab:ccs_value_pass_sos}
+\end{table}
+
 
 \section{Implementation}
 
