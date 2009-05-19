@@ -1,12 +1,33 @@
 \chapter{CCS Implementation}
 
-In this chapter we look at the Calculus of Communicating System process language, its history, formal syntax and semantics, and its implementation with the PLR as the back end compiler. The version of CCS defined here is equivalent to the one defined in \cite{reactive}, other variants sometimes have slightly different syntax (e.g. use \textsf{nil} instead of 0). CCS was the first language implemented using the PLR, and it was implemented at the same time as the PLR was being designed. For that reason the PLR contains all the main constructs of CCS so that the CCS specific parts of the implementation are fairly small and mostly have to do with the front end, that is the lexer and parser. A description of a another language, one that extends the PLR further, is found in Chapter~\ref{ch:klaim}.
+	In this chapter we look at the Calculus of Communicating System process 
+	language, its history, formal syntax and semantics, and its implementation 
+	with the PLR as the back end compiler. 
+	
+\section{Overview}
 
-\section{History}
-
+	CCS was created by Robin Milner in the 1970's where it was the subject of a 
+	number of papers such as \cite{milner1,milner2,milner3} and finally a book 
+	of the same name \cite{Milner80} published in 1980. It is, along with CSP, 
+	one of the oldest process algebras, but is still widely taught in university 
+	courses about concurrent systems and is language of choice in textbooks on 
+	concurrent systems such as \cite{reactive}. 
+	
+	In its pure form the language is fairly simple and contains fewer constructs 
+	than some of the other process algebras which came after it. This makes it 
+	an ideal candidate to use as the blueprint for the PLR. The PLR and the CCS 
+	compiler were developed in parallel and the PLR provides all the constructs 
+	that CCS needs. Because of that the actual CCS compiler itself is fairly 
+	small and mostly has to do with the front end, that is the lexer and parser. 
+	A description of another language implementation, one that extends the PLR 
+	further, is the subject of Chapter~\ref{ch:klaim}.
+	
 \section{Formal syntax and semantics}\label{sec:ccs_syntax}
 
-CCS can be described by the following syntax.
+	The version of CCS defined here is equivalent to the one defined in 
+	\cite{reactive}, other variants sometimes have slightly different syntax 
+	(e.g. use \textsf{nil} instead of 0). The language can be described by the 
+	following syntax
 
 \begin{itemize}
 		\item Let $\mathcal{A}$ be the set of \textit{channel names}, we use 
@@ -183,10 +204,12 @@ CCS can be described by the following syntax.
 \section{Implementation}
 
 	The CCS implementation was written in C\# using Visual Studio 2008 as the 
-	development environment. Since the PLR includes abstract syntax tree nodes 
-	for all constructs of CCS, no additional nodes were created specifically for 
-	the CCS implementation. There are only a handful of classes used, below is a 
-	short summary of each one.
+	development environment. It implements both pure and value-passing CCS, it 
+	is allowed but not necessary to pass values when synchronizing on channels. 
+	Since the PLR includes abstract syntax tree nodes for all constructs of CCS, 
+	no additional nodes were created specifically for the CCS implementation. 
+	There are only a handful of classes used, below is a short summary of each 
+	one.
 
 \subsection{Class overview}
 	\begin{itemize}
@@ -362,3 +385,13 @@ UnaryMinusTerm =
 		uses a .NET method for restriction could be \texttt{(a . 0) \ :MyRestrict}.
 
 	\end{itemize}
+	
+\section{Summary}
+	The CCS compiler is a fully working command line tool which supports both 
+	\textit{pure} and \textit{value-passing} CCS. In this chapter we looked at 
+	the CCS language itself, its syntax, semantics and value-passing extensions, 
+	and finally the implementation details of the compiler and how it interacts 
+	with the PLR.	More practical aspects of the CCS compiler (command line 
+	parameters, where to download, license etc.) can be found in Appendix A and 
+	Section~\ref{ch:ide} describes how the compiler can be fully integrated into 
+	an integrated development environment.
