@@ -1,3 +1,159 @@
-\chapter{KLAIM Implementation}\label{ch:klaim}s
+\chapter{KLAIM Implementation}\label{ch:klaim}
 
-\section{First Section}
+	In this chapter we look at the second language implemented using the PLR, 
+	the Kernel Language for Agents Interaction and Mobility, or KLAIM. Unlike 
+	the CCS implementation, the PLR does not contain all the constructs needed 
+	for an implementation of KLAIM, so this chapter is a case study in how the 
+	PLR can be extended for use with other languages than CCS.
+	
+\section{Overview}
+	
+	KLAIM is a language introduced in 1998 in \cite{klaim}, it's main purpose is 
+	to model mobile agents in a distributed environment. It derives many of its 
+	constructs from process algebra, but it is also heavily influenced by 
+	Linda \cite{linda1, linda2}, a distributed computing solution from which it 
+	borrows the concept of \textit{tuple spaces}. A tuple space is a collection 
+	of tuples of data, these tuples can be read and removed from the tuple space 
+	or new tuples can be added to it. Selecting tuples to read is done by means 
+	of pattern matching. In KLAIM, processes run in different 
+	\textit{localities}, each of which contains zero or more processes 
+	and its own tuple space. The actions performed by the processes input, 
+	output and read tuples of data from these tuple spaces. Unlike CCS, where 
+	processes synchronized with each other through channels, in KLAIM the way 
+	processes communicate is strictly by adding and retrieving data from tuple 
+	spaces of different localities.
+	
+	The concept of data stores (or tuple spaces) and actions which operate on 
+	them is something that is not built into the PLR. KLAIM does however contain 
+	many constructs which are a part of the PLR, namely parallel composition, 
+	non-deterministic choice and action prefixing (albeit with different type of 
+	actions than those built into the PLR). It also contains a fairly common 
+	process algebra construct which is not part of the PLR, 
+	\textit{replication}. These additional features make KLAIM an ideal 
+	candidate to use as a test of how easily the PLR can be extended to 
+	accommodate other languages than CCS.
+	
+	\subsection{The implemented subset of KLAIM}
+	
+	The implementation of KLAIM described in this chapter is only for a subset 
+	of the full language. In particular the \textbf{in}, \textbf{out} and 
+	\textbf{read} actions are implemented while the \textbf{eval} and 
+	\textbf{newloc} actions are not. The implementation also does not support 
+	process constants, processes are defined directly in the \textit{net} and so 
+	cannot turn into other processes. The subset of KLAIM implemented here is 
+	the same as that described in \cite{aspectk, giordano}, both of which are
+	projects developed at the Technical University of Denmark that focus on an 
+	aspect-oriented version of KLAIM. Section~\ref{sec:klaim_syntax} only shows 
+	syntax and semantic for the subset being used, for a description of the full 
+	KLAIM language we refer to \cite{klaim}. 
+	
+	KLAIMS stated purpose is to be a programming language for programming mobile 
+	agents in a distributed environment. However in this implementation all 
+	processes in the system are running on the same computer, and in the same 
+	(operating system) process. The distributed part of it is purely conceptual. 
+	As such, this implementation can be seen more as a simulation of how KLAIM 
+	works rather than an implementation ready to be used for actual 
+	applications. Examples of other implementations of KLAIM are given in the 
+	next section.
+		
+	\subsection{Other implementations of KLAIM}
+		
+	Noteworthy implementations of KLAIM include KLAVA\cite{klava}, which is a 
+	Java library representing the KLAIM constructs as Java classes, and X-Klaim 
+	\cite{xklaim}, a compiler for a superset of KLAIM whose output is Java 
+	source code that uses the KLAVA library. A different approach is taken in 
+	\cite{giordano} where a virtual machine is developed specifically for 
+	AspectK, an aspect-oriented version of KLAIM. A further explanation of these 
+	implementations and a comparison with the PLR is given in 
+	Section~\ref{sec:related_work}. 
+
+\section{Formal syntax and semantics}\label{sec:klaim_syntax}
+	
+	A KLAIM net is made up of located processes and located tuples. We use $N$ 
+	for a net and the composition of nodes of the net is given with the 
+	$\mid\mid$ operator. 
+	
+	Table~\ref{tab:klaim_syntax} shows an overview of the syntax.
+
+\begin{table}[t]
+\begin{ARRAY}{r c l l}
+		  N & ::= & N_1 \mid\mid\ N_2 & \mathrm{(Net\ composition)}\vspace{3pt}\\
+			    & \mid & l::\langle t \rangle & \mathrm{(Located\ tuple)}\vspace{3pt}\\
+			    & \mid & l::P & \mathrm{(Located\ process)}\vspace{10pt}\\
+
+			P & ::= & \mathbf{nil} & \mathrm{(Nil\ process)}\vspace{3pt}\\
+			    & \mid & a . P & \mathrm{(Action\ prefixing)}\vspace{3pt} \\
+			    & \mid & P \mid Q & \mathrm{(Parallel\ composition)}\vspace{3pt}\\
+			    & \mid & P + Q & \mathrm{(Nondeterministic\ choice)}\vspace{3pt}\\
+			    & \mid & *P  & \mathrm{(Replication)}\vspace{10pt}\\
+
+			a & ::= & \mathbf{out}(t)@\ell\ & \mathrm{(Add\ tuple\ to\ the\ \ell\  tuple\ space)}\vspace{3pt}\\
+			
+			    & \mid\ & \mathbf{in}(t)@\ell\ & \mathrm{(Remove\ tuple\ from\ the\ \ell\ tuple\ space)}\vspace{3pt}\\
+
+			    & \mid\ & \mathbf{read}(t)@\ell\ & \mathrm{(Read\ tuple\ from\ the\ \ell\ tuple\ space)}\vspace{10pt}\\
+			    
+			t & ::= & e & \mathrm{(Expression)} \vspace{3pt}\\
+			  & \mid & \ell & \mathrm{(Locality\ constant\ or\ variable)} \vspace{3pt}\\
+			  & \mid & x & \mathrm{(Variable)} \vspace{3pt}\\
+			  & \mid & !x & \mathrm{(The\ binding\ of\ variable\ x)} \vspace{3pt}\\
+			  & \mid & t_1,t_2 & \mathrm{(Sequence\ of\ tuple\ elements)} \vspace{3pt}\\
+\end{ARRAY}
+\caption{KLAIM Nets and processes syntax}
+\label{tab:klaim_syntax}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Structure equivalence
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+\begin{ARRAY}{l@{\qquad\qquad}l}
+l:: P_1 \ppar P_2 \equiv l::P_1 \netpar l::P_2 &
+l ::\ * P  \equiv l ::\ P \ppar\ * P
+\\[2ex]
+\Inference{N_1 \equiv N_2}{N \netpar N_1 \equiv N \netpar N_2}
+\end{ARRAY}
+\caption{KLAIM Structural Congruence.}
+\label{tab:klaim_structural_congruence}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%Semantics
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+\begin{ARRAY}{ll}
+%%Out
+l_s::\mathbf{out}(\veck\YZl)@l_0.P+\cdots \rightarrow
+l_s::P \netpar l_0::\langle \veck\YZl \rangle
+%%In
+\\[1ex]
+%\begin{array}{r}
+l_s::\mathbf{in}(\veck\Lat)@l_0.P+ \cdots \netpar
+l_0::\langle \veck\YZl \rangle \rightarrow l_s::P
+\theta & \hbox{if $match(\veck\Lat;\veck\YZl)= \theta$}
+%\end{array}
+%%Read
+\\[1ex]
+%\begin{array}{r}
+l_s::\mathbf{read}(\veck\Lat)@l_0.P+ \cdots \netpar
+l_0::\langle \veck\YZl \rangle \rightarrow  l_s::P
+\theta \netpar l_0::\langle \veck\YZl \rangle & 
+\hbox{if $match(\veck\Lat;\veck\YZl)= \theta$}
+%\end{array}
+\\[2ex]
+\Inference{ N_1 \rightarrow N_1'}{ N_1 \netpar
+N_2 \rightarrow  N_1' \netpar N_2}
+\hfill
+\Inference{N \equiv N'\quad  N' \rightarrow N'' \quad N'' \equiv
+N'''}{ N \rightarrow N'''}
+\end{ARRAY}
+\caption{KLAIM Reaction Semantics (on closed nets).}
+\label{tab:klaim_structural_congruence}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementation}
+
+\subsection{Class overview}
+	
+\section{Summary}

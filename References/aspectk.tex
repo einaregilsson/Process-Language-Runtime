@@ -1,0 +1,1393 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{llncs}
+\usepackage{amsmath,amssymb,color,latexsym,epic,eepic,epsfig,psfrag,graphics}
+\usepackage{ifpdf}
+\usepackage{comment}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Mdrm}{$\texttt{mp3}_\texttt{DRM}$}
+\newcommand{\Mdrmfree}{$\texttt{mp3}_\texttt{DRMFREE}$}
+\newcommand{\Cbob}{$\texttt{computer}_\texttt{bob}$}
+\newcommand{\Calice}{$\texttt{computer}_\texttt{alice}$}
+\newcommand{\Drmbob}{$l_{{Store\alpha DRM}\_{Bob}}$}
+\newcommand{\Storea}{$\texttt{store}_{\alpha}$}
+
+\newcommand{\netpar}{\mid\mid}
+\newcommand{\val}[1]{\langle\,#1\,\rangle}
+\newcommand{\aspect}[1]{\{#1\}}
+\newcommand{\defn}[3]{[#1(#2)\triangleq#3]}
+
+\newcommand{\ppar}{\mid}
+\newcommand{\Let}{{\bf let}}
+\newcommand{\Letin}{{\bf in}}
+
+\newcommand{\Out}[2]{{\bf out}({#1})@{\it #2}}
+\newcommand{\In}[2]{{\bf in}({#1})@{\it #2}}
+\newcommand{\Read}[2]{{\bf read}({#1})@{\it #2}}
+\newcommand{\Eval}[2]{{\bf eval}({#1})@{\it #2}}
+\newcommand{\Newloc}[1]{{\bf newloc}({\it #1})}
+\newcommand{\nil}{{\sf 0}}
+\newcommand{\aspectk}[3]{#1[#2::#3]}
+\newcommand{\Casek}[2]{{\bf case}({#1}) #2}
+
+\newcommand{\Play}[2]{{\bf play}({#1})@{\it #2}}
+\newcommand{\Auth}[2]{{\bf auth}({#1})@{\it #2}}
+\newcommand{\Deauth}[2]{{\bf deauth}({#1})@{\it #2}}
+\newcommand{\Test}[2]{{\bf test}({#1})@{\it #2}}
+\newcommand{\Inp}[2]{{\bf inp}({#1})@{\it #2}}
+\newcommand{\Readp}[2]{{\bf readp}({#1})@{\it #2}}
+\newcommand{\alphap}[1]{{\alpha}({#1})}
+
+\newcommand{\Absent}[2]{{\bf absent}({\it #1})@{\it #2}}
+\newcommand{\Impose}[2]{{\bf impose}({\it #1})@{\it #2}}
+\newcommand{\Proceed}{{\bf proceed}}
+\newcommand{\Use}[1]{{\bf next}\ #1\ {\bf then}}
+\newcommand{\Ignore}{{\bf ignore}}
+\newcommand{\adefn}[3]{#1[#2]\triangleq#3}
+\newcommand{\YZl}{l}
+\newcommand{\Fail}{{\sf fail}}
+
+\newcommand{\WF}[1]{{\it WF}($#1$)}
+\newcommand{\VF}[1]{{\it cl}($#1$)}
+
+\newcommand{\Judgek}[3]{#2 \rightarrow #3}
+
+\newcommand{\Lnt}{\ell^\lambda}
+\newcommand{\Ln}{\ell}
+\newcommand{\Lct}{\ell^\lambda}
+\newcommand{\Lc}{\ell}
+\newcommand{\Lbt}{\ell^\lambda}
+\newcommand{\Lb}{\ell}
+\newcommand{\Lat}{\ell^\lambda}
+\newcommand{\La}{\ell}
+\newcommand{\Lett}{\ell'^\lambda}
+\newcommand{\Le}{\ell'}
+
+\newcommand{\Lbk}[1]{\ell_{b_{#1}}}
+
+\newcommand{\veck}[1]{\overrightarrow{#1}}
+\newcommand{\Break}{{\bf break}}
+\newcommand{\Stop}{{\bf stop}}
+\newcommand{\Case}{{\bf case}}
+\newcommand{\TT}{{\bf tt}}
+\newcommand{\FF}{{\bf ff}}
+
+\newcommand{\If}{{\bf if}}
+\newcommand{\Then}{{\bf then}}
+\newcommand{\Else}{{\bf else}}
+\newcommand{\End}{{\bf end}}
+
+\newcommand{\Inference}[2]{\begin{array}{@{}c@{}}#1\\[0em]\hline\\[-0.9em]#2\\
+\end{array}}
+\newcommand{\Judge}[3]{{#1} \vdash {#2} \rightarrow {#3}}
+\newenvironment{ARRAY}[1]{%
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}c@{}c@{}c}
+  \hline
+  &&\\[-5pt]
+  &\begin{math}\begin{array}{@{} #1 @{}}
+}
+{ \end{array}\end{math}&\\
+  &&\\[-5pt]
+  \hline
+  \end{tabular*}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\parskip 2ex
+\parindent 0ex
+\renewcommand{\topfraction}{1}
+\renewcommand{\textfraction}{0}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Advice for Coordination}
+\begin{document}
+\author{%
+      Chris Hankin\inst{1}
+      \and
+      Flemming Nielson\inst{2}
+      \and
+      Hanne Riis Nielson\inst{2}
+      \and\\
+      Fan Yang\inst{2}
+  }
+\institute{
+      Department of Computing,
+      Imperial College London\\\email{clh@imperial.ac.uk}
+      \and
+      Department of Informatics,
+      Technical University of Denmark\\
+      \email{\{nielson,riis,fy\}@imm.dtu.dk}}
+\maketitle
+
+
+\begin{abstract}
+We show how to extend a coordination language with support for aspect
+oriented programming. The main challenge is how to properly deal with
+the trapping of actions \emph{before} the actual data have been bound
+to the formal parameters.  This necessitates dealing with \emph{open}
+joinpoints -- which is more demanding than the closed joinpoints in
+more traditional aspect oriented languages like AspectJ. The
+usefulness of our approach is demonstrated by mechanisms for
+discretionary and mandatory access control policies, as usually
+expressed by reference monitors, as well as mechanisms for logging
+actions.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}\label{sec:intro}
+
+\paragraph{Motivation.}
+Software development faces the challenge of guaranteeing the
+compliance of software to security policies even when the software has
+been developed without adequate considerations of security.  This
+situation might arise due to lack of skills of the application
+programmers, due to lack of trust in the application programmers or
+even due to modifications of the security properties after the
+original development of the sofware (e.g.~to cater for new needs of
+the users).
+
+Taking access control as an example, a number of schemes for
+discretionary access control (e.g. based on capability lists or access
+control lists) and mandatory access control (e.g. the Bell LaPadula
+policy for confidentiality) have been proposed for controlling the
+execution of software \cite{Gollmann}.  As an example, the attempt to
+read from a file where the program has insufficient access rights
+should not be successful.  As another example, transferring data from
+a file with high security classification to a file with low security
+classification should also not be successful.
+
+The traditional approach to enforcing such security policies is
+through a \emph{reference monitor} \cite{Gollmann} that dynamically
+tracks the execution of the program; it makes appropriate checks on
+each basic operation being performed, either blocking the operation or
+allowing it to proceed. In concrete systems this is implemented as
+part of the operating system or as part of the interpreter for the
+language at hand (e.g. the Java byte code interpreter); in both cases
+as part of the trusted computing base. When modelled using operational
+semantics, a reference monitor is usually a side condition to an
+inference rule either preventing or allowing the rule to be
+applicable. Sometimes it is found to be more cost effective to
+systematically modify the code so as to explicitly perform the checks
+that the reference monitor would otherwise have imposed; the term
+\emph{inlined reference monitors} \cite{UlfarSchneider} has been
+coined for this.
+
+An interesting approach to separation of concerns when programming
+systems is presented by the notion of \emph{aspect oriented
+programming} \cite{kiczales2001oa,kiczales97aspectoriented}.  The
+enforcement of security policies is an obvious candidate for such
+separation of concerns, e.g.~because the security policy can be
+implemented by more skilled or more trusted programmers, or indeed
+because security considerations can be retrofitted by (re)defining
+\emph{advice} to suit the (new) security policy. This requires that a
+notion of aspects is supported by the programming language.  The
+detailed definition of the advice will then make decisions about how
+to possibly modify the operation being trapped. In concrete systems
+this calls for a modified language (like AspectJ \cite{pldi05abc} for
+Java) that supports the use of aspects. When modelled using
+operational semantics a notion of trapping operations and applying
+advice needs to be incorporated.  Usually, it is found to be more
+cost effective to systematically modify the code so as to explicitly
+perform the operations that the advice would otherwise have imposed;
+the term \emph{weaving} (e.g.~\cite{pldi05abc}) has been coined for
+this.
+
+In many cases the aspect oriented approach provides a more flexible
+way to deal with modifications in security policies
+\cite{Daniel07,gao2004aao,georg2002uad,verhanneman2005ual,dewin2004dsa}
+than the use of reference monitors 
+\cite{REF-Shneider}. 
+% Most importantly it seems less error prone in that it avoids the %risk
+% that a modification to a reference monitor of some abstract machine
+% accidentally bypasses important security policies embedded in the
+% reference monitor.  
+% Furthermore, it offers greater flexibility in
+% allowing
+It facilitates to use frameworks for security policies that may be well
+suited to the task at hand but that are perhaps not of general
+applicability and therefore not appropriate for incorporating into a reference monitor.  We should like to refer to
+this process as \emph{internalising} the reference monitor into a
+piece of advice. An example would be the enforcement of policies
+related to information flow or policies targeting the explicit needs
+of individuals; in particular this applies to the modelling of
+discretionary and mandatory access control policies \cite{Gollmann} as
+well as mechanisms for logging actions. Since we do not offer priorities on advice we shall assume that the provision of advices is a priviledged operation. 
+
+
+\paragraph{Contribution.}
+
+Our main contribution is the integration of aspects into a
+coordination language that facilitates distribution of data, mobility
+of code, and the ability to work with dynamically evolving, open
+systems.  Rather than invent a completely new language, we define a
+small kernel language for mobile agents based on KLAIM
+\cite{bettini2003kpt,De1998,NicolaFP00}.  We present this language in
+Section 2; as in KLAIM, processes and action prefixes (LINDA's
+\textbf{read}, \textbf{in}, and \textbf{out}) are located.
+
+In our extension action prefixes are the potential joinpoints -- the
+places where execution can be interrupted by a piece of advice. We
+take the approach that input actions should be trapped \emph{before} a
+concrete tuple has been selected for input. This is because we find
+that the alternative approach, to trap after a concrete tuple has been
+selected for input, would constitute a covert channel
+\cite{gligor1994guc,Gollmann}; indeed, the presence or absence of a
+tuple in the tuple space might either enable or prevent the advice to
+trap the action and this would amount to visible behaviour bypassing
+the security policy.
+
+Trapping an input action \emph{before} a concrete tuple has been
+selected for input requires our ability to deal with joinpoints that
+contain constructs for \emph{binding} new variables -- we shall call
+these \emph{open} joinpoints. This is considerably more challenging
+than the closed joinpoints of traditional aspect oriented language
+like AspectJ \cite{kiczales2001oa}. To be more concrete, when we trap
+a method call in AspectJ we trap the actual call, i.e.~the method name
+with its actual parameters, rather than the definition of the method,
+i.e.~the method name with its \emph{formal} parameters; in other words
+AspectJ traps closed joinpoints rather than \emph{open} joinpoints. We show
+how to solve this challenge in Section 3 and provide a series of examples in Section 4.
+
+The design space for how to introduce advice into coordination
+languages is quite broad. We have aimed for a modest approach being
+inspired by the operations of reference monitors; they generally allow
+to block an action or to let it proceed. A number of extensions can be
+foreseen -- some of these are rather straightforward whereas others
+pose considerable difficulties; as a case in point it is nontrivial to
+add advice for ignoring or redirecting a given action. We discuss parts
+of the design space in Section 5.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{KLAIM}\label{sec:klaim}
+
+The syntax of our fragment of KLAIM is defined in Table
+\ref{klaim:syn_NetProcess}.  We restrict ourselves to a core language
+for presentational purposes; it is straightforward to add the actions
+{\bf newloc} and {\bf eval} but we will not need these for the
+examples.  Despite the rather modest selection of operations in our
+language it is still useful for quite a variety of applications
+related to business processes and similar workflow applications.
+
+%%Syntax of Processes and Nets
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+%\center
+%\begin{tabular}{|p{9.7cm}|}
+%\hline 
+$$
+\begin{ARRAY}{l@{\qquad}rcl}
+%\\[-1ex]
+N  \in  {\bf Net} &
+N & ::= & N_1\netpar N_2\ \mid\ \YZl::P\ \mid\
+\YZl::\val{\veck{\YZl}}
+
+\\[1ex]
+P  \in  {\bf Proc} &
+P & ::= &  P_1\ppar P_2\ \mid \sum_i a_i.P_i\ \mid\ *P
+
+% pre-syntax additions
+\\[1ex]
+a  \in  {\bf Act} &
+a & ::= & \Out{\veck{\ell}}{\ell} \mid \In{\veck{\ell^{\lambda}}}{\ell} \mid
+   \Read{\veck{\ell^\lambda}}{\ell}
+\\[1ex]
+\Ln,\Lnt \ \in \ {\bf Loc} &
+\Ln & ::= & u \  \mid\ \YZl \hfill 
+  \Lnt\  ::= \  \Ln \mid\ !u  
+\end{ARRAY}
+$$
+%\\[1ex]
+%\hline
+%\end{tabular}
+\caption{KLAIM Nets and Processes Syntax} \label{klaim:syn_NetProcess}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+A net $N$ is a parallel composition of located processes or located
+tuples. For simplicity, components of tuples can be location constants
+only. Nets must be closed, meaning that all variables must be in scope
+of a defining occurrence.
+
+A process $P$ is a parallel composition of processes, a guarded sum of
+action prefixed processes, or a replication (indicated by the $*$
+operator).  The guarded sum $\sum_i a_i.P_i$ is written 0 if the index
+set is empty.
+
+A tuple can be output to a location, input from a location, or read
+from a location (meaning that it is not removed).  Parameters can be
+location constants $l$, defining occurrences of location variables
+$!u$, and applied occurrences of a location variable $u$. We use
+$\ell$ for location expressions (i.e.  location variables and
+constants); and in patterns we use $\ell^\lambda$ which in addition to location expressions also include defining
+occurrences of locations.  The scope of a defining occurrence is the
+entire process to the right of the occurrence.  
+
+\begin{example}\label{ex1}
+Assume that the location {\sf YP}, for Yellow Pages, contains pairs of
+values representing names and phone numbers and that the location {\sf
+DB}, for the database of a phone company, contains triples of values
+representing a particular phone call, that is, the phone number of the
+caller, the cost of the call and the name of the recipient.  Consider
+the process:
+$$
+\begin{array}{ll}
+{\sf User} :: & {\bf read}(!name,!telno)@{\sf YP}.\\ 
+& {\bf read}(telno,!val_1,!val_2)@{\sf DB}.\\
+& {\bf out}(val_1)@{name}\\
+\end{array}
+$$
+Here {\sf User} will first read a pair from the location {\sf YP} and assign its
+two components to the variables $name$ and $telno$. Next the location {\sf DB} is 
+consulted to read a triple whose first component equals the value of $telno$ and the
+corresponding second component is assigned to the variable $val_1$ and the
+corresponding third component is assigned to the variable $val_2$. The final construct
+will write the first value to the location associated with $name$.
+\end{example}
+
+%%Syntax of Actions and Locations
+
+\paragraph{Well-formedness of Locations and Actions.}
+
+To express the well-formedness conditions we shall introduce functions
+{\it bv} and {\it fv} for calculating the bound, resp. free, variables
+of the various kinds of locations that may occur in actions. The
+definitions are standard, in particular, $bv(l,u,!v) = \{v\}$ whereas
+$fv(l,u,!v) = \{u\}$.
+ 
+An input action is well-formed if its sequence $\veck{\ell^\lambda} =
+\ell_1, \cdots,\ell_k$ (for $k\geq 0$) of locations is well-formed and this is the
+case when the following two conditions are fulfilled:
+$$
+\begin{array}{l}
+  \forall i,j \in \{1,\cdots,k\}: i\neq j \Rightarrow 
+ bv(\ell_i^\lambda)\cap bv(\ell_j^\lambda)=\emptyset\ \hbox{and} 
+\\
+  bv(\veck{\ell^\lambda})\cap fv(\veck{\ell^\lambda}) = \emptyset
+\end{array}
+$$
+The first condition demands that we do not use multiple defining
+occurrences of the same variable in an action. The second condition
+requires that bound variables and free variables cannot share any name
+in a single action.  Thus we shall disallow ${\bf
+in}(!u,u)@l$ as well as ${\bf in}(!u,!u)@l$.
+
+\paragraph{Semantics of KLAIM.}\label{klaim:semantics}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Structure equivalence
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+\begin{ARRAY}{l@{\qquad\qquad}l}
+l:: P_1 \ppar P_2 \equiv l::P_1 \netpar l::P_2 &
+l ::\ * P  \equiv l ::\ P \ppar\ * P
+\\[2ex]
+\Inference{N_1 \equiv N_2}{N \netpar N_1 \equiv N \netpar N_2}
+\end{ARRAY}
+\caption{KLAIM Structural Congruence.}
+\label{klaim:sem_structural_congruence}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%Semantics
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+\begin{ARRAY}{ll}
+%%Out
+l_s::\mathbf{out}(\veck\YZl)@l_0.P+\cdots \rightarrow
+l_s::P \netpar l_0::\langle \veck\YZl \rangle
+%%In
+\\[1ex]
+%\begin{array}{r}
+l_s::\mathbf{in}(\veck\Lat)@l_0.P+ \cdots \netpar
+l_0::\langle \veck\YZl \rangle \rightarrow l_s::P
+\theta & \hbox{if $match(\veck\Lat;\veck\YZl)= \theta$}
+%\end{array}
+%%Read
+\\[1ex]
+%\begin{array}{r}
+l_s::\mathbf{read}(\veck\Lat)@l_0.P+ \cdots \netpar
+l_0::\langle \veck\YZl \rangle \rightarrow  l_s::P
+\theta \netpar l_0::\langle \veck\YZl \rangle & 
+\hbox{if $match(\veck\Lat;\veck\YZl)= \theta$}
+%\end{array}
+\\[2ex]
+\Inference{ N_1 \rightarrow N_1'}{ N_1 \netpar
+N_2 \rightarrow  N_1' \netpar N_2}
+\hfill
+\Inference{N \equiv N'\quad  N' \rightarrow N'' \quad N'' \equiv
+N'''}{ N \rightarrow N'''}
+\end{ARRAY}
+\caption{KLAIM Reaction Semantics (on closed nets).}
+\label{klaim:sem}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The semantics is given by a one-step reduction relation on nets and is
+defined in Table \ref{klaim:sem}.  We make use of the structural
+congruence on nets; this is an associative and commutative (with
+respect to $\netpar$) equivalence relation and the interesting cases
+are defined in Table \ref{klaim:sem_structural_congruence}.
+
+The rule for ${\bf out}$ is rather straightforward; it uses the fact
+that the action selected may be part of a guarded sum to dispense with
+any other alternatives. The rules for ${\bf in}$ and ${\bf read}$ only
+progress if the formal parameters $\veck{\Lat}$ match the candidate
+tuple $\veck{\YZl}$. The details of the matching operation are given
+in Table \ref{klaim:pattern_matching} (explained below); if the
+matching succeeds and produces a substution then the rule applies; if
+no substitution is produced (due to a \Fail\ in part of the
+computation) the rule does not apply.
+
+The matching operation of Table \ref{klaim:pattern_matching} returns a
+substitution $\theta$ being a (potentially empty) list of pairs of the
+form [$l/u$]; if the list is empty it is denoted by $id$. Notice that
+the definition does not treat location variables because tuples in the
+tuple space may only contain location constants and the reaction
+semantics is restricted to closed nets. 
+
+\begin{example}\label{ex2}
+Continuing Example \ref{ex1} we may consider the following net and some steps of
+its execution:
+$$\small
+\begin{array}{ll}
+& {\sf YP} :: \langle {\sf Alice}, 55010 \rangle \netpar 
+  {\sf YP} :: \langle {\sf Bob}, 58266 \rangle\\
+\netpar
+& {\sf DB} :: \langle 55010, 100, {\sf Bob} \rangle \netpar 
+  {\sf DB} :: \langle 58266, 1000, {\sf Alice} \rangle \\
+\netpar
+& {\sf User} :: *\ {\bf read}(!name,!telno)@{\sf YP}.\ 
+ {\bf read}(telno,!val_1,!val_2)@{\sf DB}.\ {\bf out}(val_1)@{name}\\
+\rightarrow\\
+& {\sf YP} :: \langle {\sf Alice}, 55010 \rangle \netpar 
+  {\sf YP} :: \langle {\sf Bob}, 58266 \rangle\\
+\netpar
+& {\sf DB} :: \langle 55010, 100, {\sf Bob} \rangle \netpar
+  {\sf DB} :: \langle 58266, 1000, {\sf Alice} \rangle \\
+\netpar
+& {\sf User} :: {\bf read}(55010,!val_1,!val_2)@{\sf DB}.\ {\bf out}(val_1)@{\sf Alice}\\
+& \qquad \mid *\ {\bf read}(!name,!telno)@{\sf YP}.\ 
+ {\bf read}(telno,!val_1,!val_2)@{\sf DB}.\ {\bf out}(val_1)@{name}\\
+\rightarrow\\
+& {\sf YP} :: \langle {\sf Alice}, 55010 \rangle \netpar 
+  {\sf YP} :: \langle {\sf Bob}, 58266 \rangle\\
+\netpar
+& {\sf DB} :: \langle 55010, 100, {\sf Bob} \rangle \netpar 
+  {\sf DB} :: \langle 58266, 1000, {\sf Alice} \rangle \\
+\netpar
+& {\sf User} ::  {\bf out}(100)@{\sf Alice}\\
+& \qquad \mid *\ {\bf read}(!name,!telno)@{\sf YP}.\ 
+ {\bf read}(telno,!val_1,!val_2)@{\sf DB}.\ {\bf out}(val_1)@{name}\\
+\rightarrow\\
+& {\sf YP} :: \langle {\sf Alice}, 55010 \rangle \netpar
+  {\sf YP} :: \langle {\sf Bob}, 58266 \rangle\\
+\netpar
+& {\sf DB} :: \langle 55010, 100, {\sf Bob} \rangle \netpar 
+  {\sf DB} :: \langle 58266, 1000, {\sf Alice} \rangle \\
+\netpar
+& {\sf Alice} :: \langle 100 \rangle \\
+\netpar
+& {\sf User} ::  *\ {\bf read}(!name,!telno)@{\sf YP}.\ 
+ {\bf read}(telno,!val_1,!val_2)@{\sf DB}.\ {\bf out}(val_1)@{name}\\
+\end{array}
+$$
+In the first step {\sf User} spawns a thread and reads the pair
+$\langle {\sf Alice}, 55010\rangle$ from {\sf YP}; the bindings of the
+variables $name$ and $telno$ are reflected in the continuation of the
+thread. In the second step it is only possible to read a triple from
+{\sf DB} that has $55010$ as its first component; this results in
+binding $val_1$ and $val_2$ to 100 and {\sf Bob}, respectively. The
+last step will then complete the thread by outputting the value 100 to
+{\sf Alice}.
+\end{example}
+
+
+%%match
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+\begin{ARRAY}{l}
+match(\langle\rangle;\langle\rangle) = id
+\\[2ex]
+match(\langle\ell'^\lambda_1,\cdots,\ell'^\lambda_k\rangle;\langle\YZl_1,\cdots,\YZl_k\rangle)
+= \begin{array}[t]{l}
+\hbox{let}\ \theta = \hbox{case}\ \ell'^\lambda_1 \hbox{of}\\
+\qquad\qquad\YZl_1':\ \ \hbox{if $\YZl_1' = \YZl_1$ then $id$ else \Fail}\\
+\qquad\qquad !u:\ \ [\YZl_1/u]\\
+%%\qquad\qquad\qquad \hbox{otherwise \Fail}\\
+\hbox{in } \theta \circ match(\langle
+\ell'^\lambda_2,\cdots,\ell'^\lambda_k\rangle;\langle\YZl_2,\cdots,\YZl_k\rangle)
+\end{array}
+\end{ARRAY}
+\caption{KLAIM Pattern Matching of Templates against Tuples.}
+\label{klaim:pattern_matching}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{example}\label{ex3}
+Returning to Example \ref{ex1} we may want to impose the condition
+that only some users are allowed to access the location {\sf DB}
+containing secret data whereas all users are allowed to read from the
+location {\sf YP} containing only public data. This can be expressed
+with discretionary access control using an \emph{access control
+matrix} {\sf DAC} containing triples $(s,o,a)$ identifying which
+subjects $s$ can perform which operations $a$ on which objects $o$. We
+may thus equip the semantics of KLAIM with a reference monitor that
+will consult {\sf DAC} whenever an action is executed; in particular,
+whenever {\sf User} is performing a {\bf read} action on a location
+$l$ it will check whether $({\sf User},l,{\bf read})\in {\sf DAC}$ and
+only proceed if this is the case. Similarly when performing an {\bf
+out} action on some location $l$ it will check whether $({\sf
+User},l,{\bf out})\in{\sf DAC}$ before proceeding.
+
+A comparable policy can be imposed by a reference monitor based on
+mandatory access control.  Here \emph{security levels} are assigned to
+subjects and object. In the simple case of just two security levels we
+may give {\sf DB} the level {\sf high} and {\sf YP} the level {\sf
+low}. The Bell-LaPadula security policy will then impose that a {\sf
+low} user can only perform {\bf read} actions on {\sf YP} whereas {\bf
+out} actions can be performed on any location. A {\sf high} user, on
+the other hand, will be able to perform {\bf read} actions on both
+{\sf YP} and {\sf DB}. The {\sf out} action can only be performed on
+high locations unless a notion of declassification is imposed that
+will lower the users' security level.
+\end{example}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{AspectK}\label{sec:syntax}
+
+\paragraph{Syntax.}
+
+
+
+
+%%Syntax of Aspects
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+$$
+\begin{ARRAY}{lrcl}
+S \in {\bf System} &
+S & ::= & \Let\
+\overrightarrow{asp}\ %,\overrightarrow{sort}\
+\Letin\ N
+\\[1ex]
+asp  \in  {\bf Asp} &
+asp & ::= & \adefn{A}{cut} body 
+\\
+body \in {\bf Advice} &
+body & ::= & \Case \ (cond) \ sbody \ ; \ body 
+\ \mid\ sbody \\
+& sbody & ::= & as\ \Break\ \mid\  as\ \Proceed\ as \\
+as \in {\bf Act}^*
+& as & ::= & a.as \mid \varepsilon
+\\[1ex]
+cond \in {\bf BExp} & 
+cond & ::= & %true \ \mid false \ \mid \ \Lb : r  \ \mid \ 
+\Test{\veck{\Lbt}}{\Lb}\  %\\
+%& \mid &  
+\mid \ \ell_1 = \ell_2 \ 
+\mid \  cond_1  \land  cond_2  \ \mid \ \neg \ cond \
+
+\\[1ex]
+cut  \in  {\bf Cut} &
+cut & ::= & \Lc :: a
+
+\\[1ex]
+\Lnt \ \in \ {\bf Loc}&
+\Lnt\ & ::= & \Ln \mid\ !u \mid\ ?u
+
+\end{ARRAY}
+$$
+
+\caption{AspectK Syntax} \label{tab:syn_Aspects}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The syntax of AspectK extends the syntax of KLAIM (Table \ref{klaim:syn_NetProcess})
+as shown in Table
+\ref{tab:syn_Aspects}.
+A system $S$ consists of a net $N$ prefixed by a sequence of 
+aspect declarations.
+An aspect declaration takes the form $A[cut] \triangleq body$, where
+$A$ is the name of the aspect,
+$cut$ is the action to be trapped by $A$ and $body$ specifies
+the way it should be handled.
+
+The keyword ${\bf break}$ indicates that the original action
+ is suppressed and prevents the process from being
+further executed, whereas the keyword ${\bf proceed}$ allows 
+the original action to execute. %Actions in $ba$ take
+In case of multiple aspects that trap an action,
+all the before actions are executed in declaration order, then
+the original action (in case of no {\bf break}), and finally the after
+actions in reverse declaration order. The keyword ${\bf break}$
+takes precedence over the keyword ${\bf proceed}$.
+
+The $cond$ is similar to a standard boolean expression, which will
+be evaluated to $true$ or $false$. 
+The primitive $\Test{\veck{\Lbt}}{\Lb}$
+will only be evaluated to $true$ in case that there is a tuple that
+matches $\veck{\Lbt}$
+in the tuple space at location $\Lb$.
+
+A cutpoint $cut$ is simply a cut action accompanied by location $\Lc$.
+For the use in cut actions we have extended the definition of $\Lnt$ 
+to incorporate a new location expression $?u$ that is intended to trap
+both $!u$ and $l$ occurring in actions; this will be made precise in
+the definition of the \emph{check} function in Table 
+\ref{tab:trapping_aspects_check}.
+
+\begin{comment}
+We use the defining occurrence of cut
+location variable  $!\beta$ when we want to bind an instance of $!u$
+or $l$ and we use $u$ to bind $l$ in a normal action. As an example
+the $cut$ of
+\begin{displaymath}
+A[u_1::\textrm{\In{$u_2,!\beta$}{$u_4$}}]
+\end{displaymath}
+will bind $u$ to $\beta$ when matching against the normal action
+$l_1::\textrm{\In{$l_2,!u$}{$l_4$}}$; and it will bind $l_3$ to
+$\beta$ when matching against the normal action
+$l_1::\textrm{\In{$l_2,l_3$}{$l_4$}}$. In both cases $l_1$, $l_2$
+and $l_4$ are bound to $u_1$, $u_2$ and $u_4$, respectively. %The
+\end{comment}
+
+%%Syntax of Actions and Locations
+
+\paragraph{Well-formedness of Cuts.}
+
+We define \VF{cut} %as follows
+that generates a list of entities involved in a cut.  For example:
+\[
+\textrm{\VF{l_s::\mathbf{in}(!x,y,?z)@l_0}} =  \langle l_s,x,y,z,l_0
+\rangle
+\]
+% as follows:
+%\begin{eqnarray*}
+%\textrm{\VF{\Lc{}_s::\mathbf{out}(\veck\Lc)@\Lc{}_0}}& = & \Lc{}_s,
+%\veck\Lc,\Lc{}_0\\
+%\textrm{\VF{\Lc{}_s::\mathbf{in}(\veck\Lct)@\Lc{}_0}}& = & \Lc{}_s,
+%\veck\Lct,\Lc{}_0\\
+%\textrm{\VF{\Lc{}_s::\mathbf{read}(\veck\Lct)@\Lc{}_0}}& = &
+%\Lc{}_s, \veck\Lct,\Lc{}_0\\
+%\textrm{\VF{\Lc{}_s::\mathbf{eval}(X)@\Lc{}_0}}& = &
+%\Lc{}_s, \Lc{}_0 %\\
+%\end{eqnarray*}
+In addition to the well-formedness conditions for
+KLAIM, we require that the variables of \VF{cut} are pairwise distinct. 
+When $!u$ or $?u$ is used in a cut pattern, 
+$u$ should only occur in the {\em after} actions (actions that occur after
+{\bf proceed}); in particular $u$ should neither be used in any before action nor in any conditionals. No use of $?u$ will be allowed inside tests (use $!u$ instead).
+
+\paragraph{Semantics of AspectK.}\label{sec:semantics}
+
+
+%%Semantics2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+\begin{ARRAY}{ll}
+\Inference{ N \rightarrow N' \ \ \ \hbox{(where globally}\ \Gamma_A = \overrightarrow{asp}) }{\Let\ \overrightarrow{asp}\ \Letin\ N
+\rightarrow \Let\ \overrightarrow{asp}\ \Letin\ N'}
+\\[4ex]
+
+%%Stop
+l_s::\underline{\Stop}.P+\cdots \rightarrow  l_s::0
+
+%%Out
+\\[1ex]
+l_s::\underline{\mathbf{out}}(\veck\YZl)@l_0.P+\cdots \rightarrow
+l_s::P \netpar l_0::\langle \veck\YZl \rangle
+
+%%In
+\\[1ex]
+l_s::\underline{\mathbf{in}}(\veck\Lat)@l_0.P+ \cdots \netpar
+l_0::\langle \veck\YZl \rangle \rightarrow l_s::P
+\theta &
+\hbox{if $match(\veck\Lat;\veck\YZl)= \theta$}
+
+%%Read
+\\[1ex]
+l_s::\underline{\mathbf{read}}(\veck\Lat)@l_0.P+ \cdots \netpar
+l_0::\langle \veck\YZl \rangle \rightarrow  l_s::P
+\theta \netpar l_0::\langle \veck\YZl \rangle &
+\hbox{if $match(\veck\Lat;\veck\YZl)= \theta$}
+
+%%OutCut
+\\[2ex]
+\Inference{
+l_s::\Phi_{\mathbf{proceed}}(\Gamma_A;
+l_s::\mathbf{out}(\veck\YZl)@l_0).P \rightarrow
+N}{ l_s::
+\mathbf{out}(\veck\YZl)@l_0.P +\cdots \rightarrow N}
+
+%%InCut
+\\[2ex]
+\Inference{
+l_s::\Phi_{\mathbf{proceed}}(\Gamma_A;
+l_s::\mathbf{in}(\veck\Lat)@l_0).P \netpar N'
+\rightarrow
+N}{ l_s::
+\mathbf{in}(\veck\Lat)@l_0.P +\cdots \netpar N'
+\rightarrow N}
+
+%%ReadCut
+\\[2ex]
+\Inference{
+l_s::\Phi_{\mathbf{proceed}}(\Gamma_A;
+l_s::\mathbf{read}(\veck\Lat)@l_0).P \netpar N' \rightarrow
+N}{ l_s::
+\mathbf{read}(\veck\Lat)@l_0.P +\cdots \netpar N' \rightarrow N}
+
+\end{ARRAY}
+\caption{Reaction Semantics (on closed nets)}
+\label{tab:sem_two}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The semantics is given by a one-step reduction relation on well-formed systems and
+nets. The interesting rules are defined in Table
+\ref{tab:sem_two} -- the rule for reduction on nets and a 
+congruence rule (see Table
+\ref{klaim:sem}) are omitted -- and 
+we also make use of the structural congruence
+on nets defined in Table
+\ref{klaim:sem_structural_congruence}. 
+
+The rules for the %five 
+three actions come in pairs, as is illustrated in
+Table \ref{tab:sem_two}. One rule takes care of the action when no
+advice is allowed to interrupt it; this is syntactically denoted by
+underlining.  % as in $\underline {na}$. 
+
+%%\phi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[h]
+\begin{ARRAY}{rcl}
+\Phi_f(A[cut] \triangleq body,\Gamma_A;\ell :: a) & = & 
+\begin{array}[t]{l}
+\hbox{case $trap(cut,\ell :: a)$ of}\ 
+\begin{array}[t]{l@{\quad}l}
+\Fail: & \Phi_f(\Gamma_A;\ell :: a) \\
+\theta: & \kappa_f^{\Gamma_A,\ell :: a}(body \ \theta)\\
+\end{array}
+\end{array}
+\\[3ex]
+\Phi_f(\varepsilon;\ell :: a) & = &
+\begin{array}[t]{ll}
+\hbox{case $f$ of} &
+  \mathbf{proceed}: \ \underline{a}\\
+& \mathbf{break}:  \  \underline{\Stop}
+\end{array}
+%\\
+%\mathrm{where} \ \ \ell a ::= \ell_n::na
+\end{ARRAY}
+\caption{Trapping Aspects: Step 1.} \label{tab:trapping_aspects_phi}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{-1cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[h]
+\begin{ARRAY}{l}
+trap(cut,\ell :: a)= \begin{array}[t]{l}
+\hbox{case $(cut,\ell :: a)$ of}\\
+%%out
+\ \ (\Lc{}_s::\mathbf{out}(\veck\Lc)@\Lc{}_0,
+\YZl_s::\mathbf{out}(\veck\YZl)@\YZl_0): \hfill
+check(\langle \Lc{}_s,\veck\Lc,\Lc{}_0 \rangle, \langle
+\YZl_s,\veck\YZl,\YZl_0 \rangle )\\
+
+
+%%in
+\ \ (\Lc{}_s::\mathbf{in}(\veck\Lct)@\Lc{}_0,
+\YZl_s::\mathbf{in}(\veck\Lett)@\YZl_0): \hfill
+check(\langle \Lc{}_s,\veck\Lct,\Lc{}_0 \rangle, \langle
+\YZl_s,\veck\Lett,\YZl_0 \rangle )\\
+
+%%read
+\ \ (\Lc{}_s::\mathbf{read}(\veck\Lct)@\Lc{}_0,
+\YZl_s::\mathbf{read}(\veck\Lett)@\YZl_0):\hfill
+check(\langle \Lc{}_s,\veck\Lct,\Lc{}_0 \rangle, \langle
+\YZl_s,\veck\Lett,\YZl_0 \rangle )
+
+\\[1ex] 
+
+\hbox{otherwise \Fail}
+\end{array}
+\end{ARRAY}
+\caption{Trapping Aspects: Step 2.}
+\label{tab:trapping_aspects_trap}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{-1cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[h]
+\begin{ARRAY}{l}
+check(\langle\rangle,\langle\rangle) = id\\[2ex]
+check(\langle \ell_1^\lambda,\ell_2^\lambda,\cdots, \ell_k^\lambda
+\rangle,\langle \ell '^{\lambda}_1,\cdots,\ell '^{\lambda}_k \rangle) = 
+\begin{array}[t]{ll}
+\hbox{let $\theta$ = } & \hbox{case $(\ell_1^\lambda,\ell '^{\lambda}_1)$ of}\\
+& \begin{array}{rl}
+  \quad(!u,!u'): & [u'/u]\\
+ % \quad(!\beta,u'): & [u'/\beta]\\
+ % \quad(!u,\YZl'): & [\YZl'/u]\\
+  \quad(?u,!u'): & [u'/u]\\
+  \quad(?u,\YZl'): & [\YZl'/u]\\
+ % \quad(!u,u'): & [u'/u]\\
+  \quad(u,\YZl'): & [\YZl'/u]\\
+  \quad(\YZl,\YZl'): &\hbox{if $\YZl=\YZl'$ then
+       $id$ else \Fail}
+  \end{array}
+\\
+&\hbox{otherwise \Fail}
+\\
+\multicolumn{2}{l}{ \hbox{in } \theta \circ check(\langle
+\ell_2^\lambda,\cdots, \ell_k^\lambda \rangle,\langle \ell '^{\lambda}_2,\cdots,
+\ell '^{\lambda}_k
+\rangle) }
+\end{array}
+%\\ \\
+%\mathrm{where} \ \ \ell ::= !\beta \mid u \mid \YZl \ \ \mathrm{and}
+%\ \ \Lett:=l \ \mid \ !u
+\end{ARRAY}
+\caption{Trapping Aspects: Step 3.}
+\label{tab:trapping_aspects_check}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+\begin{ARRAY}{l}
+\kappa_f^{\Gamma_A,\ell :: a}(\Case \ cond \ sbody \ ; \ body) = 
+\hbox{case $B(cond)$ of}\ \begin{array}[t]{l@{\quad}l}
+\TT: & \kappa_f^{\Gamma_A,\ell :: a}(sbody) \\
+\FF: & \kappa_f^{\Gamma_A,\ell :: a}(body)
+\end{array}
+\\[5ex]
+\kappa_f^{\Gamma_A,\ell :: a}(sbody)= 
+ \hbox{case $sbody$ of}\
+ \begin{array}[t]{rl}
+ as_1\ \mathbf{proceed\ } as_2: &
+as_1.\Phi_f(\Gamma_A;\ell :: a).as_2
+\\
+\qquad as \mathbf{\ break\ }: &
+as.\Phi_{\mathbf{break}}(\Gamma_A;\ell :: a)
+\end{array}
+%\\ \\
+%\mathrm{where} \ \ \ell a ::= \ell_n::na
+\end{ARRAY}
+\caption{Trapping Aspects: Step $4$.} \label{tab:trapping_aspects_K}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%Function B
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[h]
+\center
+\begin{ARRAY}{lll}
+    B(\Test{\veck{\Lbt}}{l}) &=& \left\{
+    \begin{array}{ll}
+    \TT & \textrm{if } \textrm{ there exists a tuple } \veck{l} \textrm{ at location } l \\
+        & \textrm{such that } match(\veck{\Lbt}; \veck{l})\neq \Fail\\
+    \FF & \textrm{otherwise}
+    \end{array}
+    \right.
+
+
+\\[2ex]
+    B(\YZl_1 = \YZl_2) &=& \left\{
+    \begin{array}{ll}
+    \TT & \textrm{if } \YZl_1 = \YZl_2\\
+    \FF & \textrm{otherwise}
+    \end{array}
+    \right.
+
+\\[2ex]
+    B(cond_1\land cond_2) &=& \left\{
+    \begin{array}{ll}
+    \TT & \textrm{if } B(cond_1)=\TT \textrm{ and } B(cond_2)=\TT \\
+    \FF & \textrm{if } B(cond_1)=\FF \textrm{ or } B(cond_2)=\FF \\
+    \end{array}
+    \right.
+
+\\[2ex]
+     B(\neg cond)  &=& \left\{
+    \begin{array}{ll}
+    \TT & \textrm{if } B(cond)=\FF\\
+    \FF & \textrm{if } B(cond)=\TT\\
+    \end{array}
+    \right.
+\end{ARRAY}
+ \caption{Trapping Aspects: Step $5$.} \label{tab:trapping_aspects_B}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The rules for the non-underlined actions all take the same shape and
+make use of the function %\footnote{Note that if a sequence of located
+$\Phi$ defined in Table
+\ref{tab:trapping_aspects_phi}. The result of
+$\Phi_{f}(\Gamma_A; \ell ::a)$ is a sequence of
+actions trapping $\ell ::a$; $\Gamma_A$ is a global environment of aspects. 
+The index $f$ is either ${\bf
+proceed}$ or ${\bf break}$. In general $f$ will be ${\bf break}$ if
+at least one ``${\bf break}$'' advice applies, otherwise it will be
+${\bf proceed}$. In case of ${\bf proceed}$ the action
+$\underline{a}$ is eventually emitted, otherwise it will be
+dispensed with and be replaced with the $\underline{\bf stop}$
+action, % that the semantics is displayed at Table \ref{tab:sem_two},
+killing all the subsequent actions. Recall that advice is searched in
+the order of declaration and applies in a parenthesis-like fashion.
+
+%%trap^{\Gamma_R}
+
+
+
+%%Check
+
+
+The function $\Phi$ uses an auxiliary function ${trap}$ 
+(see Table \ref{tab:trapping_aspects_trap}) to step through
+the aspects in the aspects environment.  In each case, ${trap}$ checks whether
+the cut matches the action; the check is accomplished by using a further auxiliary
+function, ${check}$ (see Table \ref{tab:trapping_aspects_check}), 
+which either fails or produces a substitution for the 
+variables occurring in the cut.
+The ${check}$ function is essentially an extension of the ${match}$
+function (see Table \ref{klaim:pattern_matching}) to accommodate the matching
+of cut patterns.
+If a cut matches a normal action, we use $\kappa_f^{\Gamma_A,\ell :: a}$
+(see Table \ref{tab:trapping_aspects_K}) to recursively
+search for further advices; $body \ \theta$ is computed in the obvious
+way.
+
+%%R function
+
+
+The $\kappa_f^{\Gamma_A,\ell :: a}$ function processes the advice associated with a 
+matching cut.  The first clause in the definition processes conditional advices
+using the function $B$, displayed in Table
+\ref{tab:trapping_aspects_B}, to evaluate the condition. 
+The second clause deals with non-conditional advices which are either {\bf proceed} or
+{\bf break} advices.  In the former case, the before actions and after actions 
+sandwich a recursive call to $\Phi$ to find further applicable aspects.  In the
+latter case, the before actions are performed and $\Phi$ is called recursively
+to find further applicable aspects taking care to record the fact that a {\bf break}
+has been encountered.  Eventually, when all aspects in the aspect environment
+have been considered, the second clause of $\Phi$ is invoked (see Table
+\ref{tab:trapping_aspects_phi}).  If no {\bf break}
+has been encountered, the underlined action is emitted, otherwise a 
+$\underline{\bf stop}$ is emitted.  In the latter case, the program will terminate
+after all of the before actions have been executed.
+
+\section{Example Programs}
+
+We now show a series of examples to illustrate how AspectK can be used to encode various security policies.
+
+\newcommand{\DBpub}{{\sf YP}}
+\newcommand{\DBsec}{{\sf DB}}
+
+\begin{example}\label{ex4}
+The discretionary access control of Example \ref{ex3} can be imposed by introducing a
+location {\sf DAC} containing two kinds of triples
+\begin{itemize}
+\item $\langle user,{\DBsec},{\bf read}\rangle$ for selected users, and
+\item $\langle user,name,{\bf out}\rangle$ for the same selected users and all names.
+\end{itemize}
+The following aspect declarations will then impose the desired requirements:
+$$
+\begin{array}{rcl}\small
+{\sf A}_{\sf DAC}^{read}[u::{\bf read}(?x,?y,?z)@{\DBsec}] 
+& \triangleq & {\bf case}({\bf test}(u,{\DBsec},{\bf read})@{\sf DAC})\\ 
+&& \qquad {\bf proceed};\\
+&& \qquad {\bf break} \\[1ex]
+%{\sf A}_{\sf DAC}^{in}[u::{\bf in}(?z)@l] & \triangleq & {\bf break}\\[1ex]
+{\sf A}_{\sf DAC}^{out}[u::{\bf out}(z)@l] 
+& \triangleq &  {\bf case}({\bf test}(u,l,{\bf out})@{\sf DAC})\\ 
+&& \qquad {\bf proceed};\\ && \qquad {\bf break} 
+\end{array}
+$$
+The first action ${\bf read}(!name,!key)@{\DBpub}$ of {\sf User} 
+in Examples \ref{ex1} and \ref{ex2} will not be trapped
+by any of the aspects so it will simply be performed resulting in binding {\sf Alice} to 
+$name$ and 55010 to $telno$ as in Example \ref{ex2}. 
+
+The aspect ${\sf A}_{\sf DAC}^{read}$ will trap the second action 
+in Examples \ref{ex1} and \ref{ex2} which now is 
+\[
+{\bf read}(55010,!val_1,!val_2)@{\DBsec}
+\]
+The resulting substitution is 
+$[{\sf User}/u,55010/x,val_1/y,val_2/z]$ and we are evaluating the condition
+${\bf test}({\sf User},{\DBsec},{\bf read})@{\sf DAC}$. If this test evaluates
+to \emph{false} then the advice {\bf break} is taken and terminates the execution. 
+Alternatively, we proceed and perform the action ${\bf read}(55010,!val_1,!val_2)@{\DBsec}$
+thereby giving rise to the binding of 100 to $val_1$ and {\sf Bob} to $val_2$.
+
+Finally, the aspect ${\sf A}_{\sf DAC}^{out}$ will trap the last action which is now
+${\bf out}(100)@{\sf Alice}$; also here the test will succeed and the {\bf proceed}
+advice will be selected so that the original ${\bf out}$ is executed.
+
+Using aspects it is easy to modify the access control policy so as to allow a user
+to access his own entries in {\DBsec} even though he does not have access to the complete
+database. We simply modify the aspect ${\sf A}_{\sf DAC}^{read}$ to become
+$$
+\begin{array}{l}\small
+{\sf A}_{\sf DAC-1}^{read}[u::{\bf read}(!x,?y,?z)@{\DBsec}] \\
+\qquad \triangleq {\bf break} \\[1ex]
+
+{\sf A}_{\sf DAC-2}^{read}[u::{\bf read}(x,?y,?z)@{\DBsec}] \\
+\qquad \triangleq  {\bf case}({\bf test}(u,{\DBsec},{\bf read})@{\sf DAC} \vee
+               {\bf test}(u,x)@{\DBpub} )\\ 
+\qquad \qquad {\bf proceed};\\
+\qquad\qquad {\bf break} \\
+\end{array}
+$$
+\end{example}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{example}\label{ex5}
+To model the mandatory access control policy of Example \ref{ex3} we introduce a location
+{\sf MAC} with the following pairs:
+\begin{itemize}
+\item $\langle {\DBpub}, {\sf low}\rangle$ reflecting that the phonebook has low security level,
+\item $\langle {\DBsec}, {\sf high}\rangle$ reflecting that the customer database has high 
+security level, 
+\item $\langle s, {\sf low}\rangle$ for all users and names $s$ with low security level,
+and
+\item $\langle s, {\sf high}\rangle$ for all users and names $s$ with high security level.
+\end{itemize}
+We now consider the Bell-LaPadula security policy in a setting where
+both subjects and objects have fixed security levels.
+The first part of the policy states that a subject is allowed  
+to read or input data from any object provided that the object's 
+security level dominates 
+that of the object; this is captured by the following aspects (which
+enforce {\em no read-up}):
+$$
+\begin{array}{rcl}\small
+{\sf A}_{\sf MAC}^{read_2}[u::{\bf read}(?x,?y)@l] 
+& \triangleq & {\bf case}(\neg ({\bf test}(u,{\sf low})@{\sf MAC} \wedge 
+                                 {\bf test}(l,{\sf high})@{\sf MAC}))\\ 
+& & \qquad {\bf proceed};\\
+&& \qquad {\bf break} \\
+{\sf A}_{\sf MAC}^{read_3}[u::{\bf read}(?x,?y,?z)@l] 
+& \triangleq & {\bf case}(\neg ({\bf test}(u,{\sf low})@{\sf MAC} \wedge 
+                                 {\bf test}(l,{\sf high})@{\sf MAC}))\\ 
+& & \qquad {\bf proceed};\\
+&& \qquad {\bf break} \\
+\end{array}
+$$
+The second part of the policy, the star property, allows a subject to write to any 
+object provided that the security level of the object dominates that of the subject.
+This is captured by the following aspect (enforcing {\em no write-down}):
+$$
+\begin{array}{rcl}\small
+{\sf A}_{\sf MAC}^{out}[u::{\bf out}(z)@l] 
+& \triangleq & {\bf case}(\neg ({\bf test}(u,{\sf high})@{\sf MAC} \wedge 
+                                 {\bf test}(l,{\sf low})@{\sf MAC}))\\ 
+& & \qquad {\bf proceed};\\
+&& \qquad {\bf break}
+\end{array}
+$$
+With these aspects in place a user with {\sf low} security level will only be able to
+perform the action  ${\bf read}(!name,!key)@{\DBpub}$; once he attempts doing the action 
+${\bf read}(key,!val_1,!val_2)@{\DBsec}$ the advice {\bf break} will stop the execution.
+A user with {\sf high} security level will be able to perform both of these actions
+but may be stopped at the third action  ${\bf out}(val)@{name}$ if the security level
+of the location bound to $name$ turns out to be {\sf low}. 
+
+In order to allow a high user to write to a low name we may introduce 
+{\em declassification} 
+of security levels. To keep things simple we may do so by
+introducing a billing location
+that does not need to adhere to the security policy and replace the process by:
+$$
+\begin{array}{lll}
+& {\sf User} :: & {\bf read}(!name,!key)@{\DBpub}.\\ 
+& & {\bf read}(key,!val_1,!val_2)@{\DBsec}.\\
+& & {\bf out}(name,val_1,val_2)@{\sf Billing}\\
+\netpar & 
+{\sf Billing} :: & {\bf in}(!n,!v_1,!v_2)@{\sf Billing}.\ {\bf out}(v_1)@{n}
+\end{array}
+$$
+We add the pair $\langle {\sf Billing},{\sf high}\rangle$ to the {\sf MAC} 
+location thereby
+allowing all high users to output to {\sf Billing}; 
+we also modify the aspect for {\bf out} actions to ensure that they
+are always allowed to {\bf proceed} at the {\sf Billing} location:
+$$
+\begin{array}{rcl}\small
+{\sf A}_{\sf MAC}^{out}[u::{\bf out}(z)@l] 
+& \triangleq & {\bf case}(\neg ({\bf test}(u,{\sf high})@{\sf MAC} \wedge 
+                                 {\bf test}(l,{\sf low})@{\sf MAC})\\
+& & \qquad \vee (u = {\sf Billing}))\\ 
+& & \qquad \qquad {\bf proceed};\\
+&& \qquad \qquad {\bf break}
+\end{array}
+$$
+%the aspects are not invoked for
+%the actions performed at the {\sf Billing} location.
+\end{example}
+
+
+\begin{example}\label{ex6}
+As a final example, which illustrates the need for actions both before and 
+after {\bf proceed} we define an aspect which maintains a log of
+{\bf read} action on ${\DBsec}$:
+
+$$
+\begin{array}{rcl}
+{\sf A}_{\sf LOG}[u::{\bf read}(?x,?y,?z)@{\DBsec}]
+& \triangleq &
+{\bf in}({sem}) @ {\sf semaphore}\\
+& & {\bf proceed}\\
+& & {\bf out}(u,x,y,z)@{\sf logfile}.\\
+& & {\bf out}({sem}) @ {\sf semaphore}
+\end{array}
+$$
+
+%The intention here is that read actions on ${\DBsec}$ should be logged.  
+We use a
+semaphore to ensure that the reads and the updating of the log file are kept 
+in lock step, meaning that at any time at most one {\bf read}
+action has been performed but still needs to be logged.  
+The before action grabs the semaphore, {\bf proceed} allows the read to 
+be performed
+and the parameters that are bound in the read are recorded in the 
+log file before
+the semaphore is released.
+In a similar way we can log {\bf out} actions.
+
+\end{example}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Conclusions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}\label{sec:conclusion}
+
+\paragraph{Summary.}
+
+We have shown how to extend a coordination language with support for
+aspect oriented programming. While we have only performed the
+technical development for a fragment of KLAIM we do believe that our
+approach and our findings would apply to a larger class of
+coordination languages.
+
+A distinguishing feature of coordination languages with respect to
+object oriented languages and web service languages \cite{CharfiM04} is the need to deal with \emph{open}
+joinpoints, i.e.~joinpoints that contain mechanisms for binding
+variables.  Similar considerations would apply if we were to
+incorporate aspects into process algebras that, like the
+$\pi$-calculus, allow a notion of open input (or input from the
+environment) but would not be necessary for calculi without this feature
+\cite{andrews2001paf,bruns2004muma,jagadeesan2003cua,walker2003ta,Wand2004}.
+This calls for considerable care in designing a notion of advice where
+input actions are trapped \emph{before} a concrete tuple has been
+selected for input. We argued in the Introduction that the more
+standard choice of trapping an action after a concrete tuple has been
+selected would constitute a covert channel in the presence of open
+joinpoints.  Our technical solution to this challenge was presented in
+Section 3 and we believe it to be applicable to open joinpoints in
+general.
+
+In our development we focused on just two types of basic advice, ${\bf
+break}$ and ${\bf proceed}$, together with actions performed before or
+after the advice (in order to obtain some of the benefits of ${\bf
+around}$ advice).  We showed by means of examples that our approach is
+sufficiently flexible for defining aspects for enforcing discretionary
+and mandatory access control policies as well as mechanisms for
+logging actions. As argued in the Introduction we find this to be both
+a more flexible and less error-prone way of accomodating new security
+policies. Also we only considered the possibility of fixed global advice
+applicable at all locations. 
+
+There are different views as to whether the actions generated by an advice should also be subject to further advice. Throughout the development we have taken the view that this is indeed desirable. But it is straightforward to modify Table \ref{tab:trapping_aspects_K} to use underlined before and after actions so as to accommodate the alternative view. 
+
+Similarly, the use of a global test is often considered hard to implement because of the need to synchronise the whole network \cite{De1998}. In our examples we have taken the view that we only perform tests on special persistent databases.
+
+We now discuss the possibility of extending
+our design.
+
+\paragraph{Types of advice.}
+
+We did consider the incorporation of an ${\bf ignore}$ advice, as is
+commonly expressible in aspect oriented object oriented languages, but
+somewhat surprisingly found this to be a challenging extension.
+
+To illustrate the problems consider the following advice
+$${\sf A}_{\sf IGNORE}[u::{\bf read}(!v)@l_{priv}] \triangleq {\bf ignore}$$
+for simply ignoring inputs from a private location $l_{priv}$.  The
+problem with this definition is that it might be trapping a {\bf read}
+action occurring in the following process $l::{\bf
+read}(!w)@l_{priv}. {\bf out}(w)@l_{print}$ which would then become
+$l:{\bf out}(w)@l_{print}$ that contains a free variable; however, our
+semantics does not ascribe meaning to such processes!
+
+Even a somewhat more useful advice
+$${\sf A}_{\sf REDIRECT}[u::{\bf read}(!v)@l_{priv}] \triangleq 
+  {\bf ignore}\ u::{\bf read}(!v)@l_{sandbox}
+$$
+for redirecting inputs from a private location $l_{priv}$ to a sandbox
+$l_{sandbox}$ is problematic.
+Once again consider the program
+$l::{\bf read}(!w)@l_{priv}. {\bf out}(w)@l_{print}$
+that is intended to become
+$l::{\bf read}(!w)@l_{sandbox}. {\bf out}(w)@l_{print}$.
+The problem is that our current notion of substitution does not achieve this
+effect: while we can bind $v$ to $w$ to obtain the substitution $[w/v]$,
+we would not normally let the substitution change the defining occurrence
+$!v$ in $u::{\bf read}(!v)@l_{sandbox}$ to $!w$ so as to yield the desired
+$u::{\bf read}(!w)@l_{sandbox}$.
+
+This can be solved by suitable extensions of our approach; in particular
+we can introduce special variables, e.g.~$\beta$, that can be substituted
+also in defining occurrences and write
+$${\sf A}_{\sf REDIRECT}[u::{\bf read}(!\beta)@l_{priv}] \triangleq {\bf ignore}\
+ u::{\bf read}(!\beta)@l_{sandbox}$$
+Then the program
+$l::{\bf read}(!w)@l_{priv}. {\bf out}(w)@l_{print}$
+would correctly be transformed to
+$l::{\bf read}(!w)@l_{sandbox}. {\bf out}(w)@l_{print}$.
+
+\paragraph{Local or global advice.}
+
+For simplicity we have taken an approach where all advice is given in
+advance and is global in scope. It would be worthwhile to be able to
+introduce new pieces of advice and to limit the scope of its
+applicability. 
+Indeed, it might be natural to consider the aspect environment to be
+distributed and associated with locations.  In that case
+it would be appropriate to extend the syntax with a ${\bf newloc}(u: \Gamma)$
+construct with inference rule:
+$$ l ::^\Gamma {\bf newloc}(u:\Gamma ').P \rightarrow l ::^\Gamma P[l' / u]
+\netpar l' ::^{\Gamma '} 0 ~~~ \mbox{with }l'~\mbox{fresh}$$
+%$$P  ::=  \Let\ \overrightarrow{asp}\ \Letin\ P'$$
+%for introducing advice only applicable to $P'$.  
+This would constitute
+a static treatment of scoped advice unlike the dynamic 
+treatment 
+%contrasts with the more dynamic approach 
+in CaesarJ \cite{aracic2006oc}.
+
+This would be useful when dealing with the \textbf{eval} action. Here
+we would extend the syntax of processes with a process identifier $X$
+that could match an arbitrary process. Then we might write an advice
+for executing a process in a sandbox as follows:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
+$$\begin{array}{l}
+{\sf SANDBOX}[u:{\bf eval}(X)@l_{sensitive}] \triangleq \\ 
+\qquad {\bf ignore}\ u:{\bf eval}(
+  \begin{array}[t]{l}
+  \Let\ {\sf BOXREAD}[u:out(v)@w] \triangleq u:{\bf out}(v)@l_{sandbox} \\
+  \Letin\ X)@l_{sandbox}
+   \end{array}
+\end{array}$$
+When executing a program $l::{\bf eval}(P)@l_{sensitive}. P'$
+the advice transforms it to
+$$
+l::{\bf eval}(\Let\ {\sf BOXREAD}[u:{\bf out}(v)@w] \triangleq u:{\bf out}(v)@l_{sandbox} \Letin\ P)@l_{sandbox}. P'
+$$
+\end{comment}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+$$\begin{array}{l}
+{\sf A}_{\sf SANDBOX}[u::^\gamma {\bf eval}(X)@l_{sensitive}] \triangleq \\ 
+\qquad {\bf newloc}(u_{sandbox}:\gamma[{\sf A}_{\sf BOXREAD}[u::^{\gamma'} out(v)@w] 
+\triangleq u::^{\gamma'} {\bf out}(v)@u_{sandbox}]) \\
+\qquad {\bf ignore}\\
+\qquad u ::^\gamma {\bf eval}(X)@u_{sandbox}
+\end{array}$$
+When executing a program $l::^\Gamma {\bf eval}(P)@l_{sensitive}. P'$
+the advice transforms it to
+%$$
+%l::{\bf eval}(\Let\ {\sf BOXREAD}[u:{\bf out}(v)@w] \triangleq u:{\bf out}(v)@l_{sandbox} \Letin\ P)@l_{sandbox}. P'
+%$$
+a process 
+that evaluates the process in a confined location and redirects all outputs to
+a confined location.
+
+Clearly a number of additional extensions can be contemplated. For example we
+might want to have more powerful pointcut languages
+\cite{avgustinov2007ssp,masuhara2003dpa} allowing patterns that bind
+over a number of parameters (in order to avoid having separate advice
+for each arity of the operations) or giving priorities to advice.  
+% and allowing patterns that
+%explicitly forbid the use of binding constructs.
+However, our goal was to demonstrate both the need to, and the
+possibility of, dealing with open joinpoints.
+% as we believe this to be
+%central for applying aspect oriented programming to open systems.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Acknowledgements.}
+Thanks to Sebastian Nanz for discussions about aspects. This project was
+partially funded by the Danish Strategic Research Council (project
+2106-06-0028) ``Aspects of Security for Citizens''.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{plain}
+\bibliography{refs,referenceAspectK}
+
+\end{document}
+
+\section{Appendix}\label{sec:appendix}
+\begin{enumerate}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item In Table \ref{tab:syn_NetProcess},
+$P_{A}  ::=    P \  \mid\   X$, however, we could also define it as
+
+\begin{displaymath}
+P_{A} ::=  P_1\ppar P_2\ \mid \sum_i na_i.P_i\ \mid\ I(\veck{\Ln})
+\mid X
+\end{displaymath}
+This make the language more expressive, but we won't go for it at
+the moment to keep the language simple.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item Not like KLAIM \cite{NicolaFP00}, our language doesn't
+  support allocation environment $\rho$ at the moment. So our
+  process only works with logical locality, not with physical locality.
+  We didn't introduce the special word $self$ to the syntax as well.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item In Table \ref{tab:syn_Aspects}, $simplebody$ was plan to
+  support {\Ignore}  as shown below.
+  \begin{center}
+    $
+  \begin{array}{rcl}
+  simplebody & ::= & ba\ \Break \\
+    & \mid & ba\ \Proceed\ aa \\
+    & \mid & ba\ \Ignore \ aa
+    \end{array}
+$
+    \end{center}
+It will first execute $ba$ and ignore the original action and
+proceed with $aa$. We can't model some scenario without using this
+primitive. For example, if we want to $hide$ the original action and
+proceed with propositional actions. The current primitive {\Break}
+will simply $stop$ the process, while the {\Proceed} will not $hide$
+original actions but execute the original action followed by
+propositional actions.
+
+\end{enumerate}
