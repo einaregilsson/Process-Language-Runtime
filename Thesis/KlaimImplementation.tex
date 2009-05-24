@@ -269,7 +269,246 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 
 
 \section{Implementation}
+	The KLAIM implementation was written in C\# using Visual Studio 2008 as the 
+	development environment. It implements the subset of KLAIM described in  
+	Section~\ref{sec:klaim_syntax}. KLAIM contains a number of features not 
+	available in the PLR, some of these were implemented as syntax tree nodes 
+	for the PLR syntax tree while others were implemented in a KLAIM runtime 
+	library. The PLR syntax tree nodes for action prefixing, the nil process, 
+	parallel composition and nondeterministic choice were used without 
+	modification. Expression nodes (constants, variables, arithmetic 
+	expressions) could also be re-used so right away the implementation had a 
+	number of building blocks ready for use. The main focus was then on the 
+	things that differentiate KLAIM from other process languages: its syntax, 
+	replication and tuple spaces with their associated \textbf{in}, \textbf{out} 
+	and \textbf{read} actions. Each of these is described in the following 
+	sections.
 
+\subsection{Replication}
+	
+	Replication is a construct which was quite tricky to implement 
+	according to specification. As we saw in 
+	Figure~\ref{tab:klaim_structural_congruence} the congruence of replication 
+	is defined as
+	\begin{center}$l::*P  \equiv l::P \mid\ *P$\end{center}
+	so essentially a replicated process is equal to infinite instances of that 
+	process. For obvious reasons the implementation can not create infinite 
+	instances so another solution was needed that mimicked this behavious as 
+	closely as possibly. The solution was \TODO{WHAT THE HELL WAS THE 
+	SOLUTION!!!???}
+
+\subsection{Tuple spaces}
+
+	The tuple spaces of KLAIM are implemented in the KLAIM runtime library. The 
+	library consists of just four classes, \textsf{Net}, \textsf{Locality}, 
+	\textsf{Tuple} and \textsf{KLAIMException}. Figure~\ref{fig:klaim_runtime} 
+	shows a class diagram of the runtime library.
+
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.8]{klaim_runtime.jpg}
+		\caption{KLAIM runtime library classes}
+		\label{fig:klaim_runtime}
+	\end{figure}
+	
+	\begin{itemize}
+	
+	\item The \textsf{Net} class represents the entire program, or net, being 
+	executed. It does very little itself and only contains a collection of 
+	\textsf{Locality} instances as well as methods to add and delete them. 
+	
+	\item The \textsf{Locality} class has a name and a collection of tuples, 
+	which 
+	represents its tuple space. The \textbf{in}, \textbf{out} and \textbf{read} 
+	actions are implemented as member methods of this class, this seemed a 
+	natural fit since this class holds the tuples. It also contains some 
+	convenience methods not available to KLAIM itself, such as methods to check 
+	in a non-blocking way if a tuple exists and retrieve a random tuple from the 
+	tuple space.
+
+	\item The \textsf{Tuple} class represents a tuple. As such it holds an 
+	ordered collection of items (integers or strings). It also contains the 
+	\textsf{Matches} method, this method implements the template matching 
+	against tuples described in Section~\ref{klaim_pattern_matching}.
+	
+	\item \textsf{KLAIMException} is a trivial class which just inherits from 
+	\textsf{System.Exception} and whose only purpose is to allow callers to 
+	catch a KLAIM specific exception instead of a general one.
+	
+	\end{itemize}
+	
+	As seen in these class descriptions, the implementation of tuple spaces is 
+	handled by these four classes, \textsf{Net} holds \textsf{Locality} 
+	instances, they hold collections of \textsf{Tuple} instances and the methods 
+	to access them, and the \textsf{Tuple}'s implement the pattern matching.
+	
+	The tuples initially contained in each locality's tuple space need to 
+	somehow be put in their place before execution of the net starts. This is an 
+	activity that does not really fit into the abstract syntax tree in any 
+	particular place. To accomplish this the KLAIM compiler subscribes to the 
+	event \textsf{MainMethodStart} of the \textsf{ProcessSystem} object, which 
+	is the root node of the syntax tree. Then when the syntax tree is compiling 
+	itself and is starting to compile the entry method of the program, it raises 
+	this event and passes as an event argument the \textsf{CompileContext} 
+	class. It contains an initialized \textsf{ILGenerator} for the main method, 
+	so the KLAIM compiler can then inject its tuple space initialization code 
+	directly into the start of the main method, before any processes are 
+	activated.
+	
+	\subsection{In, Out and Read actions}
+	
+	As we saw in the previous section, the runtime methods for these actions are 
+	members of the \textsf{Locality} class in the runtime library. However, that 
+	is only part of their implementation, before they can be used someone has to 
+	generate the bytecode to call these methods at the appropriate places. For 
+	that purpose there are three new syntax tree nodes, \textsf{InAction}, 
+	\textsf{OutAction} and \textsf{ReadAction}. These inherit from the 
+	\textsf{Action} node from the PLR, and so can be used as children of the 
+	PLR's \textsf{ActionPrefix} syntax tree node. These three nodes compile 
+	themselves into bytecode that gets the correct locality from the net, and 
+	then calls the correct method on that locality. These new action have 
+	\textsf{Expression} nodes as children which represent the items in the 
+	tuple, one new expression node was added, \textsf{VariableBinding}, other 
+	nodes needed were already a part of the PLR.
+	
 \subsection{Class overview}
 	
+	Here we quickly go over the main classes used in the KLAIM compiler itself. 	
+	\begin{itemize}
+	
+	\item \textsf{Program} is the main class which parses the command line, 
+	validates the given parameters and instantiates the parser. It then gets the 
+	syntax tree back from the parser (given that no syntax errors occurred) and 
+	instructs the syntax tree to compile itself.
+	
+	\item \textsf{Scanner} is the lexer class whose responsibility it is to 
+	tokenize a KLAIM source code file into valid KLAIM terminals. 
+	Listing~\ref{lst:klaimterminals} shows the more complicated terminals of 
+	KLAIM defined by regular expressions. The simpler terminals, who are just 
+	string constants, are given directly in quotes in the parser definition. 
+	
+  \item \textsf{Parser} is a recursive-descent parser for KLAIM. The parser 
+  constructs a PLR abstract syntax tree as it parses, using both the built in 
+  PLR syntax tree nodes and the additional KLAIM syntax tree nodes described 
+  below. As with the CCS parser and lexer, this class as well as the 
+  \textsf{Scanner} class are generated with help from the Coco/R \cite{cocor} 
+  parser generator. The Extended Backus-Naur Form (EBNF) description of the 
+  full syntax, which is used as input to Coco/R, is shown in 
+  Listing~\ref{lst:klaim_ebnf}.
+	
+	\item \textsf{InAction, OutAction} and \textsf{ReadAction} are syntax tree 
+	nodes for the \textbf{in}, \textbf{out} and \textbf{read} operations 
+	respectively. They are stored in the compiler rather than the runtime 
+	library since they are only needed at compile time.
+	
+	\item \textsf{VariableBinding} is a syntax tree node which inherits from 
+	\textsf{Expression} and represents the binding of a value from a tuple to a 
+	variable.
+	
+	\end{itemize}
+	
+\begin{figure}
+\lstset{showtabs=false,showspaces=false,showstringspaces=false}
+\begin{lstlisting}[caption=Terminals of KLAIM scanner,label=lst:klaimterminals,frame=trbl,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
+  PROCNAME   = [A-Z][A-Za-z0-9]*
+  LCASEIDENT = [a-z][A-Za-z0-9]*
+  CLASSNAME  = [A-Z][A-Za-z0-9]*(\\.[A-Z][A-Za-z0-9]*)*
+  OUTACTION  = _[a-z][A-Za-z0-9]*_
+  METHOD     = :[a-zA-Z][A-Za-z0-9]*
+  NUMBER     = [0-9]+
+  STRING     = "[^"]*"'
+  \end{lstlisting}
+	\end{figure}
+	
+	\begin{figure}
+\lstset{showtabs=false,showspaces=false,showstringspaces=false}
+\begin{lstlisting}[caption=EBNF Productions of KLAIM,frame=trbl,label=lst:klaim_ebnf,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
+CCS = { ClassImport } ProcessDefinition { ProcessDefinition } 
+
+ClassImport = "use" CLASSNAME 
+
+ProcessDefinition = 
+  PROCNAME [ "(" LCASEIDENT {"," LCASEIDENT } ")" ] "=" Process 
+
+Process = NonDeterministicChoice
+
+NonDeterministicChoice = ParallelComposition { "+" ParallelComposition }
+
+ParallelComposition = ActionPrefix { "|" ActionPrefix } .
+
+ActionPrefix =
+  { Action "." }
+  (
+    "(" Process ")"
+    | "0"
+    | ProcessConstantInvoke
+    | BranchProcess
+  )
+  [ Relabelling ]
+  [ Restriction ]
+
+BranchProcess = "if" Expression "then" Process "else" Process .
+
+ProcessConstantInvoke = 
+  PROCNAME [ "(" ArithmeticExpression {"," ArithmeticExpression } ")" ]
+
+Action =
+  LCASEIDENT [ "(" LCASEIDENT { "," LCASEIDENT } ")" ]
+  | OUTACTION [ "(" ArithmeticExpression { "," ArithmeticExpression } ")" ]
+  | METHOD "(" [ CallParam { "," CallParam } ")"
+
+CallParam = ArithmeticExpression | STRING
+
+Relabelling =
+  "[" METHOD "]"
+  | "[" LCASEIDENT "/" LCASEIDENT { "," LCASEIDENT "/" LCASEIDENT } "]"
+
+Restriction = 
+  "\" 
+  (
+    LCASEIDENT 
+    | "{" LCASEIDENT {"," LCASEIDENT } "}"
+    | METHOD
+  )        
+
+Expression = OrTerm { "or" OrTerm }
+
+OrTerm = AndTerm { "and" AndTerm }
+
+AndTerm = RelationalTerm { "xor" RelationalTerm }
+
+RelationalTerm = 
+  ArithmeticExpression [ ("=="|"!="|">"|">="|"<"|"<=") ArithmeticExpression ]
+		
+ArithmeticExpression = PlusMinusTerm { ("+" | "-") PlusMinusTerm }
+
+PlusMinusTerm = UnaryMinusTerm { ("*"|"/"|"\%") UnaryMinusTerm }
+
+UnaryMinusTerm =
+  [ "-" ]                                   
+  (
+    "(" ArithmeticExpression ")"
+    | NUMBER 
+    | "0"
+    | "true"
+    | "false"
+    | LCASEIDENT
+  )
+	\end{lstlisting}
+	\end{figure}
+	
 \section{Summary}
+
+	The KLAIM compiler was mainly meant as a proof-of-concept that the PLR could 
+	in fact be used and be useful for languages other than CCS. It serves as a 
+	case study of how a new language can be implemented fairly quickly by using 
+	the PLR as a foundation and adding compile time and/or runtime classes as 
+	needed. Although the compiler does not implement the full KLAIM language, it 
+	does implement a useful subset of it and could be used as a foundation for 
+	adding extensions to, such as implementing AspectK \cite{aspectk}. Another 
+	possible extension would be to add the possibility of calling .NET methods, 
+	this was not done here as it had already been shown possible in the CCS 
+	implementation.
+	
+	Practical aspects of the compiler (command line parameters, where to 
+	download, license etc.) can be found in Appendix A.
