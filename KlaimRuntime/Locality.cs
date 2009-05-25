@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
-namespace KlaimRuntime {
+namespace KLAIM.Runtime {
 
     public class Locality {
 
@@ -16,13 +17,14 @@ namespace KlaimRuntime {
 
         public Locality(string name) {
             _name = name;
+            _tuples = new List<Tuple>();
         }
 
         public List<Tuple> Tuples {
             get { return _tuples; }
         }
 
-        public void AddTuple(object[] items) {
+        public void Out(object[] items) {
             _tuples.Add(new Tuple(items));
         }
 
@@ -33,13 +35,29 @@ namespace KlaimRuntime {
         }
 
         public Tuple In(object[] items) {
-            Tuple t = GetRandomTuple(items);
-            _tuples.Remove(t);
-            return t;
+            while (true) {
+                lock (this) {
+                    Tuple t = GetRandomTuple(items);
+                    if (t != null) {
+                        _tuples.Remove(t);
+                        return t;
+                    }
+                }
+                Thread.Sleep(250);
+            }
         }
 
         public Tuple Read(object[] items) {
-            return GetRandomTuple(items);
+            while (true) {
+                lock (this) {
+                    Tuple t = GetRandomTuple(items);
+                    if (t != null) {
+                        return t;
+                    }
+                }
+                Console.WriteLine("BLOCKED!");
+                Thread.Sleep(250);
+            }
         }
 
         private Tuple GetRandomTuple(object[] items) {
@@ -47,16 +65,17 @@ namespace KlaimRuntime {
                 return t.Matches(items);
             });
             if (candidates.Count == 0) {
-                throw new KlaimException("No matching tuple found at " + _name);
+                return null;
             }
             return candidates[new Random().Next(candidates.Count)];
         }
 
         public override string ToString() {
             StringBuilder builder = new StringBuilder();
-            builder.Append(Name).Append("\n");
             foreach (Tuple t in Tuples) {
-                builder.Append("\t").Append(t.ToString()).Append("\n");
+                builder.Append("|| ");
+                builder.Append(Name).Append("::");
+                builder.Append(t).Append("\n");
             }
             return builder.ToString();
         }

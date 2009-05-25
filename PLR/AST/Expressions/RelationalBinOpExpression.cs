@@ -54,8 +54,8 @@ namespace PLR.AST.Expressions {
 
         public override void Compile(CompileContext context) {
             ILGenerator il = context.ILGenerator;
-            Left.Compile(context);
-            Right.Compile(context);
+            Left.Compile(context); if (Left is Variable) il.Emit(OpCodes.Unbox_Any, typeof(int));
+            Right.Compile(context); if (Right is Variable) il.Emit(OpCodes.Unbox_Any, typeof(int));
             switch (this.Op) {
                 case RelationalBinOp.Equal:
                     il.Emit(OpCodes.Ceq);

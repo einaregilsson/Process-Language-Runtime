@@ -6,6 +6,7 @@ using PLR.Compilation;
 namespace PLR.AST.Expressions {
 
     public class PLRString : Expression {
+        public static bool DisplayWithoutQuotes { get; set; }
         private string _value;
         public PLRString(string value) {
             _value = value;
@@ -20,7 +21,11 @@ namespace PLR.AST.Expressions {
         }
 
         public override string ToString() {
-            return "\"" + _value + "\"";
+            if (PLRString.DisplayWithoutQuotes) {
+                return _value;
+            } else {
+                return "\"" + _value + "\"";
+            }
         }
 
         public override Type Type {

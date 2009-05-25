@@ -5,7 +5,7 @@ using System.Reflection;
 using PLR.Compilation;
 
 namespace PLR.AST.Expressions {
-    public class Variable : ArithmeticExpression {
+    public class Variable : Expression {
         protected string _name;
         private LocalBuilder _local;
         private static int _genCounter = 0;
@@ -27,11 +27,11 @@ namespace PLR.AST.Expressions {
                 if (_local != null) {
                     return _local.LocalType;
                 } else {
-                    return typeof(int);
+                    return typeof(object);
                 }
-                
             }
         }
+
         #region Compilation
         public virtual void Declare(ILGenerator il) {
             if (_local != null) {

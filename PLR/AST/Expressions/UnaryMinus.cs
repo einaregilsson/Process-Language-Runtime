@@ -24,7 +24,7 @@ namespace PLR.AST.Expressions {
         }
 
         public override void Compile(CompileContext context) {
-            _exp.Compile(context);
+            _exp.Compile(context); if (_exp is Variable) context.ILGenerator.Emit(OpCodes.Unbox_Any, typeof(int));
             context.ILGenerator.Emit(OpCodes.Neg);
         }
     }

@@ -2,21 +2,30 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace KlaimRuntime {
+namespace KLAIM.Runtime {
     public static class Net {
 
-        private static List<Locality> _localities = new List<Locality>();
+        private static SortedList<string, Locality> _localities = new SortedList<string, Locality>();
 
         public static Locality GetLocality(string name) {
-            return _localities.Find(delegate(Locality l) { return l.Name == name; });
+            if (!_localities.ContainsKey(name)) {
+                AddLocality(name);
+            }
+            return _localities[name];
         }
-
-        public static Type Type { get { return typeof(Net); } }
 
         public static Locality AddLocality(string name) {
             Locality l = new Locality(name);
-            _localities.Add(l);
+            _localities.Add(name, l);
             return l;
+        }
+
+        public static string Display() {
+            StringBuilder sb = new StringBuilder();
+            foreach (Locality loc in _localities.Values) {
+                sb.Append(loc).Append("\n");
+            }
+            return sb.ToString();
         }
     }
 }

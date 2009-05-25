@@ -83,7 +83,7 @@ namespace PLR.AST {
                 newTypeInfo.VariablesField = type.DefineField("_variables", newTypeInfo.Variables, FieldAttributes.Private);
 
                 foreach (string variableName in varCollection.vars) {
-                    FieldBuilder field = variables.DefineField(variableName, typeof(int), FieldAttributes.Assembly);
+                    FieldBuilder field = variables.DefineField(variableName, typeof(object), FieldAttributes.Assembly);
                     newTypeInfo.AddField(field);
                 }
 

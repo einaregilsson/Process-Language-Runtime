@@ -49,11 +49,10 @@ namespace PLR.Runtime {
                 bool allWaiting = true;
                 lock (_activeProcs) {
                     foreach (ProcessBase p in _activeProcs) {
-                        allWaiting &= p.State == ThreadState.Suspended;
+                        allWaiting &= (p.State == ThreadState.Suspended || p.State == ThreadState.WaitSleepJoin);
                         Debug(p + " is in state: " + p.State);
                     }
                 }
-                
                 if (allWaiting) {
                     FindMatches();
                 }
@@ -114,6 +113,24 @@ namespace PLR.Runtime {
             matches.AddRange(FindMatches(GlobalScope.Actions));
 
             if (matches.Count == 0) {
+                bool shouldWaitForBlocked = false;
+                //Give blocked processes a chance 
+                List<ProcessBase> blockedProcs = new List<ProcessBase>();
+                foreach (ProcessBase p in _activeProcs) {
+                    if (p.State == ThreadState.WaitSleepJoin) {
+                        blockedProcs.Add(p);
+                    }
+                }
+                if (blockedProcs.Count > 0) {
+                    Thread.Sleep(1000); //give them a second to see if latest developments allowed them to unblock...
+                    foreach (ProcessBase p in blockedProcs) {
+                        if (p.State != ThreadState.WaitSleepJoin) {
+                            Debug("A process came out of blocked state, all hope is not lost!");
+                            return;
+                        }
+                    }
+                }
+
                 Debug("System is deadlocked");
                 Console.ReadKey();
                 Environment.Exit(1);

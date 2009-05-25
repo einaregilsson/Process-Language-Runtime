@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace KlaimRuntime {
+namespace KLAIM.Runtime {
     public class Tuple {
         private List<object> _items = new List<object>();
 
@@ -10,7 +10,13 @@ namespace KlaimRuntime {
             _items.AddRange(items);
         }
 
-        public static Type Type { get { return typeof(Tuple); } }
+        /// <summary>
+        /// Returns true if the tuple matches the items given.
+        /// Null matches everything and can be used for things like
+        /// variable bindings.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
         public bool Matches(object[] items) {
             if (items.Length != _items.Count) {
                 return false;
@@ -22,6 +28,10 @@ namespace KlaimRuntime {
                 }
             }
             return true;
+        }
+
+        public object GetValueAt(int index) {
+            return _items[index];               
         }
 
         public override string ToString() {

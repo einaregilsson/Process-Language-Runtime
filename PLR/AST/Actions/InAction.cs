@@ -46,7 +46,7 @@ namespace PLR.AST.Actions {
                 il.Emit(OpCodes.Ldloc, syncObject);
                 il.Emit(OpCodes.Ldc_I4, i);
                 il.Emit(OpCodes.Call, typeof(ChannelSyncAction).GetMethod("GetValue"));
-
+                il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("WriteLine", new Type[] {typeof(object)}));
                 //...and assign it
                 il.Emit(OpCodes.Stfld, context.CurrentMasterType.GetField(var.Name));
             }

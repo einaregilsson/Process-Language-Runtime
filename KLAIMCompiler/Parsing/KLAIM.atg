@@ -1,0 +1,216 @@
+using PLR.AST;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
+using PLR.AST.ActionHandling;
+using KLAIM.AST;
+using Action = KLAIM.AST.Action;
+using System.Collections.Generic;
+
+COMPILER KLAIM
+    
+CHARACTERS
+  ucaseletter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
+  lcaseletter = "abcdefghijklmnopqrstuvwxyz".
+  letter = ucaseletter + lcaseletter.   
+  digit = "0123456789".
+  cr  = '\r'.    
+  lf  = '\n'.
+  tab = '\t'.  
+  space = ' '.
+  anyButQuote = ANY - '"'.
+  underscore = '_'.      
+      
+TOKENS    
+  LOCALITY   = ucaseletter {letter|digit} .
+  VARIABLE   = lcaseletter {letter|digit} .
+  VARBINDING  = '!' lcaseletter {letter|digit} .
+  NUMBER = digit {digit}.
+
+COMMENTS FROM "#" TO lf
+IGNORE cr + lf + tab
+
+PRODUCTIONS
+
+KLAIM                                                   
+=                                           
+	LocatedItem<>
+    {
+        "||"
+        LocatedItem<>
+    }                
+.  
+
+LocatedItem<>
+=                                               (. TupleInfo ti = null; Process p = null; .)
+    LOCALITY                                    (. string locality = t.val; .)
+    "::"
+    (
+        Tuple<out ti, locality>                  (. this.tuples.Add(ti); .)
+        |
+        Process<out p, locality>                 (. this.Processes.Add(new ProcessDefinition(p, GetProcName(locality), true)); .)
+    )
+. 
+
+Tuple<out TupleInfo ti, string locality> =      (. object val = null; List<object> items = new List<object>();.)
+    "<"
+    Constant<out val>                           (. items.Add(val); .)
+    {
+        ","
+        Constant<out val>                       (. items.Add(val); .)
+    }
+    ">"                                         (. ti = new TupleInfo(){Items = items, Locality = locality}; .)
+.
+
+Constant<out object val>                        (. val = null; .) 
+=                                               
+    LOCALITY                                    (. val = t.val; .)
+    |
+    NUMBER                                      (. val = int.Parse(t.val); .)
+.
+
+Process<out Process p, string locality>         (. p = null; .)
+=
+    NonDeterministicChoice<out p, locality>
+.
+
+
+NonDeterministicChoice<out Process proc, string locality> (. NonDeterministicChoice ndc = new NonDeterministicChoice(); Process pc = null; .)
+=
+    ParallelComposition<out pc, locality>        (. ndc.Add(pc); .)
+    {
+        '+' ParallelComposition<out pc, locality>(. ndc.Add(pc); .)
+    }                                                   (. if (ndc.Count == 1) {proc = ndc[0]; } else {proc = ndc; CopyPos(proc,ndc[0], t);}.)
+.
+
+
+ParallelComposition<out Process proc, string locality>  (. Process ap; ParallelComposition pc = new ParallelComposition();.)
+=
+    ActionPrefix<out ap, locality>                      (. pc.Add(ap); .)
+    {
+        '|' ActionPrefix<out ap, locality>              (. pc.Add(ap); .)
+    }                                                   (. if (pc.Count == 1) proc = pc[0]; else {proc = pc; CopyPos(pc[0],proc,t);}.)
+.
+
+ActionPrefix <out Process proc, string locality>        (. Process nextproc = new NilProcess(); proc = null; Action action = null;.)
+=
+        Action<out action, locality>
+        [ '.' ActionPrefix<out nextproc, locality> ]    (. proc = new ActionPrefix(action, nextproc); .)
+        |
+        '(' Process<out proc, locality> ')'                                                        
+        |
+        "nil"                                               (. proc = new NilProcess(); SetPos(proc, t); .)
+.
+
+Action<out Action action, string locality>               (. action = null; Token start = la;.)
+=
+    (
+    OutAction<out action, locality>
+    |
+    InOrReadAction<out action, locality>
+    )
+                                                            (. Token end = t; SetPos(action, start, end); .)
+.
+
+OutAction<out Action action, string locality>               (. Expression exp = null; action = new OutAction(); action.Locality = locality;  .)
+=
+    "out"
+    '('
+    OutParam<out exp>                                       (. action.AddExpression(exp); .)
+    {
+        ','
+        OutParam<out exp>                                   (. action.AddExpression(exp); .)
+    }
+    ')'
+    '@'
+    (
+        LOCALITY                                            (. action.At = new PLRString(t.val); .)
+        |
+        VARIABLE                                            (. action.At = new Variable(t.val); .)
+     )                                     
+.
+
+OutParam<out Expression exp>                                (. exp = null; .)
+= 
+    LOCALITY                                                (. exp = new PLRString(t.val); .)
+    |
+    Expression<out exp>
+.
+
+InOrReadAction<out Action action, string locality>                            (. Expression exp = null;   action = null; .)
+=
+                                                         
+    (
+    "in"                                                    (. action = new InAction(); action.Locality = locality;.)
+    |
+    "read"                                                  (. action = new ReadAction();  action.Locality = locality;.)
+    )                                           
+    '('
+    InOrReadParam<out exp>                                  (. action.AddExpression(exp); .)
+    {
+        ','
+        InOrReadParam<out exp>                              (. action.AddExpression(exp); .)
+    }
+    ')'
+    '@'
+    (
+        LOCALITY                                            (. action.At = new PLRString(t.val); .)
+        |
+        VARIABLE                                            (. action.At = new Variable(t.val); .)
+     )                                     
+. 
+
+InOrReadParam<out Expression exp>                       (. exp = null; .)
+= 
+    LOCALITY                                            (. exp = new PLRString(t.val); .)
+    |
+    VARBINDING                                          (. exp = new VariableBinding(t.val.Replace("!", "")); .)
+    |
+    Expression<out exp>
+.
+
+Expression<out Expression aexp>				            (. ArithmeticBinOp op; Expression right = null, left = null; .)
+=
+    PlusMinusTerm<out left>                             (. aexp = left; .)
+    {
+        (
+            '+'                                         (. op = ArithmeticBinOp.Plus; .)
+            |
+            '-'                                         (. op = ArithmeticBinOp.Minus; .)
+        )
+        PlusMinusTerm<out right>                        (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t);.)
+    }
+.
+
+PlusMinusTerm<out Expression aexp>					(. ArithmeticBinOp op; Expression right = null, left = null; .)
+=
+    UnaryMinusTerm<out left>                            (. aexp = left; .)
+    {
+        (
+            '*'                                         (. op = ArithmeticBinOp.Multiply; .)
+            |
+            '/'                                         (. op = ArithmeticBinOp.Divide; .)
+            |
+            '%'                                         (. op = ArithmeticBinOp.Modulo; .)
+        )
+        UnaryMinusTerm<out right>                       (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t); .)
+    }
+.
+
+UnaryMinusTerm<out Expression aexp>						(. bool isMinus = false; Token minusToken = null; aexp = null; .)
+=
+    [
+        '-'                                             (. isMinus = true; minusToken = t; .)
+    ]                                   
+    
+    (
+        '(' Expression<out aexp> ')'                    (. aexp.ParenCount += 1; .)
+        |
+        NUMBER                                          (. aexp = new Number(int.Parse(t.val)); SetPos(aexp, t); .)
+        |
+        VARIABLE                                      (. aexp = new Variable(t.val); SetPos(aexp, t); .)
+    )
+                                                        (. if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} .)
+.
+
+
+END KLAIM.
