@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{BD33F5D2-72EC-4B9E-B4F5-1B9B85B4663E}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{F141CA2B-A520-43D4-BFA8-2539C0CB2F7C}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KLAIM</RootNamespace>
-    <AssemblyName>kc</AssemblyName>
+    <RootNamespace>CCS.BuildTasks</RootNamespace>
+    <AssemblyName>CCS.BuildTasks</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,50 +31,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v3.5">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AST\Action.cs" />
-    <Compile Include="AST\InAction.cs" />
-    <Compile Include="AST\OutAction.cs" />
-    <Compile Include="AST\ReadAction.cs" />
-    <Compile Include="AST\VariableBinding.cs" />
-    <Compile Include="Compiler.cs" />
-    <Compile Include="Parsing\Parser.cs" />
-    <Compile Include="Parsing\Parser.Generated.cs">
-      <DependentUpon>Parser.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Parsing\Scanner.cs" />
-    <Compile Include="Parsing\Scanner.Generated.cs">
-      <DependentUpon>Scanner.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
+    <Compile Include="CompileTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TupleInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KLAIM.Runtime\KLAIM.Runtime.csproj">
-      <Project>{EE38DA60-6308-4298-A7C9-5E66B9640515}</Project>
-      <Name>KlaimRuntime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PLR\PLR.csproj">
-      <Project>{C2BC567A-4740-4224-9CBA-8C2B527EBF83}</Project>
-      <Name>PLR</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Parsing\KLAIM.atg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

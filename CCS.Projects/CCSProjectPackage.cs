@@ -10,8 +10,9 @@ using Microsoft.Win32;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Package;
 
-namespace EinarEgilsson.CCSProjects
+namespace CCS.Projects
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -39,8 +40,16 @@ namespace EinarEgilsson.CCSProjects
     // http://msdn.microsoft.com/vstudio/extend/). This attributes tells the shell that this 
     // package has a load key embedded in its resources.
     [ProvideLoadKey("Standard", "1.0", "CCS Projects", "Einar Egilsson", 1)]
-    [Guid(GuidList.guidCCSProjectsPkgString)]
-    public sealed class CCSProjectsPackage : Package
+    [ProvideProjectFactory(
+        typeof(CCSProjectFactory),
+        "CCS",
+        "CCS Project Files (*.ccsproj);*.ccsproj",
+        "ccsproj", "ccsproj",
+        @"..\..\Template",
+        LanguageVsTemplate = "CCS Project",
+        NewProjectRequireNewFolderVsTemplate = false)]
+    [Guid(GuidList.guidCCSProjectPkgString)]
+    public sealed class CCSProjectPackage : Microsoft.VisualStudio.Package.ProjectPackage
     {
         /// <summary>
         /// Default constructor of the package.
@@ -49,7 +58,7 @@ namespace EinarEgilsson.CCSProjects
         /// not sited yet inside Visual Studio environment. The place to do all the other 
         /// initialization is the Initialize method.
         /// </summary>
-        public CCSProjectsPackage()
+        public CCSProjectPackage()
         {
             Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
@@ -68,6 +77,7 @@ namespace EinarEgilsson.CCSProjects
         {
             Trace.WriteLine (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
+            this.RegisterProjectFactory(new CCSProjectFactory(this));
 
         }
         #endregion

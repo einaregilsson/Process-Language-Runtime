@@ -7,8 +7,8 @@
     <ProjectGuid>{697144D5-DC3B-484B-9747-E79CB6D7AC97}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ManagedMyC</RootNamespace>
-    <AssemblyName>ManagedMyC</AssemblyName>
+    <RootNamespace>CCS.LanguageService</RootNamespace>
+    <AssemblyName>CCS.LanguageService</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
