@@ -40,19 +40,19 @@ namespace Babel
             CreateColor("Number", COLORINDEX.CI_SYSPLAINTEXT_FG, COLORINDEX.CI_USERTEXT_BK);
             CreateColor("Text", COLORINDEX.CI_SYSPLAINTEXT_FG, COLORINDEX.CI_USERTEXT_BK);
 
-            TokenColor error = CreateColor("Error", COLORINDEX.CI_RED, COLORINDEX.CI_USERTEXT_BK, false, true);
-
-            TokenColor proc = CreateColor("Proc", COLORINDEX.CI_DARKGREEN, COLORINDEX.CI_USERTEXT_BK, true, false);
-            TokenColor outaction = CreateColor("OutAction", COLORINDEX.CI_MAGENTA, COLORINDEX.CI_USERTEXT_BK);
-            TokenColor inaction = CreateColor("InAction", COLORINDEX.CI_RED, COLORINDEX.CI_USERTEXT_BK);
-            TokenColor method = CreateColor("Method", COLORINDEX.CI_BROWN, COLORINDEX.CI_USERTEXT_BK);
+            TokenColor error = CreateColor("Error", COLORINDEX.CI_RED, COLORINDEX.CI_USERTEXT_BK, false, false);
+            TokenColor proc = CreateColor("Proc", COLORINDEX.CI_AQUAMARINE, COLORINDEX.CI_USERTEXT_BK, true, false);
+            TokenColor outaction = CreateColor("OutAction", COLORINDEX.CI_BLUE, COLORINDEX.CI_USERTEXT_BK, true, false);
+            TokenColor inaction = CreateColor("InAction", COLORINDEX.CI_BLACK, COLORINDEX.CI_USERTEXT_BK);
+            TokenColor method = CreateColor("Method", COLORINDEX.CI_MAGENTA, COLORINDEX.CI_USERTEXT_BK);
             TokenColor fullclass = CreateColor("FullClass", COLORINDEX.CI_MAROON, COLORINDEX.CI_USERTEXT_BK);
             TokenColor stringColor = CreateColor("String", COLORINDEX.CI_MAROON, COLORINDEX.CI_USERTEXT_BK);
+            TokenColor fatParens = CreateColor("FatParens", COLORINDEX.CI_BLACK, COLORINDEX.CI_USERTEXT_BK, true, false);
             //
             // map tokens to color classes
             //
-            ColorToken((int)Tokens.LCASEIDENT, TokenType.Keyword, outaction, TokenTriggers.None);
-            ColorToken((int)Tokens.INACTION, TokenType.Keyword, inaction, TokenTriggers.None);
+            ColorToken((int)Tokens.LCASEIDENT, TokenType.Keyword, inaction, TokenTriggers.None);
+            ColorToken((int)Tokens.OUTACTION, TokenType.Keyword, outaction, TokenTriggers.None);
             ColorToken((int)Tokens.PROC, TokenType.Keyword, proc, TokenTriggers.None);
             ColorToken((int)Tokens.NUMBER, TokenType.Literal, TokenColor.String, TokenTriggers.None);
             ColorToken((int)Tokens.KWUSE, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
@@ -62,8 +62,10 @@ namespace Babel
 
             ColorToken((int)'(', TokenType.Delimiter, TokenColor.Text, TokenTriggers.MatchBraces);
             ColorToken((int)')', TokenType.Delimiter, TokenColor.Text, TokenTriggers.MatchBraces);
-            ColorToken((int)'{', TokenType.Delimiter, TokenColor.Text, TokenTriggers.MatchBraces);
-            ColorToken((int)'}', TokenType.Delimiter, TokenColor.Text, TokenTriggers.MatchBraces);
+            ColorToken((int)'{', TokenType.Delimiter, fatParens, TokenTriggers.MatchBraces);
+            ColorToken((int)'}', TokenType.Delimiter, fatParens, TokenTriggers.MatchBraces);
+            ColorToken((int)'[', TokenType.Delimiter, fatParens, TokenTriggers.MatchBraces);
+            ColorToken((int)']', TokenType.Delimiter, fatParens, TokenTriggers.MatchBraces);
 
             //// Extra token values internal to the scanner
             ColorToken((int)Tokens.LEX_ERROR, TokenType.Text, error, TokenTriggers.None);

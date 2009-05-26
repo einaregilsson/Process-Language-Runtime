@@ -34,7 +34,7 @@ ABStar       [^\*\n]*
 use                       { return (int)Tokens.KWUSE; }
 [A-Z][a-zA-Z0-9]*\.[A-Z][a-zA-Z0-9]*(\.[A-Z][a-zA-Z0-9]*)* { return (int)Tokens.FULLCLASS; }
 [a-z]+                    { return (int)Tokens.LCASEIDENT; }
-_[a-z]+_                  { return (int)Tokens.INACTION; }
+_[a-z]+_                  { return (int)Tokens.OUTACTION; }
 :[a-zA-Z_0-9]+            { return (int)Tokens.METHOD; }
 [A-Z][a-zA-Z0-9]*         { return (int)Tokens.PROC; }
 \"[^\"]*\"                { return (int)Tokens.STRING; }

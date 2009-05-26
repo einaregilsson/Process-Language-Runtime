@@ -26,7 +26,7 @@
     }
 %}
 
-%token INACTION PROC KWUSE METHOD FULLCLASS STRING
+%token OUTACTION PROC KWUSE METHOD FULLCLASS STRING
 %token IDENTIFIER LCASEIDENT
 %token KWIF KWELSE KWWHILE KWFOR KWCONTINUE KWBREAK KWRETURN
 %token KWEXTERN KWSTATIC KWAUTO KWINT KWVOID 
@@ -50,8 +50,7 @@ Program
     ;
 
 Usings
-    : Using Usings
-    | Using error { CallHdlr("Expected use statement", @2); }
+    : Usings Using 
     | /* empty */
     ;
 
@@ -70,8 +69,7 @@ ProcDef
     ;
 
 Process
-    : NonDeterministicChoice Relabel Restrict
-    | '(' NonDeterministicChoice ')' Relabel Restrict { Match(@1, @3); }
+    : NonDeterministicChoice 
     ;
     
 Relabel
@@ -98,7 +96,6 @@ Restrict
 
 IdentList
     : LCASEIDENT
-    | error    { CallHdlr("Expected channel name", @1); }
     | IdentList ',' LCASEIDENT
     | IdentList ',' error { CallHdlr("Expected channel name", @3); }
     ;
@@ -110,7 +107,6 @@ VariableParams
 
 VariableParamList
     : LCASEIDENT
-    | error    { CallHdlr("Expected variable name", @1); }
     | VariableParamList ',' LCASEIDENT
     | VariableParamList ',' error { CallHdlr("Expected variable name", @3); }
     
@@ -125,14 +121,12 @@ ExprParamList
     : ExprParamList ',' Expr
     | ExprParamList ',' error { CallHdlr("Expected expression", @3); }
     | Expr
-    | error    { CallHdlr("Expected expression", @1); }
-    
     ;
+
 MethodExprParamList
     : MethodExprParamList ',' MethodExpr
     | MethodExprParamList ',' error { CallHdlr("Expected expression", @3); }
     | MethodExpr
-    | error    { CallHdlr("Expected expression", @1); }
     ;
 
 MethodExpr
@@ -151,11 +145,12 @@ ParallelComposition
     ;  
 
 ActionPrefix
-    : LCASEIDENT ExprParams '.' ActionPrefix
-    | INACTION VariableParams '.' ActionPrefix
+    : LCASEIDENT VariableParams '.' ActionPrefix
+    | OUTACTION ExprParams '.' ActionPrefix
     | METHOD '(' MethodExprParamList ')' '.' ActionPrefix { Match(@2, @4); }
-    | PROC
+    | PROC Relabel Restrict
     | NUMBER { if (((Babel.Lexer.Scanner)this.scanner).yytext != "0") CallHdlr( "Expected 0 or a process" , @1); }
+      Relabel Restrict 
     | '(' NonDeterministicChoice ')' Relabel Restrict {  Match(@1, @3); }
     ; 
 
