@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask TaskName="CCS.BuildTasks.CompileTask" AssemblyFile="D:\DTU\MSC\Build\CCS.BuildTasks.dll"/>
+    <Target Name="CoreCompile">
+        <CompileTask 
+            Debug="$(DebugSymbols)" 
+            OutputFile="@(IntermediateAssembly)" 
+            InputFile="@(Compile)" 
+            References="@(ReferencePath)"/>
+    </Target>
+    <Target Name="CreateManifestResourceNames"></Target>
+    <Target Name="Build"></Target>
+    <Target Name="Compile"></Target>
+    <Import Project="$(MSBuildBinPath)\Microsoft.Common.targets" />
+</Project>

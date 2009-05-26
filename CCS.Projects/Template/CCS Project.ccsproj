@@ -1,12 +1,11 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <UsingTask TaskName="CCS.BuildTasks.CompileTask" AssemblyFile="d:\dtu\msc\ccs.buildtasks\bin\debug\ccs.buildtasks.dll"/>
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <SchemaVersion>2.0</SchemaVersion>
         <ProjectGuid>{99999999-9999-9999-9999-999999999999}</ProjectGuid>
         <OutputType>Exe</OutputType>
         <RootNamespace>MyRootNamespace</RootNamespace>
-        <AssemblyName>MyAssemblyName</AssemblyName>
+        <AssemblyName>$safeprojectname$</AssemblyName>
         <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -20,16 +19,12 @@
     <ItemGroup>
         <Reference Include="mscorlib" />
         <Reference Include="System" />
+        <Reference Include="D:\DTU\MSC\Build\PLR.dll" />
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.ccs">
             <SubType>Code</SubType>
         </Compile>
     </ItemGroup>
-<!--    <Target Name="Build">
-        <CompileTask />
-    </Target>
-    -->
-    <Import Project="D:\test.targets" />
-    <!--<Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />-->
+    <Import Project="D:\DTU\MSC\CCS.BuildTasks\CCS.targets" />
 </Project>

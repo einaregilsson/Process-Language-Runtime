@@ -48,8 +48,15 @@ namespace CCS.Projects {
         }
 
         public override void AddFileFromTemplate(string source, string target) {
+
+            string nameSpace = this.FileTemplateProcessor.GetFileNamespace(target, this);
+            string className = System.IO.Path.GetFileNameWithoutExtension(target);
+            this.FileTemplateProcessor.AddReplace("$nameSpace$", nameSpace);
+            this.FileTemplateProcessor.AddReplace("$className$", className);
+
             this.FileTemplateProcessor.UntokenFile(source, target);
             this.FileTemplateProcessor.Reset();
+
         }
     }
 }

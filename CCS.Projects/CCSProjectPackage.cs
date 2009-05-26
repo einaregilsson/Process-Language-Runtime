@@ -53,7 +53,7 @@ namespace CCS.Projects
         "CCS",
         "CCS Project Files (*.ccsproj);*.ccsproj",
         "ccsproj", "ccsproj",
-        @"..\..\Template",
+        @"..\CCS.Projects\Template",
         LanguageVsTemplate = "CCS Project",
         NewProjectRequireNewFolderVsTemplate = false)]
     [Guid(GuidList.guidCCSProjectPkgString)]
@@ -70,8 +70,6 @@ namespace CCS.Projects
         {
             Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
-
-
 
         /////////////////////////////////////////////////////////////////////////////
         // Overriden Package Implementation

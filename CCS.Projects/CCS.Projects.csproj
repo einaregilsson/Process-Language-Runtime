@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\build\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -87,8 +87,7 @@
     <Content Include="Resources\Package.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CCSProject.ccsproj" />
-    <None Include="Template\CCSProject.ccsproj" />
+    <None Include="Template\CCS Project.ccsproj" />
     <None Include="Template\Program.ccs" />
   </ItemGroup>
   <PropertyGroup>
