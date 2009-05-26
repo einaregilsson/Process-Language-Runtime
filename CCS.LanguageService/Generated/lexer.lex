@@ -70,6 +70,7 @@ _[a-z]+_                  { return (int)Tokens.INACTION; }
 \|                        { return (int)'|';    }
 \|\|                      { return (int)Tokens.BARBAR; }
 \.                        { return (int)'.';    }
+\\                        { return (int) '\\'; }
 
 {CmntStart}{ABStar}\**{CmntEnd} { return (int)Tokens.LEX_COMMENT; } 
 {CmntStart}{ABStar}\**          { BEGIN(COMMENT); return (int)Tokens.LEX_COMMENT; }

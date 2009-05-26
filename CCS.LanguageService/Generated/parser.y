@@ -27,9 +27,10 @@
 %}
 
 %token INACTION PROC KWUSE METHOD FULLCLASS STRING
-%token IDENTIFIER NUMBER  LCASEIDENT
+%token IDENTIFIER LCASEIDENT
 %token KWIF KWELSE KWWHILE KWFOR KWCONTINUE KWBREAK KWRETURN
 %token KWEXTERN KWSTATIC KWAUTO KWINT KWVOID 
+%token NUMBER
 
   // %token ',' ';' '(' ')' '{' '}' '=' 
   // %token '+' '-' '*' '/' '!' '&' '|' '^'
@@ -59,8 +60,8 @@ Using
 	;
     
 ProcDefs
-    : ProcDefs ProcDef
-    | ProcDef /* Must be at least one */
+    : ProcDef /* Must be at least one */
+    | ProcDefs ProcDef
     | ProcDefs error { CallHdlr("Expected process definition", @2); }
     ;
 
@@ -76,24 +77,30 @@ Process
 Relabel
     : /* Empty */
     | '[' RelabelList ']' { Match(@1, @3); }
+    | '[' METHOD ']' { Match(@1, @3); }
     ;    
 
 RelabelList
-    : RelabelList LCASEIDENT '/' LCASEIDENT
-    | LCASEIDENT '/' LCASEIDENT
+    : RelabelOne
+    | RelabelList ',' RelabelOne
+    ;
+    
+RelabelOne
+    : LCASEIDENT '/' LCASEIDENT
     ;
     
 Restrict
     : /* Empty */
     | '\\' LCASEIDENT
+    | '\\' METHOD
     | '\\' '{' IdentList '}'  { Match(@2, @4); }
     ;   
 
 IdentList
-    : IdentList ',' LCASEIDENT
-    | IdentList ',' error { CallHdlr("Expected channel name", @3); }
-    | LCASEIDENT
+    : LCASEIDENT
     | error    { CallHdlr("Expected channel name", @1); }
+    | IdentList ',' LCASEIDENT
+    | IdentList ',' error { CallHdlr("Expected channel name", @3); }
     ;
      
 VariableParams
@@ -102,10 +109,10 @@ VariableParams
     ;
 
 VariableParamList
-    : VariableParamList ',' LCASEIDENT
-    | VariableParamList ',' error { CallHdlr("Expected variable name", @3); }
-    | LCASEIDENT
+    : LCASEIDENT
     | error    { CallHdlr("Expected variable name", @1); }
+    | VariableParamList ',' LCASEIDENT
+    | VariableParamList ',' error { CallHdlr("Expected variable name", @3); }
     
     ;
 
@@ -121,7 +128,17 @@ ExprParamList
     | error    { CallHdlr("Expected expression", @1); }
     
     ;
+MethodExprParamList
+    : MethodExprParamList ',' MethodExpr
+    | MethodExprParamList ',' error { CallHdlr("Expected expression", @3); }
+    | MethodExpr
+    | error    { CallHdlr("Expected expression", @1); }
+    ;
 
+MethodExpr
+    : STRING
+    | Expr
+    ;
 
 NonDeterministicChoice
     : NonDeterministicChoice '+' ParallelComposition
@@ -131,23 +148,25 @@ NonDeterministicChoice
 ParallelComposition
     : ParallelComposition '|' ActionPrefix
     | ActionPrefix
-    ; 
+    ;  
 
 ActionPrefix
     : LCASEIDENT ExprParams '.' ActionPrefix
     | INACTION VariableParams '.' ActionPrefix
+    | METHOD '(' MethodExprParamList ')' '.' ActionPrefix { Match(@2, @4); }
     | PROC
-    | '0'
+    | NUMBER { if (((Babel.Lexer.Scanner)this.scanner).yytext != "0") CallHdlr( "Expected 0 or a process" , @1); }
     | '(' NonDeterministicChoice ')' Relabel Restrict {  Match(@1, @3); }
     ; 
 
 
 Expr
-    : Expr '+' Factor
+    : Factor
+    | Expr '+' Factor
     | Expr '-' Factor
     | Expr '*' Factor
     | Expr '/' Factor
-    | Factor
+    | Expr '%' Factor
     ;
     
 Factor
