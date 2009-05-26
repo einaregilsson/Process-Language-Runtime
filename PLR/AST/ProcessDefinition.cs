@@ -1,4 +1,12 @@
-﻿using System.Collections.Generic;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System.Collections.Generic;
 using PLR.AST.Processes;
 using PLR.AST.Expressions;
 using PLR.Compilation;
@@ -89,7 +97,7 @@ namespace PLR.AST {
 
                 Type[] paramTypes = new Type[this.Variables.Count];
                 for (int i = 0; i < paramTypes.Length; i++) {
-                    paramTypes[i] = typeof(int);
+                    paramTypes[i] = typeof(object);
                 }
                 constructor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, paramTypes);
                 ILGenerator ilCon = constructor.GetILGenerator();

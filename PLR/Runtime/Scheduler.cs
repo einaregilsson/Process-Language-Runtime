@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,14 +17,22 @@ namespace PLR.Runtime {
 
     public class Scheduler {
 
-        private Scheduler() { }
+        private Scheduler() {
+            foreach (string arg in Environment.GetCommandLineArgs()) {
+                if (arg.ToLower() == "/i" || arg.ToLower() == "/interactive") {
+                    this.Interactive = true;
+                }
+            }
+        }
         private List<IAction> _trace = new List<IAction>();
         private static Scheduler _instance = new Scheduler();
+
         public static Scheduler Instance {
             get { return _instance; }
         }
         //Active processes and their possible actions
         private List<ProcessBase> _activeProcs = new List<ProcessBase>();
+        public bool Interactive { get; set; }
 
         public void AddProcess(ProcessBase p) {
             Debug("Added " + p);
@@ -70,7 +86,7 @@ namespace PLR.Runtime {
         }
 
         private void Debug(object msg) {
-            Logger.Debug("SCHED: " + msg);
+            Logger.SchedulerDebug("SCHED: " + msg);
         }
 
         private List<Match> FindMatches(List<IAction> actions) {
@@ -96,6 +112,7 @@ namespace PLR.Runtime {
             List<ProcessBase> finished = new List<ProcessBase>();
             List<Match> matches = new List<Match>();
 
+
             foreach (ProcessBase proc in _activeProcs) {
                 ProcessBase parent = proc;
                 while (parent != null) {
@@ -113,7 +130,6 @@ namespace PLR.Runtime {
             matches.AddRange(FindMatches(GlobalScope.Actions));
 
             if (matches.Count == 0) {
-                bool shouldWaitForBlocked = false;
                 //Give blocked processes a chance 
                 List<ProcessBase> blockedProcs = new List<ProcessBase>();
                 foreach (ProcessBase p in _activeProcs) {
@@ -132,11 +148,17 @@ namespace PLR.Runtime {
                 }
 
                 Debug("System is deadlocked");
+                Logger.TraceDebug("<DEADLOCKED>");
                 Console.ReadKey();
                 Environment.Exit(1);
             }
 
-            Match m = matches[new Random().Next(matches.Count)];
+            Match m;
+            if (Interactive) {
+                m = ChooseMatchInterActive(matches);
+            } else {
+                m = matches[new Random().Next(matches.Count)];
+            }
             Debug("Chose match");
             _trace.Add(m.a1);
 
@@ -149,8 +171,7 @@ namespace PLR.Runtime {
             List<ProcessBase> wakeUp = new List<ProcessBase>();
             List<Guid> wakeUpGuids = new List<Guid>();
             foreach (ProcessBase p in _activeProcs) {
-                if (m.a1.ProcessID == p.ID)
-                {
+                if (m.a1.ProcessID == p.ID) {
                     p.ChosenAction = m.a1;
                     wakeUp.Add(p);
                     wakeUpGuids.Add(p.SetID);
@@ -166,12 +187,13 @@ namespace PLR.Runtime {
             } else {
                 Debug("Chose match " + m.a1.ToString().Replace("_", "") + ", procs " + wakeUp[0] + " and " + wakeUp[1]);
             }
-            
+
             string[] tmp = new String[_trace.Count];
-            for (int i = 0; i < _trace.Count ; i++) {
-                tmp[i] = _trace[i].ToString().Replace("_","");
+            for (int i = 0; i < _trace.Count; i++) {
+                tmp[i] = _trace[i].ToString().Replace("_", "");
             }
             Debug("TRACE: " + "\n     " + String.Join("\n     ", tmp));
+            Logger.TraceDebug(tmp[tmp.Length - 1]);
             foreach (ProcessBase p in _activeProcs) {
                 if (!wakeUp.Contains(p) && wakeUpGuids.Contains(p.SetID)) {
                     p.ChosenAction = null;
@@ -184,6 +206,25 @@ namespace PLR.Runtime {
                 Debug("Waking up " + p);
                 p.Continue();
             }
+        }
+
+        private Match ChooseMatchInterActive(List<Match> matches) {
+
+            int choice = -1;
+            Console.WriteLine("\nInteractive mode: ");
+            for (int i = 0; i < matches.Count; i++) {
+                Match printm = matches[i];
+                Console.WriteLine((i + 1) + ". " + printm.a1.ToString().Replace("_", ""));
+            }
+            Console.WriteLine();
+            while (choice < 1 || choice > matches.Count) {
+                Console.Write("Type the number of the next action to perform: ");
+                string input = Console.ReadLine();
+                if (!int.TryParse(input, out choice)) {
+                    choice = -1;
+                }
+            }
+            return matches[choice - 1];
         }
     }
 }

@@ -1,4 +1,12 @@
-﻿using System;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +22,7 @@ namespace KLAIM {
 
         public void Compile(List<TupleInfo> tuples, ProcessSystem processes, CompileOptions options) {
             this.processes = processes;
+            this.processes.MeetTheParents();
             this.tuples = tuples;
             this.processes.MainMethodStart += new CompileEventHandler(CompileTupleSpaces);
             PLR.AST.Expressions.PLRString.DisplayWithoutQuotes = true; //To make localities look right...

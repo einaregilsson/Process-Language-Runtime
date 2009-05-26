@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,6 +26,13 @@ namespace PLR.AST.Expressions {
             LookupMethod(instance.LocalType, methodName);
         }
 
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+        }
+
+        public string MethodName {
+            get { return _methodName; }
+        }
         public MethodCallExpression(Expression instance, string methodName, params object[] args) : base(args) {
             _instance = instance;
             _methodName = methodName;
@@ -37,10 +52,14 @@ namespace PLR.AST.Expressions {
 
         private void LookupMethod(Type objectType, string name) {
             _method = objectType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, GetArgTypes(), null);
+            if (_method == null) {
+                Console.Error.WriteLine("ERROR: Method '{0}' was not found!");
+                System.Environment.Exit(1);
+            }
         }
 
         public override string ToString() {
-            return _methodName + "(" + Util.Join(", ", Arguments) + ")";
+            return _methodName + "(" + Util.Join(", ", ChildNodes) + ")";
         }
 
         public override Type Type {
@@ -61,9 +80,10 @@ namespace PLR.AST.Expressions {
                 _instance.Compile(context);
             }
 
-            foreach (Expression exp in Arguments) {
+            foreach (Expression exp in ChildNodes) {
                 exp.Compile(context);
             }
+
             if (_method.IsVirtual) {
                 context.ILGenerator.Emit(OpCodes.Callvirt, _method);
             } else {

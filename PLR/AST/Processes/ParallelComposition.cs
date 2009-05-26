@@ -1,4 +1,12 @@
-﻿using System;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -10,8 +18,14 @@ namespace PLR.AST.Processes {
 
     public class ParallelComposition : Process{
 
-        public new Process this[int index] {
-            get { return (Process) _children[index]; }
+        public List<Process> Processes {
+            get {
+                List<Process> list = new List<Process>();
+                for (int i = 2; i < _children.Count; i++) {
+                    list.Add((Process)_children[i]);
+                }
+                return list;
+            }
         }
         
         public void Add(Process p) {
@@ -24,8 +38,8 @@ namespace PLR.AST.Processes {
 
         public override void Compile(CompileContext context) {
 
-            for (int i = 0; i < this.Count; i++) {
-                Process p = this[i];
+            for (int i = 0; i < this.Processes.Count; i++) {
+                Process p = this.Processes[i];
                 string innerTypeName = "Parallel" + (i + 1);
 
                 ConstructorBuilder con = null;

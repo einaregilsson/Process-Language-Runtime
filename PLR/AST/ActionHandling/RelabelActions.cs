@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,6 +18,7 @@ using PLR.Runtime;
 namespace PLR.AST.ActionHandling {
     public class RelabelActions : PreProcessActions{
         private Dictionary<string, string> _mapping = new Dictionary<string, string>();
+        public Dictionary<string, string> Mapping { get { return _mapping; } }
         public void Add(string fromName, string toName) {
             _mapping.Add(fromName, toName);
         }

@@ -1,4 +1,12 @@
-﻿using PLR.AST;
+﻿/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+using PLR.AST;
 using PLR.AST.Actions;
 using PLR.Runtime;
 using PLR.AST.ActionHandling;
@@ -11,17 +19,20 @@ using System;
 
 namespace PLR.AST.Processes {
     public abstract class Process : Node {
-        private PreProcessActions _preprocess = null;
-        public PreProcessActions PreProcessActions {
-            get { return _preprocess; }
-            set { _preprocess = value; }
+
+        public Process() {
+            _children.Add(null); //PreProcessActions
+            _children.Add(null); //Restrict
         }
 
+        public PreProcessActions PreProcessActions {
+            get { return (PreProcessActions) _children[0]; }
+            set { _children[0] = value; }
+        }
 
-        private ActionRestrictions _restrictions = null;
-        public ActionRestrictions ActionRestrictions { 
-            get { return _restrictions; }
-            set { _restrictions = value; }
+        public ActionRestrictions ActionRestrictions {
+            get { return (ActionRestrictions)_children[1]; }
+            set { _children[1] = value; }
         }
 
         protected virtual bool WrapInTryCatch {

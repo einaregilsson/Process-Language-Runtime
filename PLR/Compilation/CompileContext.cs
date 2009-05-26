@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -103,7 +111,7 @@ namespace PLR.Compilation {
         }
 
         public MethodInfo GetMethod(string methodName, Type[] paramTypes) {
-            MethodInfo method;
+            MethodInfo method = null;
             foreach (Assembly assembly in this.ReferencedAssemblies) {
                 foreach (string clazz in this.ImportedClasses) {
                     Type type = assembly.GetType(clazz);
@@ -119,6 +127,10 @@ namespace PLR.Compilation {
                         }
                     }
                 }
+            }
+            if (method == null) {
+                Console.Error.WriteLine("ERROR: Static method '{0}' not found in any referenced assembly!", methodName);
+                System.Environment.Exit(1);
             }
             return null;
         }

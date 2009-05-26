@@ -1,4 +1,12 @@
-﻿using System;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using PLR.Runtime;
@@ -13,14 +21,7 @@ namespace KLAIM.Runtime {
             _displayName = displayName;
         }
 
-        private class Test {
-            public object x;
-        }
         public bool CanSyncWith(IAction other) {
-            //Tuple t = new Tuple(new object[] { 1, 3, 4, "234" });
-            //Test test = new Test();
-            //test.x = t.GetValueAt(0);
-
             return false;
         }
 

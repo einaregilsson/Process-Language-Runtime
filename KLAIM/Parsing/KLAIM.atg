@@ -79,7 +79,7 @@ NonDeterministicChoice<out Process proc, string locality> (. NonDeterministicCho
     ParallelComposition<out pc, locality>        (. ndc.Add(pc); .)
     {
         '+' ParallelComposition<out pc, locality>(. ndc.Add(pc); .)
-    }                                                   (. if (ndc.Count == 1) {proc = ndc[0]; } else {proc = ndc; CopyPos(proc,ndc[0], t);}.)
+    }                                                   (. if (ndc.Processes.Count == 1) {proc = ndc.Processes[0]; } else {proc = ndc; CopyPos(proc,ndc.Processes[0], t);}.)
 .
 
 
@@ -88,7 +88,7 @@ ParallelComposition<out Process proc, string locality>  (. Process ap; ParallelC
     ActionPrefix<out ap, locality>                      (. pc.Add(ap); .)
     {
         '|' ActionPrefix<out ap, locality>              (. pc.Add(ap); .)
-    }                                                   (. if (pc.Count == 1) proc = pc[0]; else {proc = pc; CopyPos(pc[0],proc,t);}.)
+    }                                                   (. if (pc.Processes.Count == 1) proc = pc.Processes[0]; else {proc = pc; CopyPos(pc.Processes[0],proc,t);}.)
 .
 
 ActionPrefix <out Process proc, string locality>        (. Process nextproc = new NilProcess(); proc = null; Action action = null;.)
@@ -207,7 +207,7 @@ UnaryMinusTerm<out Expression aexp>						(. bool isMinus = false; Token minusTok
         |
         NUMBER                                          (. aexp = new Number(int.Parse(t.val)); SetPos(aexp, t); .)
         |
-        VARIABLE                                      (. aexp = new Variable(t.val); SetPos(aexp, t); .)
+        VARIABLE                                        (. aexp = new Variable(t.val); SetPos(aexp, t); .)
     )
                                                         (. if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} .)
 .

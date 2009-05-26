@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -20,6 +28,9 @@ namespace PLR.AST.Expressions {
             context.ILGenerator.Emit(OpCodes.Ldstr, _value);
         }
 
+        public string Value {
+            get { return _value; }
+        }
         public override string ToString() {
             if (PLRString.DisplayWithoutQuotes) {
                 return _value;

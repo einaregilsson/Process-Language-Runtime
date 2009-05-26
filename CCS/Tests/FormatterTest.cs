@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +16,7 @@ using PLR.AST;
 using PLR.AST.Processes;
 using PLR.AST.Actions;
 using PLR.AST.Expressions;
-using CCS.Formatters;
+using PLR.AST.Formatters;
 
 namespace CCS.Tests
 {
@@ -35,9 +43,10 @@ namespace CCS.Tests
 System_{n,k} = a . b . c . d . 0 + f . 0 | John
 John = 0";
             ProcessSystem sys = Parse(src);
-            SourceFormatter f = new SourceFormatter();
+            BaseFormatter f = new BaseFormatter();
 
-            string result = f.Format(sys);
+            f.Start(sys);
+            string result = f.GetFormatted();
             Assert.AreEqual(src, result);
         }
 

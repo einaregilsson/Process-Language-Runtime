@@ -41,7 +41,7 @@
       <Field Name="lockString" Hidden="true" />
     </Members>
     <TypeIdentifier>
-      <HashCode>AAACAIAAAAAAAIIAAAAIAAAAIAABAAAAAAAAAAAAMAA=</HashCode>
+      <HashCode>AQCAAIAAAAAAACICAAAIAAAAIAABAAAAAAAAAAAEMAI=</HashCode>
       <FileName>Runtime\Logger.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -101,7 +101,7 @@
       </Class>
     </NestedTypes>
     <TypeIdentifier>
-      <HashCode>AEAEAAAAIABAAIAEAAABAAAAAAAAAAAAQAAAAAAAIAI=</HashCode>
+      <HashCode>AEAEAAAAIABCAIAEAAABAAAAAAAAAAAAQAAAABAAIAI=</HashCode>
       <FileName>Runtime\Scheduler.cs</FileName>
     </TypeIdentifier>
   </Class>

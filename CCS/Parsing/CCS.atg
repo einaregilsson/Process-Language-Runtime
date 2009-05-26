@@ -111,7 +111,7 @@ NonDeterministicChoice<out Process proc>                (. Process pc; NonDeterm
     ParallelComposition<out pc>                         (. ndc.Add(pc); .)
     {
         '+' ParallelComposition<out pc>                 (. ndc.Add(pc); .)
-    }                                                   (. if (ndc.Count == 1) {proc = ndc[0]; }else {proc = ndc; CopyPos(proc,ndc[0], t);}.)
+    }                                                   (. if (ndc.Processes.Count == 1) {proc = ndc.Processes[0]; }else {proc = ndc; CopyPos(proc,ndc.Processes[0], t);}.)
 .
 
 ParallelComposition<out Process proc>                   (. Process ap; ParallelComposition pc = new ParallelComposition();.)
@@ -119,7 +119,7 @@ ParallelComposition<out Process proc>                   (. Process ap; ParallelC
     ActionPrefix<out ap>                                (. pc.Add(ap); .)
     {
         '|' ActionPrefix<out ap>                        (. pc.Add(ap); .)
-    }                                                   (. if (pc.Count == 1) proc = pc[0]; else {proc = pc; CopyPos(pc[0],proc,t);}.)
+    }                                                   (. if (pc.Processes.Count == 1) proc = pc.Processes[0]; else {proc = pc; CopyPos(pc.Processes[0],proc,t);}.)
 .
 
 ActionPrefix<out Process proc>                          (. ActionPrefix ap = null; ActionPrefix prev = null; ActionPrefix first = null; Process nextProc = null; ProcessConstant pc; proc = null; Action act = null; .)

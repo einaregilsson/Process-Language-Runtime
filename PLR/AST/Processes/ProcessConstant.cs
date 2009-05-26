@@ -1,4 +1,12 @@
-﻿using System;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using PLR.AST;
@@ -11,15 +19,13 @@ namespace PLR.AST.Processes
     public class ProcessConstant : Process {
         public ProcessConstant(string name) {
             _name = name;
-            _expressions = new ExpressionList();
-            _children.Add(Expressions);
+            _children.Add(new ExpressionList());
         }
 
         private string _name;
         public string Name { get { return _name; } }
 
-        protected ExpressionList _expressions;
-        public ExpressionList Expressions { get { return _expressions; } }
+        public ExpressionList Expressions { get { return (ExpressionList)_children[2]; } }
         public override void Accept(AbstractVisitor visitor)
         {
             visitor.Visit(this);
@@ -49,8 +55,11 @@ namespace PLR.AST.Processes
 
         public override void Compile(CompileContext context) {
 
-            foreach (ArithmeticExpression exp in this.Expressions) {
+            foreach (Expression exp in this.Expressions) {
                 exp.Compile(context);
+                if (exp is ArithmeticExpression) {
+                    context.ILGenerator.Emit(OpCodes.Box, typeof(Int32));
+                }
             }
             EmitRunProcess(context, context.GetType(this.FullName).Constructor, false, LexicalInfo, false);
         }

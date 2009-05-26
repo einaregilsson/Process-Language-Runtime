@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,15 +24,15 @@ namespace PLR.AST.Processes {
         }
 
         public Expression Expression {
-            get { return (Expression)_children[0]; }
+            get { return (Expression)_children[2]; }
         }
 
         public Process IfBranch {
-            get { return (Process)_children[1]; }
+            get { return (Process)_children[3]; }
         }
 
         public Process ElseBranch{
-            get { return (Process)_children[2]; }
+            get { return (Process)_children[4]; }
         }
 
         protected override bool WrapInTryCatch {

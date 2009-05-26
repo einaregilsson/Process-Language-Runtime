@@ -1,4 +1,12 @@
-﻿using System.Collections.Generic;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -69,8 +77,8 @@ namespace PLR.AST {
                 procdef.CompileSignature(module, context);
             }
 
-            if (!context.ImportedClasses.Contains("PLR.BuiltIns")) {
-                context.ImportedClasses.Add("PLR.BuiltIns");
+            if (!context.ImportedClasses.Contains(typeof(PLR.Runtime.BuiltIns).FullName)) {
+                context.ImportedClasses.Add(typeof(PLR.Runtime.BuiltIns).FullName);
             }
             context.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly());
             if (options.References != "") {
@@ -108,7 +116,6 @@ namespace PLR.AST {
             }
 
             //Run Scheduler, who now knows all the new Processes
-            context.ILGenerator.EmitWriteLine("Starting Scheduler");
             CallScheduler("Run", true, context);
 
             if (MainMethodEnd!= null) {
@@ -127,6 +134,22 @@ namespace PLR.AST {
             assembly.Save(filename);
         }
 
+        /// <summary>
+        /// Call this method after constructing the tree to attach parent nodes to all nodes in the tree.
+        /// This is easier than having to do this during parsing in each and every implementation.
+        /// </summary>
+        public void MeetTheParents() {
+            MeetTheParents(this);
+        }
+
+        private void MeetTheParents(Node node) {
+            foreach (Node child in node.ChildNodes) {
+                if (child != null) {
+                    child.Parent = node;
+                    MeetTheParents(child);
+                }
+            }
+        }
 
         private void GenerateAssemblyLookup(ModuleBuilder module) {
             File.Copy("plr.dll", "plr.dll.embed", true);
@@ -172,15 +195,3 @@ namespace PLR.AST {
     }
 }
 
-class Base { }
-
-class Test {
-    public Test(int x) {
-        vars = new Variables();
-        vars.member = x;
-    }
-    private Variables vars;
-    class Variables {
-        public int member;
-    }
-}

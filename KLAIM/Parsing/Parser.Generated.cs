@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
@@ -94,7 +102,7 @@ public partial class Parser {
 			ParallelComposition(out pc, locality);
 			ndc.Add(pc); 
 		}
-		if (ndc.Count == 1) {proc = ndc[0]; } else {proc = ndc; CopyPos(proc,ndc[0], t);}
+		if (ndc.Processes.Count == 1) {proc = ndc.Processes[0]; } else {proc = ndc; CopyPos(proc,ndc.Processes[0], t);}
 	}
 
 	void ParallelComposition(out Process proc, string locality) {
@@ -106,7 +114,7 @@ public partial class Parser {
 			ActionPrefix(out ap, locality);
 			pc.Add(ap); 
 		}
-		if (pc.Count == 1) proc = pc[0]; else {proc = pc; CopyPos(pc[0],proc,t);}
+		if (pc.Processes.Count == 1) proc = pc.Processes[0]; else {proc = pc; CopyPos(pc.Processes[0],proc,t);}
 	}
 
 	void ActionPrefix(out Process proc, string locality) {

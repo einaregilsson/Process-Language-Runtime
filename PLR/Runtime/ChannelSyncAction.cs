@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +17,7 @@ namespace PLR.Runtime {
         private ProcessBase _proc;
         private string _name;
         private bool _input;
-        private List<int> _values = new List<int>();
+        private List<object> _values = new List<object>();
         private int _paramCount = 0;
 
         public ChannelSyncAction(string name, ProcessBase p, int paramCount, bool input) {
@@ -19,11 +27,11 @@ namespace PLR.Runtime {
             _paramCount = paramCount;
         }
 
-        public void AddValue(int value) {
+        public void AddValue(object value) {
             _values.Add(value);
         }
 
-        public int GetValue(int index) {
+        public object GetValue(int index) {
             return _values[index];
         }
 

@@ -1,4 +1,12 @@
-﻿using System;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System;
 using System.Collections.Generic;
 using PLR.AST.Actions;
 using PLR.AST.Expressions;
@@ -12,22 +20,18 @@ namespace PLR.AST.Processes {
     public class ActionPrefix : Process {
 
         public ActionPrefix(Action action, Process proc) {
-            _action = action;
-            _proc = proc;
-            _children.Add(Action);
+            _children.Add(action);
             _children.Add(proc);
         }
 
-        private Action _action;
         public Action Action {
-            get { return _action; }
-            set { _action = value; _children[0] = _action; }
+            get { return (Action) _children[2]; }
+            set { _children[2] = value; }
         }
 
-        private Process _proc;
         public Process Process {
-            get { return _proc; }
-            set { _proc = value; _children[1] = _proc; }
+            get { return (Process)_children[3];}
+            set {  _children[3] = value; }
         }
 
         protected override bool WrapInTryCatch {
@@ -39,7 +43,7 @@ namespace PLR.AST.Processes {
         }
 
         public override void Compile(CompileContext context) {
-            _action.Compile(context);
+            Action.Compile(context);
             ConstructorBuilder inner = null;
             if (Process.HasRestrictionsOrPreProcess) {
                 inner = Process.CompileNewProcessStart(context, "Inner");
@@ -52,7 +56,7 @@ namespace PLR.AST.Processes {
         }
 
         public override string ToString() {
-            return _action.ToString() + " . " + _proc.ToString();
+            return Action.ToString() + " . " + Process.ToString();
         }
 
     }

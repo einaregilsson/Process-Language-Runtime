@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,15 +17,17 @@ using PLR.Runtime;
 
 namespace PLR.AST.Actions {
     public class Call : Action{
-        private MethodCallExpression _exp;
         
         public Call(MethodCallExpression callExpr)
             : base(callExpr.ToString()) {
-            _exp = callExpr;
+            _children.Add(callExpr);
         }
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+        }
+        public MethodCallExpression MethodCallExpr {
+            get { return (MethodCallExpression)_children[0]; }
         }
 
         public override void Compile(CompileContext context) {
@@ -37,7 +47,7 @@ namespace PLR.AST.Actions {
             il.Emit(OpCodes.Call, SyncMethod);
             context.MarkSequencePoint(this.LexicalInfo);
             //Now compile the actual method call
-            _exp.Compile(context);
+            MethodCallExpr.Compile(context);
         }
 
     }

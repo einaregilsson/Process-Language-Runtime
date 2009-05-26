@@ -1,4 +1,12 @@
-﻿using PLR.AST.Expressions;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using PLR.AST.Expressions;
 using System.Text;
 
 namespace KLAIM.AST {

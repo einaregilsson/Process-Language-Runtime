@@ -1,4 +1,12 @@
-﻿using System;
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
+ ﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -8,9 +16,9 @@ using PLR.Runtime;
 using PLR.Compilation;
 using PLR.AST;
 using PLR.AST.Processes;
-using CCS.Formatters;
 using System.Reflection;
 using System.Security.Cryptography;
+using PLR.AST.Formatters;
 
 namespace CCS {
     class Program {
@@ -25,6 +33,7 @@ Usage: CCS [options] <filename>
                 return 1;
             }
             List<string> listArgs = new List<string>(args);
+            CompileOptions.AddOptionWithArgument("p", "print", ""); //Allow printouts
             CompileOptions options = CompileOptions.Parse(listArgs);
             
             DieIf(options.Arguments.Count == 0, "ERROR: Missing input file name");
@@ -45,8 +54,35 @@ Usage: CCS [options] <filename>
             Parser parser = new Parser(new Scanner(new FileStream(filename, FileMode.Open)));
             parser.Parse();
             ProcessSystem system = parser.System;
+            system.MeetTheParents();
+
+            CheckPrintout(options, system);
             system.Compile(options);
             return 0;
+        }
+
+        private static void CheckPrintout(CompileOptions options, ProcessSystem system) {
+            //Check whether we want to print out a formatted version of the source
+            if (options["p"] != "") {
+                string format = options["p"];
+                BaseFormatter formatter = null;
+                if (format.ToLower() == "html") {
+                    formatter = new BaseFormatter();
+                } else if (format.ToLower() == "latex" || format.ToLower() == "tex") {
+                    format = "tex";
+                    formatter = new LaTeXFormatter();
+                } else if (format.ToLower() == "txt" || format.ToLower() == "ccs") {
+                    format = "formatted_ccs"; //So we don't overwrite the original file...
+                    formatter = new BaseFormatter();
+                } else {
+                    DieIf(true, "Format for /print options must be one of ccs,html,latex");
+                }
+                formatter.Start(system);
+                string result = formatter.GetFormatted();
+                string filename = Path.ChangeExtension(options.OutputFile, format);
+                File.WriteAllText(filename, result);
+                Console.WriteLine("Formatted source written to {0}", filename);
+            }
         }
 
         private static void DieIf(bool condition, string msg, params object[] args) {

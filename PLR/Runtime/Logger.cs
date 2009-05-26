@@ -1,3 +1,11 @@
+/**
+ * $Id$ 
+ * 
+ * This file is part of the Process Language Runtime (PLR) 
+ * and is licensed under the GPL v3.0.
+ * 
+ * Author: Einar Egilsson (einar@einaregilsson.com) 
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -5,6 +13,45 @@ using System.Threading;
 
 namespace PLR.Runtime {
     static class Logger {
+
+        public static bool SchedulerDebugOn {get; set;}
+        public static bool ProcessDebugOn {get; set;}
+        public static bool TraceDebugOn {get; set;}
+
+        static Logger() {
+            //Defaults
+            SchedulerDebugOn = false;
+            ProcessDebugOn = false;
+            TraceDebugOn = true;
+            //Now lets see if they are overwritten
+            string[] args = System.Environment.GetCommandLineArgs();
+            foreach (string arg in args) {
+                string larg = arg.ToLower();
+                if (larg.StartsWith("/log:")) {
+                    TraceDebugOn = SchedulerDebugOn = ProcessDebugOn = false; //Set all to false and use what's passed in
+                    if (larg.Length == 5) {
+                        Console.Error.WriteLine("ERROR: Invalid /log: argument");
+                        System.Environment.Exit(1);
+                    } else {
+                        string[] opts = larg.Substring(5).Split(',');
+                        foreach (string opt in opts) {
+                            if (opt == "trace" || opt == "t") {
+                                TraceDebugOn = true;
+                            } else if (opt == "scheduler" || opt == "s") {
+                                SchedulerDebugOn = true;
+                            } else if (opt == "process" || opt == "p") {
+                                ProcessDebugOn = true;
+                            } else {
+                                Console.Error.WriteLine("ERROR: Invalid /log option: '{0}'", opt);
+                                System.Environment.Exit(1);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
         private static List<ConsoleColor> _availableColors = new List<ConsoleColor>(
             new ConsoleColor[] { 
                 ConsoleColor.Blue, 
@@ -43,12 +90,22 @@ namespace PLR.Runtime {
             }
         }
         
-        public static void Debug(object msg) {
-            Output(msg);
+        public static void SchedulerDebug(object msg) {
+            if (SchedulerDebugOn) {
+                Output(msg);
+            }
         }
 
-        public static void context(object msg) {
-            Output(msg);
+        public static void ProcessDebug(object msg) {
+            if (ProcessDebugOn) {
+                Output(msg);
+            }
+        }
+
+        public static void TraceDebug(object msg) {
+            if (TraceDebugOn) {
+                Output("TRACE: " + msg);
+            }
         }
 
         private static void Output(object msg) {
