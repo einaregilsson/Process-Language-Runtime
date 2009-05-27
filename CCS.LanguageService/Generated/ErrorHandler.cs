@@ -17,6 +17,7 @@ using Babel.ParserGenerator;
 
 namespace Babel.Parser
 {
+
     public class Error : IComparable<Error>
     {
         internal const int minErr = 50;

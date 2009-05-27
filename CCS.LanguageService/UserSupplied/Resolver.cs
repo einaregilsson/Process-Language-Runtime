@@ -21,7 +21,7 @@ namespace Babel
 
 		public IList<Babel.Declaration> FindCompletions(object result, int line, int col)
 		{
-			return new List<Babel.Declaration>();
+			return new List<Babel.Declaration>(){new Declaration("DESCR", "DISPL", 1, "NAME")};
 		}
 
 		public IList<Babel.Declaration> FindMembers(object result, int line, int col)
@@ -31,7 +31,6 @@ namespace Babel
 
             //foreach (string state in aast.startStates.Keys)
             //    members.Add(new Declaration(state, state, 0, state));
-
 			return members;
 		}
 
