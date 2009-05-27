@@ -2,7 +2,7 @@
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <SchemaVersion>2.0</SchemaVersion>
-        <ProjectGuid>{99999999-9999-9999-9999-999999999999}</ProjectGuid>
+        <ProjectGuid>{D39941DE-05FC-4bb4-B97F-0896FEB88C5A}</ProjectGuid>
         <OutputType>Exe</OutputType>
         <RootNamespace>MyRootNamespace</RootNamespace>
         <AssemblyName>$safeprojectname$</AssemblyName>
@@ -19,12 +19,12 @@
     <ItemGroup>
         <Reference Include="mscorlib" />
         <Reference Include="System" />
-        <Reference Include="D:\DTU\MSC\Build\PLR.dll" />
+        <Reference Include="$(CCS_PATH)PLR.dll" />
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.ccs">
             <SubType>Code</SubType>
         </Compile>
     </ItemGroup>
-    <Import Project="D:\DTU\MSC\CCS.BuildTasks\CCS.targets" />
+    <Import Project="$(CCS_PATH)CCS.targets" />
 </Project>

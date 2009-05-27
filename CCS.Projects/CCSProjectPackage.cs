@@ -54,7 +54,7 @@ namespace CCS.Projects
         "CCS Project Files (*.ccsproj);*.ccsproj",
         "ccsproj", "ccsproj",
         @"..\CCS.Projects\Template",
-        LanguageVsTemplate = "CCS Project",
+        LanguageVsTemplate = "CCSProject",
         NewProjectRequireNewFolderVsTemplate = false)]
     [Guid(GuidList.guidCCSProjectPkgString)]
     public sealed class CCSProjectPackage : Microsoft.VisualStudio.Package.ProjectPackage

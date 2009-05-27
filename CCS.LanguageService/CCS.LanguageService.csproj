@@ -30,6 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\PublicAssemblies\EnvDTE.dll</HintPath>
+    </Reference>
+    <Reference Include="envdte90, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.VisualStudio.Package.LanguageService.9.0" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.9.0" />
@@ -38,12 +43,14 @@
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0" />
     <Reference Include="Microsoft.VisualStudio.TextManager.Interop" />
     <Reference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" />
+    <Reference Include="plr, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Generated\ErrorHandler.cs" />
     <Compile Include="Generated\LexDefs.cs" />
-    <Compile Include="ManagedBabel\AuthoringScope.cs" />
     <Compile Include="ManagedBabel\Configuration.cs" />
     <Compile Include="ManagedBabel\Declaration.cs" />
     <Compile Include="ManagedBabel\Declarations.cs" />
@@ -66,6 +73,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="UserSupplied\AuthoringScope.cs" />
     <Compile Include="UserSupplied\Configuration.cs" />
     <Compile Include="UserSupplied\LanguageService.cs" />
     <Compile Include="UserSupplied\Package.cs" />

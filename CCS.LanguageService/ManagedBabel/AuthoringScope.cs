@@ -24,7 +24,7 @@ namespace Babel
 			this.parseResult = parseResult;
 		
 			// how should this be set?
-			this.resolver = new Resolver();
+			this.resolver = null;
 		}
 
 		object parseResult;
