@@ -61,6 +61,7 @@ namespace PLR.AST.Processes
                     context.ILGenerator.Emit(OpCodes.Box, typeof(Int32));
                 }
             }
+            context.MarkSequencePoint(this.LexicalInfo);
             EmitRunProcess(context, context.GetType(this.FullName).Constructor, false, LexicalInfo, false);
         }
 

@@ -116,10 +116,10 @@ NonDeterministicChoice<out Process proc>                (. Process pc; NonDeterm
 
 ParallelComposition<out Process proc>                   (. Process ap; ParallelComposition pc = new ParallelComposition();.)
 =
-    ActionPrefix<out ap>                                (. pc.Add(ap); .)
+    ActionPrefix<out ap>                                (. pc.Add(ap); .) 
     {
         '|' ActionPrefix<out ap>                        (. pc.Add(ap); .)
-    }                                                   (. if (pc.Processes.Count == 1) proc = pc.Processes[0]; else {proc = pc; CopyPos(pc.Processes[0],proc,t);}.)
+    }                                                   (. if (pc.Processes.Count == 1) proc = pc.Processes[0]; else {proc = pc; CopyPos(proc, pc.Processes[0],t);}.)
 .
 
 ActionPrefix<out Process proc>                          (. ActionPrefix ap = null; ActionPrefix prev = null; ActionPrefix first = null; Process nextProc = null; ProcessConstant pc; proc = null; Action act = null; .)
@@ -159,7 +159,7 @@ BranchProcess<out Process proc>							(. Expression exp = null; Process ifProc =
 
 ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; Expression exp = null;.)
 =
-    PROCNAME                                            (. pc = new ProcessConstant(t.val); SetPos(pc, t); .)
+    PROCNAME                                            (. pc = new ProcessConstant(t.val); Token start = t; .)
     [
 		'('
 			ArithmeticExpression<out exp>				(. pc.Expressions.Add(exp); .)
@@ -167,7 +167,7 @@ ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; Expression
 				',' ArithmeticExpression<out exp>		(. pc.Expressions.Add(exp); .)
 			}
 		')'
-    ]
+    ]                                                   (. SetPos(pc, start, t); . )
 .
 
 Action<out Action act>                                  (. act = null; .)

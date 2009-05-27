@@ -4,7 +4,7 @@
         <SchemaVersion>2.0</SchemaVersion>
         <ProjectGuid>{D39941DE-05FC-4bb4-B97F-0896FEB88C5A}</ProjectGuid>
         <OutputType>Exe</OutputType>
-        <RootNamespace>MyRootNamespace</RootNamespace>
+        <RootNamespace>CCS</RootNamespace>
         <AssemblyName>$safeprojectname$</AssemblyName>
         <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
     </PropertyGroup>
@@ -19,12 +19,14 @@
     <ItemGroup>
         <Reference Include="mscorlib" />
         <Reference Include="System" />
-        <Reference Include="$(CCS_PATH)PLR.dll" />
+        <Reference Include="PLR">
+            <HintPath>$(CCS_PATH)\PLR.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Program.ccs">
+        <Compile Include="$safeprojectname$.ccs">
             <SubType>Code</SubType>
         </Compile>
     </ItemGroup>
-    <Import Project="$(CCS_PATH)CCS.targets" />
+    <Import Project="$(CCS_PATH)\CCS.targets" />
 </Project>

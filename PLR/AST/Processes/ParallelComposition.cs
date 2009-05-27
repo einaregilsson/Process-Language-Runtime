@@ -46,6 +46,7 @@ namespace PLR.AST.Processes {
                 if (p.HasRestrictionsOrPreProcess || !(p is ProcessConstant)) {
                     con = p.CompileNewProcessStart(context, innerTypeName);
                 }
+
                 p.Compile(context); 
                 
                 if (con != null) {

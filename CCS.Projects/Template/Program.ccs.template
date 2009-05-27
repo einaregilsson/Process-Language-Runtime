@@ -1,0 +1,8 @@
+﻿use System.Console
+use PLR.Runtime.BuiltIns
+
+# This is a simple example, remove and add your own CCS ...
+
+University = CoffeeMachine | ComputerScientist
+CoffeeMachine     =  coin  . _coffee_ . CoffeeMachine
+ComputerScientist = _coin_ .  coffee  . :Println("Ahh, got my coffee") . ComputerScientist

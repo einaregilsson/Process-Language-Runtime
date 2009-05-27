@@ -12,33 +12,20 @@ using System.Text;
 
 namespace PLR.AST {
     public class LexicalInfo {
-        public LexicalInfo(){}
+        public LexicalInfo() { }
 
-        private int _startLine;
-        public int StartLine
-        {
-            get { return _startLine; }
-            set { _startLine = value; }
+        public int s;
+        public int StartLine {
+            get { return s; }
+            set {
+                if (value == 0) Console.WriteLine("SET TO 0" + new System.Diagnostics.StackTrace()); s = value;
+            }
         }
-
-        private int _startCol;
-        public int StartColumn
-        {
-            get { return _startCol; }
-            set { _startCol = value; }
-        }
-        private int _endLine;
-        public int EndLine
-        {
-            get { return _endLine; }
-            set { _endLine = value; }
-        }
-
-        private int _endCol;
-        public int EndColumn
-        {
-            get { return _endCol; }
-            set { _endCol = value; }
+        public int StartColumn { get; set; }
+        public int EndLine { get; set; }
+        public int EndColumn { get; set; }
+        public override string ToString() {
+            return string.Format("({0},{1},{2},{3})", StartLine, StartColumn, EndLine, EndColumn);
         }
     }
 }

@@ -138,6 +138,7 @@ namespace PLR.Compilation {
         public void MarkSequencePoint(LexicalInfo lexinfo) {
             if (this.Options.Debug) {
                 this.ILGenerator.MarkSequencePoint(DebugWriter, lexinfo.StartLine, lexinfo.StartColumn, lexinfo.EndLine, lexinfo.EndColumn);
+                this.ILGenerator.Emit(OpCodes.Nop);
             }
             
 

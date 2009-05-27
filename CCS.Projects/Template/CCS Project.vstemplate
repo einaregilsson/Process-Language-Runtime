@@ -1,0 +1,18 @@
+﻿<VSTemplate Version="2.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+    <TemplateData>
+        <Name Package="{D39941DE-05FC-4bb4-B97F-0896FEB88C5A}" />
+        <Description Package="{D39941DE-05FC-4bb4-B97F-0896FEB88C5A}"  />
+        <Icon Package="{D39941DE-05FC-4bb4-B97F-0896FEB88C5A}"  />
+        <ProjectType>CCS</ProjectType>
+        <SortOrder>10</SortOrder>
+        <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+        <CreateNewFolder>true</CreateNewFolder>
+        <DefaultName>CCS Project</DefaultName>
+        <ProvideDefaultName>true</ProvideDefaultName>
+    </TemplateData>
+    <TemplateContent>
+        <Project File="CCSProject.ccsproj.template" ReplaceParameters="true" TargetFileName="$safeprojectname$.ccsproj">
+            <ProjectItem ReplaceParameters="true" TargetFileName="$safeprojectname$.ccs">Program.ccs.template</ProjectItem>
+        </Project>
+    </TemplateContent>
+</VSTemplate>

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -83,7 +83,7 @@
       <SpecificVersion>Yes</SpecificVersion>
       <Aliases>global</Aliases>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.VSHelp, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"/>
+    <Reference Include="Microsoft.VisualStudio.VSHelp, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.VisualStudio.Shell.Design" />
     <Reference Include="Microsoft.VisualStudio.ProjectAggregator" />
     <Reference Include="VsLangProj" />
@@ -95,7 +95,7 @@
       <Aliases>global</Aliases>
     </Reference>
     <Reference Include="System.Xml" />
-    <Reference Include ="Microsoft.VisualStudio.CommonIDE, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.CommonIDE, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -105,113 +105,6 @@
     <Compile Include="CCSProjectNode.cs" />
     <Compile Include="GuidList.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProjectBase\AssemblyReferenceNode.cs" />
-    <Compile Include="ProjectBase\Attributes.cs" />
-    <Compile Include="ProjectBase\Automation\OAFileItem.cs" />
-    <Compile Include="ProjectBase\Automation\OAFolderItem.cs" />
-    <Compile Include="ProjectBase\Automation\OANavigableProjectItems.cs" />
-    <Compile Include="ProjectBase\Automation\OANestedProjectItem.cs" />
-    <Compile Include="ProjectBase\Automation\OANullProperty.cs" />
-    <Compile Include="ProjectBase\Automation\OAProject.cs" />
-    <Compile Include="ProjectBase\Automation\OAProjectItem.cs" />
-    <Compile Include="ProjectBase\Automation\OAProjectItems.cs" />
-    <Compile Include="ProjectBase\Automation\OAProperties.cs" />
-    <Compile Include="ProjectBase\Automation\OAProperty.cs" />
-    <Compile Include="ProjectBase\Automation\OAReferenceFolderItem.cs" />
-    <Compile Include="ProjectBase\Automation\OAReferenceItem.cs" />
-    <Compile Include="ProjectBase\Automation\OASolutionFolder.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OAAssemblyReference.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OABuildManager.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OAComReference.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OAProjectReference.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OAReferenceBase.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OAReferences.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OAVSProject.cs" />
-    <Compile Include="ProjectBase\Automation\VSProject\OAVSProjectItem.cs" />
-    <Compile Include="ProjectBase\BuildDependency.cs" />
-    <Compile Include="ProjectBase\BuildPropertyPage.cs" />
-    <Compile Include="ProjectBase\ComReferenceNode.cs" />
-    <Compile Include="ProjectBase\ConfigProvider.cs" />
-    <Compile Include="ProjectBase\ConfigurationProperties.cs" />
-    <Compile Include="ProjectBase\DataObject.cs" />
-    <Compile Include="ProjectBase\DependentFileNode.cs" />
-    <Compile Include="ProjectBase\DesignPropertyDescriptor.cs" />
-    <Compile Include="ProjectBase\DocumentManager.cs" />
-    <Compile Include="ProjectBase\DontShowAgainDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProjectBase\DontShowAgainDialog.Designer.cs">
-      <DependentUpon>DontShowAgainDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProjectBase\EnumDependencies.cs" />
-    <Compile Include="ProjectBase\FileChangeManager.cs" />
-    <Compile Include="ProjectBase\FileDocumentManager.cs" />
-    <Compile Include="ProjectBase\FileNode.cs" />
-    <Compile Include="ProjectBase\FolderNode.cs" />
-    <Compile Include="ProjectBase\GlobalPropertyHandler.cs" />
-    <Compile Include="ProjectBase\GlobalSuppressions.cs" />
-    <Compile Include="ProjectBase\HierarchyNode.cs" />
-    <Compile Include="ProjectBase\IDEBuildLogger.cs" />
-    <Compile Include="ProjectBase\ImageHandler.cs" />
-    <Compile Include="ProjectBase\Interfaces.cs" />
-    <Compile Include="ProjectBase\LocalizableProperties.cs" />
-    <Compile Include="ProjectBase\Microsoft.VisualStudio.Package.Project.cs" />
-    <Compile Include="ProjectBase\misc\ConnectionPointContainer.cs" />
-    <Compile Include="ProjectBase\misc\ExternDll.cs" />
-    <Compile Include="ProjectBase\misc\NativeMethods.cs" />
-    <Compile Include="ProjectBase\misc\UnsafeNativeMethods.cs" />
-    <Compile Include="ProjectBase\NestedProjectBuildDependency.cs" />
-    <Compile Include="ProjectBase\NestedProjectNode.cs" />
-    <Compile Include="ProjectBase\NodeProperties.cs" />
-    <Compile Include="ProjectBase\OleServiceProvider.cs" />
-    <Compile Include="ProjectBase\Output.cs" />
-    <Compile Include="ProjectBase\OutputGroup.cs" />
-    <Compile Include="ProjectBase\ProjectConfig.cs" />
-    <Compile Include="ProjectBase\ProjectContainerNode.cs" />
-    <Compile Include="ProjectBase\ProjectDesignerDocumentManager.cs" />
-    <Compile Include="ProjectBase\ProjectDocumentsListener.cs" />
-    <Compile Include="ProjectBase\ProjectElement.cs" />
-    <Compile Include="ProjectBase\ProjectFactory.cs" />
-    <Compile Include="ProjectBase\ProjectFileConstants.cs" />
-    <Compile Include="ProjectBase\ProjectNode.CopyPaste.cs" />
-    <Compile Include="ProjectBase\ProjectNode.cs" />
-    <Compile Include="ProjectBase\ProjectNode.Events.cs" />
-    <Compile Include="ProjectBase\ProjectOptions.cs" />
-    <Compile Include="ProjectBase\ProjectPackage.cs" />
-    <Compile Include="ProjectBase\ProjectReferenceNode.cs" />
-    <Compile Include="ProjectBase\ProjectSecurityChecker.cs" />
-    <Compile Include="ProjectBase\PropertiesEditorLauncher.cs" />
-    <Compile Include="ProjectBase\ReferenceContainerNode.cs" />
-    <Compile Include="ProjectBase\ReferenceNode.cs" />
-    <Compile Include="ProjectBase\RegisteredProjectType.cs" />
-    <Compile Include="ProjectBase\SecurityWarningDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProjectBase\SecurityWarningDialog.Designer.cs">
-      <DependentUpon>SecurityWarningDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProjectBase\SelectionListener.cs" />
-    <Compile Include="ProjectBase\SettingsPage.cs" />
-    <Compile Include="ProjectBase\SingleFileGenerator.cs" />
-    <Compile Include="ProjectBase\SingleFileGeneratorFactory.cs" />
-    <Compile Include="ProjectBase\SolutionListener.cs" />
-    <Compile Include="ProjectBase\SolutionListenerForBuildDependencyUpdate.cs" />
-    <Compile Include="ProjectBase\SolutionListenerForProjectEvents.cs" />
-    <Compile Include="ProjectBase\SolutionListenerForProjectOpen.cs" />
-    <Compile Include="ProjectBase\SolutionListenerForProjectReferenceUpdate.cs" />
-    <Compile Include="ProjectBase\StructuresEnums.cs" />
-    <Compile Include="ProjectBase\SuspendFileChanges.cs" />
-    <Compile Include="ProjectBase\TokenProcessor.cs" />
-    <Compile Include="ProjectBase\Tracing.cs" />
-    <Compile Include="ProjectBase\TrackDocumentsHelper.cs" />
-    <Compile Include="ProjectBase\TypeConverters.cs" />
-    <Compile Include="ProjectBase\UpdateSolutionEventsListener.cs" />
-    <Compile Include="ProjectBase\Url.cs" />
-    <Compile Include="ProjectBase\UserProjectSecurityChecker.cs" />
-    <Compile Include="ProjectBase\Utilities.cs" />
-    <Compile Include="ProjectBase\VsCommands.cs" />
-    <Compile Include="ProjectBase\VSMDCodeDomProvider.cs" />
-    <Compile Include="ProjectBase\VSShellUtilities.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -234,31 +127,364 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="CCSProject.ico" />
-    <EmbeddedResource Include="ProjectBase\DontShowAgainDialog.resx">
-      <DependentUpon>DontShowAgainDialog.cs</DependentUpon>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\CCSProjectNode.bmp" />
+    <Content Include="Resources\Package.ico" />
+    <Content Include="Template\CCS Project.vstemplate" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Template\CCSProject.ccsproj.template" />
+    <None Include="Template\Program.ccs.template" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ProjectBase\Diagrams\AutomationClasses.cd">
+      <Visible>true</Visible>
+    </None>
+    <None Include="ProjectBase\Diagrams\ConfigurationClasses.cd">
+      <Visible>true</Visible>
+    </None>
+    <None Include="ProjectBase\Diagrams\DocumentManagerClasses.cd">
+      <Visible>true</Visible>
+    </None>
+    <None Include="ProjectBase\Diagrams\HierarchyClasses.cd">
+      <Visible>true</Visible>
+    </None>
+    <None Include="ProjectBase\Diagrams\PropertiesClasses.cd">
+      <Visible>true</Visible>
+    </None>
+    <None Include="ProjectBase\Diagrams\ReferenceClasses.cd">
+      <Visible>true</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ProjectBase\Misc\ConnectionPointContainer.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Misc\ExternDll.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Misc\NativeMethods.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Misc\UnsafeNativeMethods.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\AssemblyReferenceNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Attributes.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <!-- Automation Objects -->
+    <Compile Include="ProjectBase\Automation\OAFileItem.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAFolderItem.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OANestedProjectItem.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OANullProperty.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAProject.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAProjectItem.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAProjectItems.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAProperties.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAProperty.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OANavigableProjectItems.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAReferenceFolderItem.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OAReferenceItem.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\OASolutionFolder.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <!-- Objects needed to implement a Language Project -->
+    <Compile Include="ProjectBase\Automation\VSProject\OAAssemblyReference.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\VSProject\OABuildManager.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\VSProject\OAComReference.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\VSProject\OAProjectReference.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\VSProject\OAReferenceBase.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\VSProject\OAReferences.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\VSProject\OAVSProject.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Automation\VSProject\OAVSProjectItem.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\BuildDependency.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\BuildPropertyPage.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ComReferenceNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ConfigProvider.cs">
+      <Visible>true</Visible>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProjectBase\ConfigurationProperties.cs">
+      <Visible>true</Visible>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProjectBase\DataObject.cs">
+      <Visible>true</Visible>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProjectBase\DesignPropertyDescriptor.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\DocumentManager.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\DontShowAgainDialog.cs">
+      <SubType>Form</SubType>
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\DontShowAgainDialog.Designer.cs">
+      <DependentUpon>ProjectBase\DontShowAgainDialog.cs</DependentUpon>
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\EnumDependencies.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\FileChangeManager.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\FileDocumentManager.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\FileNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\DependentFileNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\FolderNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\GlobalPropertyHandler.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\GlobalSuppressions.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\HierarchyNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ImageHandler.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Interfaces.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\IDEBuildLogger.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\LocalizableProperties.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Microsoft.VisualStudio.Package.Project.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\NestedProjectBuildDependency.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\NestedProjectNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\NodeProperties.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\OleServiceProvider.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Output.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\OutputGroup.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectConfig.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectContainerNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectDesignerDocumentManager.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectElement.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectFactory.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectFileConstants.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectNode.CopyPaste.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectNode.Events.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectOptions.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectPackage.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectReferenceNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectSecurityChecker.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\PropertiesEditorLauncher.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ReferenceContainerNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ReferenceNode.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\RegisteredProjectType.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SecurityWarningDialog.cs">
+      <SubType>Form</SubType>
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SecurityWarningDialog.Designer.cs">
+      <DependentUpon>ProjectBase\SecurityWarningDialog.cs</DependentUpon>
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SettingsPage.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SingleFileGenerator.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SingleFileGeneratorFactory.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SolutionListener.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SolutionListenerForBuildDependencyUpdate.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SolutionListenerForProjectEvents.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SolutionListenerForProjectOpen.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SolutionListenerForProjectReferenceUpdate.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\StructuresEnums.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SuspendFileChanges.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Tracing.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\TokenProcessor.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\TrackDocumentsHelper.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\TypeConverters.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\UpdateSolutionEventsListener.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Url.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\Utilities.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\UserProjectSecurityChecker.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\VsCommands.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\VSMDCodeDomProvider.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\VSShellUtilities.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\SelectionListener.cs">
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="ProjectBase\ProjectDocumentsListener.cs">
+      <Visible>true</Visible>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="ProjectBase\Microsoft.VisualStudio.Package.Project.resx">
-      <DependentUpon>Microsoft.VisualStudio.Package.Project.cs</DependentUpon>
+      <Visible>true</Visible>
+      <LogicalName>Microsoft.VisualStudio.Package.Project.resources</LogicalName>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectBase\Resources\imagelis.bmp">
+      <Visible>true</Visible>
+      <LogicalName>Resources.imagelis.bmp</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="ProjectBase\SecurityWarningDialog.resx">
+      <Visible>true</Visible>
+      <SubType>Designer</SubType>
       <DependentUpon>SecurityWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\CCSProjectNode.bmp" />
-    <Content Include="ProjectBase\Resources\imagelis.bmp" />
-    <Content Include="Resources\Package.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ProjectBase\Diagrams\AutomationClasses.cd" />
-    <None Include="ProjectBase\Diagrams\ConfigurationClasses.cd" />
-    <None Include="ProjectBase\Diagrams\DocumentManagerClasses.cd" />
-    <None Include="ProjectBase\Diagrams\HierarchyClasses.cd" />
-    <None Include="ProjectBase\Diagrams\PropertiesClasses.cd" />
-    <None Include="ProjectBase\Diagrams\ReferenceClasses.cd" />
-    <None Include="Template\CCS Project.ccsproj" />
-    <None Include="Template\Program.ccs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ProjectBase\LangProj\" />
+    <EmbeddedResource Include="ProjectBase\DontShowAgainDialog.resx">
+      <Visible>true</Visible>
+      <SubType>Designer</SubType>
+      <DependentUpon>DontShowAgainDialog.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <!--
@@ -268,7 +494,9 @@
     -->
     <RegisterOutputPackage>true</RegisterOutputPackage>
     <RegisterWithCodebase>true</RegisterWithCodebase>
+    <!--<ProjectBasePath>$(VSSDK90Install)VisualStudioIntegration\Common\Source\CSharp\Project</ProjectBasePath>-->
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\VSSDK\Microsoft.VsSDK.targets" />
+  <!--<Import Project="ProjectBase\ProjectBase.Files" />    -->
 </Project>

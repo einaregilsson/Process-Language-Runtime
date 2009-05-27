@@ -14,6 +14,8 @@ using System.Text;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Package;
+using Babel.Parser;
+using System.Text.RegularExpressions;
 
 namespace Babel
 {
@@ -101,18 +103,35 @@ namespace Babel
         }
 
         public override int ValidateBreakpointLocation(IVsTextBuffer buffer, int line, int col, TextSpan[] pCodeSpan) {
+            return Microsoft.VisualStudio.VSConstants.S_OK;
+
             if (pCodeSpan != null) {
                 pCodeSpan[0].iStartLine = line;
                 pCodeSpan[0].iStartIndex = col;
                 pCodeSpan[0].iEndLine = line;
                 pCodeSpan[0].iEndIndex = col;
+
                 if (buffer != null) {
                     int length;
                     buffer.GetLengthOfLine(line, out length);
-                    pCodeSpan[0].iStartIndex = 0;
-                    pCodeSpan[0].iEndIndex = length;
+                    IVsTextLines lines = (IVsTextLines)buffer;
+                    string text;
+                    lines.GetLineText(line, 0, line, length, out text);
+                    //Some simple string hacking here... should replace with real scanner probably...
+                    if (text.IndexOf('#') != -1) {
+                        text = text.Substring(0, text.IndexOf('#'));//Cut out comments
+                    }
+                    
+                    Match m = Regex.Match(text, @"_[a-z][a-z0-9]*_|\b[a-z][a-z0-9]*\b|\b0\b|:[a-zA-Z]\w*");
+                    if (m.Success && m.Value != "use") {
+                        pCodeSpan[0].iStartIndex = m.Index;
+                        pCodeSpan[0].iEndIndex = m.Index+m.Value.Length;
+                        return Microsoft.VisualStudio.VSConstants.S_OK;
+                    } else {
+                        return Microsoft.VisualStudio.VSConstants.S_FALSE;
+                    }
                 }
-                return Microsoft.VisualStudio.VSConstants.S_OK;
+                return Microsoft.VisualStudio.VSConstants.S_FALSE;
             } else {
                 return Microsoft.VisualStudio.VSConstants.S_FALSE;
             }

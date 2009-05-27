@@ -54,7 +54,7 @@ namespace CCS.BuildTasks {
                 string message = m.Groups[3].Value;
                 int line=0, column=0;
                 if (numbers != "") {
-                    string[] parts = numbers.Split(',');
+                    string[] parts = numbers.Replace("(","").Replace(")", "").Split(',');
                     line = int.Parse(parts[0]);
                     column = int.Parse(parts[1]);
                 }
@@ -64,7 +64,7 @@ namespace CCS.BuildTasks {
                     this.BuildEngine.LogWarningEvent(new BuildWarningEventArgs("", "CCSError", InputFile, line, column, line, column, message, "", ""));
                 }
             } else {
-                this.BuildEngine.LogErrorEvent(new BuildErrorEventArgs(this.Debug + this.OutputFile + this.InputFile, "ASDF", "john", 3, 4, 5, 6, "Done", "", ""));
+                this.BuildEngine.LogErrorEvent(new BuildErrorEventArgs("", "CCSError", InputFile, 0, 0,0, 0, "Unexpected message from compiler: " + singleLine, "", ""));
             }
             
         }
