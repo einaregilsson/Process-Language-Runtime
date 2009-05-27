@@ -50,14 +50,21 @@ Usage: CCS [options] <filename>
             if (!options.OutputFile.ToLower().EndsWith(".exe")) {
                 options.OutputFile += ".exe";
             }
+            try {
 
-            Parser parser = new Parser(new Scanner(new FileStream(filename, FileMode.Open)));
-            parser.Parse();
-            ProcessSystem system = parser.System;
-            system.MeetTheParents();
+                Parser parser = new Parser(new Scanner(new FileStream(filename, FileMode.Open)));
+                parser.Parse();
+                if (parser.errors.count > 0) {
+                    Environment.Exit(1);
+                }
+                ProcessSystem system = parser.System;
+                system.MeetTheParents();
 
-            CheckPrintout(options, system);
-            system.Compile(options);
+                CheckPrintout(options, system);
+                system.Compile(options);
+            } catch (Exception ex) {
+                DieIf(true, ex.Message);
+            }
             return 0;
         }
 

@@ -79,7 +79,6 @@ namespace CCS.Parsing {
     public partial class Errors {
         public int count = 0;                                    // number of errors detected
         public System.IO.TextWriter errorStream = Console.Out;   // error messages go to this stream
-        public string errMsgFormat = "-- line {0} col {1}: {2}"; // 0=line, 1=column, 2=text
 
         public void SynErr(int line, int col, int n) {
             string s;
@@ -87,27 +86,20 @@ namespace CCS.Parsing {
             if (s == null) {
                 s = "error " + n;
             }
-            errorStream.WriteLine(errMsgFormat, line, col, s);
+            errorStream.WriteLine("ERROR({0},{1}): {2}", line, col, s);
             count++;
         }
 
         public void SemErr(int line, int col, string s) {
-            errorStream.WriteLine(errMsgFormat, line, col, s);
+            errorStream.WriteLine("ERROR({0},{1}): {2}", line, col, s);
             count++;
         }
 
-        public void SemErr(string s) {
-            errorStream.WriteLine(s);
-            count++;
-        }
 
         public void Warning(int line, int col, string s) {
-            errorStream.WriteLine(errMsgFormat, line, col, s);
+            errorStream.WriteLine("WARNING({0},{1}): {2}", line, col, s);
         }
 
-        public void Warning(string s) {
-            errorStream.WriteLine(s);
-        }
     } // Errors
 
 
