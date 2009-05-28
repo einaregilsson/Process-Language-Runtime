@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using Microsoft.VisualStudio.Shell;
 
 namespace Babel
 {
@@ -23,12 +24,13 @@ namespace Babel
      * If this code is copied for a different package, then the GUID should be regenerated
      * so to not interfere with this sample package's GUID.
      */
-    
-    [Microsoft.VisualStudio.Shell.PackageRegistration(UseManagedResourcesOnly=true)]
-    [Microsoft.VisualStudio.Shell.DefaultRegistryRoot(@"Software\Microsoft\VisualStudio\9.0Exp")]
-    [Microsoft.VisualStudio.Shell.ProvideService(typeof(CCS.LanguageService.CCSLanguage))]
-    [Microsoft.VisualStudio.Shell.ProvideLanguageExtension(typeof(CCS.LanguageService.CCSLanguage), Configuration.Extension)]
-    [Microsoft.VisualStudio.Shell.ProvideLanguageService(typeof(CCS.LanguageService.CCSLanguage), Configuration.Name, 0,
+
+    [ProvideLoadKey("Standard", "1.0", "CCS Language Service", "Einar Egilsson", 1)]
+    [PackageRegistration(UseManagedResourcesOnly=true)]
+    [DefaultRegistryRoot(@"Software\Microsoft\VisualStudio\9.0Exp")]
+    [ProvideService(typeof(CCS.LanguageService.CCSLanguage))]
+    [ProvideLanguageExtension(typeof(CCS.LanguageService.CCSLanguage), Configuration.Extension)]
+    [ProvideLanguageService(typeof(CCS.LanguageService.CCSLanguage), Configuration.Name, 0,
         CodeSense = true,
         EnableCommenting = true,
         MatchBraces = true,
@@ -40,5 +42,6 @@ namespace Babel
     [Guid("7b98c6da-ca1b-4ff4-8638-b0ba4473c68e")]
     class Package : BabelPackage
     {
+        
     }
 }

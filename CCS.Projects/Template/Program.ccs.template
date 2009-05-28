@@ -5,4 +5,4 @@ use PLR.Runtime.BuiltIns
 
 University = CoffeeMachine | ComputerScientist
 CoffeeMachine     =  coin  . _coffee_ . CoffeeMachine
-ComputerScientist = _coin_ .  coffee  . :Println("Ahh, got my coffee") . ComputerScientist
+ComputerScientist = _coin_ .  coffee  . :Print("Ahh, got my coffee") . ComputerScientist

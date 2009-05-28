@@ -49,6 +49,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="VSPackage.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>VSPackage.resx</DependentUpon>
+    </Compile>
     <Compile Include="ManagedBabel\ErrorHandler.cs" />
     <Compile Include="ManagedBabel\LexDefs.cs" />
     <Compile Include="ManagedBabel\Configuration.cs" />
@@ -80,6 +85,11 @@
     <Compile Include="CCS.LanguageService\Resolver.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="VSPackage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>VSPackage.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
@@ -89,6 +99,9 @@
   <ItemGroup>
     <MPLexCompile Include="ParserGeneration\lexer.lex" />
     <MPPGCompile Include="ParserGeneration\parser.y" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TextFile1.ccs" />
   </ItemGroup>
   <PropertyGroup>
     <!--

@@ -132,8 +132,8 @@
     <Content Include="Template\CCS Project.vstemplate" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Template\CCSProject.ccsproj.template" />
-    <None Include="Template\Program.ccs.template" />
+    <Content Include="Template\CCSProject.ccsproj.template" />
+    <Content Include="Template\Program.ccs.template" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProjectBase\Diagrams\AutomationClasses.cd">

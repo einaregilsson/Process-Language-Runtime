@@ -118,17 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="1" xml:space="preserve">
-    <value>CPA0HPRZDJRMRRM0H1MQEJRRJTQAADDIK2ZCEJQKMIMHRRPKD0HQR2H0Z1A9P1AMEEDHEDC9DQJZH8J1MCAMERJEPPCDQII1EEQ3IIR3CEK0H1A9D3P3JAHKJAZ9KTQT</value>
-    <comment>Package load key</comment>
-  </data>
-  <data name="110" xml:space="preserve">
-    <value>CCS Projects</value>
-  </data>
-  <data name="112" xml:space="preserve">
-    <value>CCS Integration</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="400" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Package.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>JEMAM2CMEIPHCHHIAKIPC2HHQ3MRMMJPJQETM9QIEAAKIIHTZCHJRCZAMJPIHARRK1DPD9EEAMA9J1KRZZATHKIQECPZMTCMCQCTQ1M1A0J8HAQJJ1E3I9JDPRJHCKDM</value>
   </data>
 </root>

@@ -20,7 +20,7 @@
         <Reference Include="mscorlib" />
         <Reference Include="System" />
         <Reference Include="PLR">
-            <HintPath>$(CCS_PATH)\PLR.dll</HintPath>
+            <HintPath>$(CCS_PATH)PLR.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
@@ -28,5 +28,5 @@
             <SubType>Code</SubType>
         </Compile>
     </ItemGroup>
-    <Import Project="$(CCS_PATH)\CCS.targets" />
+    <Import Project="$(CCS_PATH)CCS.targets" />
 </Project>

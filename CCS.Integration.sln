@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CCS.Projects", "CCS.Project
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CCS.BuildTasks", "CCS.BuildTasks\CCS.BuildTasks.csproj", "{F141CA2B-A520-43D4-BFA8-2539C0CB2F7C}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "CCS.Deployment", "CCS.Deployment\CCS.Deployment.vdproj", "{7710A36A-F86B-46EC-9CE9-8307FBD6E6C4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,8 @@ Global
 		{F141CA2B-A520-43D4-BFA8-2539C0CB2F7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F141CA2B-A520-43D4-BFA8-2539C0CB2F7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F141CA2B-A520-43D4-BFA8-2539C0CB2F7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7710A36A-F86B-46EC-9CE9-8307FBD6E6C4}.Debug|Any CPU.ActiveCfg = Debug
+		{7710A36A-F86B-46EC-9CE9-8307FBD6E6C4}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
