@@ -46,6 +46,7 @@ namespace PLR.AST.Processes {
         public override void Compile(CompileContext context) {
             Label elseStart = context.ILGenerator.DefineLabel();
             Label elseEnd = context.ILGenerator.DefineLabel();
+            context.MarkSequencePoint(Expression.LexicalInfo);
             this.Expression.Compile(context);
             context.ILGenerator.Emit(OpCodes.Brfalse, elseStart);
             IfBranch.Compile(context);
@@ -53,10 +54,14 @@ namespace PLR.AST.Processes {
             context.ILGenerator.MarkLabel(elseStart);
             ElseBranch.Compile(context);
             context.ILGenerator.MarkLabel(elseEnd);
+            if (context.Options.Debug && ElseBranch.LexicalInfo.EndLine != 0) {
+                LexicalInfo l = ElseBranch.LexicalInfo;
+                context.ILGenerator.MarkSequencePoint(context.DebugWriter, l.EndLine, l.EndColumn + 1, l.EndLine, l.EndColumn + 1);
+            }
         }
 
         public override string ToString() {
-            return "if " + Expression + " then " + IfBranch + " else " + ElseBranch + " fi";
+            return "if " + Expression + " then " + IfBranch + " else " + ElseBranch ;
         }
     }
 }

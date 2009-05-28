@@ -6,7 +6,7 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System.Reflection.Emit;
+using System.Reflection.Emit;
 using PLR.Compilation;
 
 namespace PLR.AST.Processes {
@@ -17,11 +17,8 @@ namespace PLR.AST.Processes {
         }
 
         public override void Compile(CompileContext context) {
-            EmitDebug("Turned into 0",context);
-            if (context.Options.Debug && LexicalInfo.StartLine != 0) {
-                context.MarkSequencePoint(LexicalInfo);
-                context.ILGenerator.Emit(OpCodes.Nop);
-            }
+            context.MarkSequencePoint(LexicalInfo);
+            EmitDebug("Turned into 0", context);
         }
 
         public override string ToString() {

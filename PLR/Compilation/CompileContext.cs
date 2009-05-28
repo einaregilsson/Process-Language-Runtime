@@ -96,6 +96,13 @@ namespace PLR.Compilation {
         }
 
         public TypeInfo GetType(string name) {
+            int paramNr = 0;
+            if (name.Contains("_")) {
+                paramNr = int.Parse(name.Split('_')[1]);
+            }
+            if (!_types.ContainsKey(name)) {
+                throw new Exception("Process " + name + " does not exist, at least not with " + paramNr + " parameters!");
+            }
             return _types[name];
         }
         public ILGenerator PopIL() {
@@ -137,12 +144,10 @@ namespace PLR.Compilation {
         }
 
         public void MarkSequencePoint(LexicalInfo lexinfo) {
-            if (this.Options.Debug) {
+            if (this.Options.Debug && lexinfo.StartLine != 0) {
                 this.ILGenerator.MarkSequencePoint(DebugWriter, lexinfo.StartLine, lexinfo.StartColumn, lexinfo.EndLine, lexinfo.EndColumn);
                 this.ILGenerator.Emit(OpCodes.Nop);
             }
-            
-
         }
     }
 }

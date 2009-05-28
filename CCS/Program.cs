@@ -63,7 +63,7 @@ Usage: CCS [options] <filename>
                 CheckPrintout(options, system);
                 system.Compile(options);
             } catch (Exception ex) {
-                DieIf(true, ex.Message);
+                DieIf(true, "ERROR: " + ex.Message);
             }
             return 0;
         }

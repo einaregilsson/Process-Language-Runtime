@@ -38,8 +38,8 @@ COMPILER CCS
     private void CopyPos(Node n, Node source, Token end) {
         n.LexicalInfo.StartLine = source.LexicalInfo.StartLine;
         n.LexicalInfo.StartColumn = source.LexicalInfo.StartColumn;
-        n.LexicalInfo.EndLine = t.line;
-        n.LexicalInfo.EndColumn = t.col;
+        n.LexicalInfo.EndLine = end.line;
+        n.LexicalInfo.EndColumn = end.col+end.val.Length;
     }
 
 CHARACTERS
@@ -101,9 +101,9 @@ ProcessDefinition<out ProcessDefinition procdef, bool entryProc> = (. Process pr
 														   .)
 .
 
-Process<out Process proc>                               
+Process<out Process proc>                               (. Token start = la; .)
 =   
-    NonDeterministicChoice<out proc>       
+    NonDeterministicChoice<out proc>                    (. SetPos(proc, start, t); .)
 .
 
 NonDeterministicChoice<out Process proc>                (. Process pc; NonDeterministicChoice ndc = new NonDeterministicChoice();.)
@@ -347,15 +347,15 @@ UnaryMinusTerm<out Expression aexp>						(. bool isMinus = false; Token minusTok
         |
         '0'                                             (. aexp = new Number(int.Parse(t.val)); SetPos(aexp, t);.)
         |
-        "true"											(. aexp = new Bool(true); .)
+        "true"											(. aexp = new Bool(true); SetPos(aexp, t);.)
         |
-        "false"											(. aexp = new Bool(false); .)
+        "false"											(. aexp = new Bool(false); SetPos(aexp, t); .)
         |
         LCASEIDENT                                      (. aexp = new Variable(t.val); SetPos(aexp, t); .)
         |
         MethodCall<out aexp, false>                            
     )
-                                                        (. if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} .)
+                                                        (. if (isMinus) {aexp = new UnaryMinus(aexp); SetStartPos(aexp, minusToken); SetEndPos(aexp, t);} .)
 .
 
 END CCS.

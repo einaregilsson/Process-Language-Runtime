@@ -55,8 +55,8 @@ private ProcessSystem system = new ProcessSystem();
     private void CopyPos(Node n, Node source, Token end) {
         n.LexicalInfo.StartLine = source.LexicalInfo.StartLine;
         n.LexicalInfo.StartColumn = source.LexicalInfo.StartColumn;
-        n.LexicalInfo.EndLine = t.line;
-        n.LexicalInfo.EndColumn = t.col;
+        n.LexicalInfo.EndLine = end.line;
+        n.LexicalInfo.EndColumn = end.col+end.val.Length;
     }
 
 
@@ -117,7 +117,9 @@ private ProcessSystem system = new ProcessSystem();
 	}
 
 	void Process(out Process proc) {
+		Token start = la; 
 		NonDeterministicChoice(out proc);
+		SetPos(proc, start, t); 
 	}
 
 	void NonDeterministicChoice(out Process proc) {
@@ -463,12 +465,12 @@ private ProcessSystem system = new ProcessSystem();
 		}
 		case 39: {
 			Get();
-			aexp = new Bool(true); 
+			aexp = new Bool(true); SetPos(aexp, t);
 			break;
 		}
 		case 40: {
 			Get();
-			aexp = new Bool(false); 
+			aexp = new Bool(false); SetPos(aexp, t); 
 			break;
 		}
 		case 3: {
@@ -482,7 +484,7 @@ private ProcessSystem system = new ProcessSystem();
 		}
 		default: SynErr(47); break;
 		}
-		if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} 
+		if (isMinus) {aexp = new UnaryMinus(aexp); SetStartPos(aexp, minusToken); SetEndPos(aexp, t);} 
 	}
 
 
