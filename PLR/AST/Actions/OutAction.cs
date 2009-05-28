@@ -48,7 +48,7 @@ namespace PLR.AST.Actions
             foreach (Expression exp in _children) {
                 il.Emit(OpCodes.Ldloc, syncObject);
                 exp.Compile(context);
-                if (exp is ArithmeticExpression) {
+                if (exp is ArithmeticExpression || exp is MethodCallExpression) {
                     il.Emit(OpCodes.Box, typeof(int));
                 }
                 il.Emit(OpCodes.Call, typeof(ChannelSyncAction).GetMethod("AddValue"));

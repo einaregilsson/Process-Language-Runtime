@@ -16,20 +16,12 @@ namespace PLR.Runtime {
             return true;
         }
 
-        public static void Print(string s) {
-            Console.Write(s);
-        }
-        public static void Println(string s) {
-            Console.WriteLine(s);
-        }
-
-        public static void Println(object s) {
-            Console.WriteLine(s);
-        }
-
         public static void Print(object s) {
-            Console.Write(s);
+            Console.WriteLine(s);
         }
+
+        public static int GetFive() { return 5; }
+
         public static void Println(string s, int a) {
             Console.WriteLine(s + a);
         }

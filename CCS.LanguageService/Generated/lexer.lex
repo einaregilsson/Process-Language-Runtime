@@ -32,6 +32,14 @@ ABStar       [^\*\n]*
 %%
 
 use                       { return (int)Tokens.KWUSE; }
+if                        { return (int)Tokens.KWIF; }
+then                      { return (int)Tokens.KWTHEN; }
+else                      { return (int)Tokens.KWELSE; }
+and                      { return (int)Tokens.KWAND; }
+or                      { return (int)Tokens.KWOR; }
+xor                      { return (int)Tokens.KWXOR; }
+true                      { return (int)Tokens.KWTRUE; }
+false                      { return (int)Tokens.KWFALSE; }
 [A-Z][a-zA-Z0-9]*\.[A-Z][a-zA-Z0-9]*(\.[A-Z][a-zA-Z0-9]*)* { return (int)Tokens.FULLCLASS; }
 [a-z]+                    { return (int)Tokens.LCASEIDENT; }
 _[a-z]+_                  { return (int)Tokens.OUTACTION; }

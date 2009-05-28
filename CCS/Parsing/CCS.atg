@@ -119,7 +119,7 @@ ParallelComposition<out Process proc>                   (. Process ap; ParallelC
     ActionPrefix<out ap>                                (. pc.Add(ap); .) 
     {
         '|' ActionPrefix<out ap>                        (. pc.Add(ap); .)
-    }                                                   (. if (pc.Processes.Count == 1) proc = pc.Processes[0]; else {proc = pc; CopyPos(proc, pc.Processes[0],t);}.)
+    }                                                   (. if (pc.Processes.Count == 1) proc = pc.Processes[0]; else {proc = pc; CopyPos(proc, pc.Processes[0],t);} .)
 .
 
 ActionPrefix<out Process proc>                          (. ActionPrefix ap = null; ActionPrefix prev = null; ActionPrefix first = null; Process nextProc = null; ProcessConstant pc; proc = null; Action act = null; .)
@@ -167,10 +167,10 @@ ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; Expression
 				',' ArithmeticExpression<out exp>		(. pc.Expressions.Add(exp); .)
 			}
 		')'
-    ]                                                   (. SetPos(pc, start, t); . )
+    ]                                                   (. SetPos(pc, start, t); .)
 .
 
-Action<out Action act>                                  (. act = null; .)
+Action<out Action act>                                  (. act = null; Expression exp = null;.)
 =
     LCASEIDENT                                          (. InAction inAct = new InAction(t.val); .)
     [
@@ -182,7 +182,7 @@ Action<out Action act>                                  (. act = null; .)
 		')'
     ]													(. act = inAct; .)
     |
-    OUTACTION                                           (. OutAction outAct = new OutAction(t.val);  Expression exp; .) 
+    OUTACTION                                           (. OutAction outAct = new OutAction(t.val);  .) 
     [
 		'('
 			ArithmeticExpression<out exp>				(. outAct.AddExpression(exp); .)
@@ -192,18 +192,24 @@ Action<out Action act>                                  (. act = null; .)
 		')'
     ]													(. act = outAct;  .)
     |
-    METHOD												(. List<object> list = new List<object>(); Expression exp = null; string methodName = t.val.Replace(":","");  .) 
+    MethodCall<out exp, true>                           (. act = new Call((MethodCallExpression)exp); .)
+.
+
+
+MethodCall<out Expression exp, bool popReturn>
+=
+    METHOD												(. List<object> list = new List<object>(); MethodCallExpression mexp = null; exp = null; string methodName = t.val.Replace(":","");  Token start = t;.) 
     '('
     [
 		CallParam<out exp>								(. list.Add(exp); .)
 		
 		{
 			','
-			CallParam<out exp>							(. list.Add(exp); .)
+			CallParam<out exp>							(. list.Add(exp); .)  
 		}	
     
     ]
-    ')'													(. act = new Call(new MethodCallExpression(methodName, list.ToArray())); .)
+    ')'													(. mexp = new MethodCallExpression(methodName, list.ToArray()); mexp.PopReturnValue = popReturn; exp = mexp; SetPos(exp, start, t); .)
 .
 
 CallParam<out Expression exp>							(. Expression aexp = null; exp = null;.)
@@ -252,7 +258,7 @@ Restriction<out ActionRestrictions ar>
     )        
 .
 
-Expression<out Expression exp>							(. Expression right = null, left = null; .)
+Expression<out Expression exp>							(. Expression right = null, left = null; exp = null;.)
 =
     OrTerm<out left>									(. exp = left; .)
     {
@@ -309,7 +315,7 @@ ArithmeticExpression<out Expression aexp>				(. ArithmeticBinOp op; Expression r
             |
             '-'                                         (. op = ArithmeticBinOp.Minus; .)
         )
-        PlusMinusTerm<out right>                        (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t);.)
+        PlusMinusTerm<out right>                        (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(aexp,((ArithmeticBinOpExpression)aexp).Left,t);.)
     }
 .
 
@@ -324,7 +330,7 @@ PlusMinusTerm<out Expression aexp>					(. ArithmeticBinOp op; Expression right =
             |
             '%'                                         (. op = ArithmeticBinOp.Modulo; .)
         )
-        UnaryMinusTerm<out right>                       (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(((ArithmeticBinOpExpression)aexp).Left,aexp,t); .)
+        UnaryMinusTerm<out right>                       (. aexp = new ArithmeticBinOpExpression(aexp, right, op); CopyPos(aexp,((ArithmeticBinOpExpression)aexp).Left,t); .)
     }
 .
 
@@ -346,6 +352,8 @@ UnaryMinusTerm<out Expression aexp>						(. bool isMinus = false; Token minusTok
         "false"											(. aexp = new Bool(false); .)
         |
         LCASEIDENT                                      (. aexp = new Variable(t.val); SetPos(aexp, t); .)
+        |
+        MethodCall<out aexp, false>                            
     )
                                                         (. if (isMinus) {aexp = new UnaryMinus(aexp); SetPos(aexp, minusToken);} .)
 .

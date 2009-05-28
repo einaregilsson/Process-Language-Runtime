@@ -63,7 +63,7 @@ namespace PLR.AST.Expressions {
         }
 
         public override Type Type {
-            get { return _method == null ? null : _method.ReturnType; }
+            get { return _method == null ? typeof(int) : _method.ReturnType; } //Assume int for unknowns, we mostly operate on ints
         }
 
         public bool PopReturnValue {
@@ -72,16 +72,24 @@ namespace PLR.AST.Expressions {
         }
 
         public override void Compile(CompileContext context) {
+            Type[] argtypes = GetArgTypes();
+
             if (_method == null) {
-                _method = context.GetMethod(_methodName, GetArgTypes());
+                _method = context.GetMethod(_methodName, argtypes);
             }
 
             if (_instance != null) {
                 _instance.Compile(context);
             }
 
-            foreach (Expression exp in ChildNodes) {
+            ParameterInfo[] actualParams = _method.GetParameters();
+            for (int i = 0 ; i< ChildNodes.Count; i++) {
+                Expression exp = (Expression)ChildNodes[i];
                 exp.Compile(context);
+                if (exp.Type.Equals(typeof(int))
+                    && actualParams[i].ParameterType.Equals(typeof(object))) {
+                    context.ILGenerator.Emit(OpCodes.Box, typeof(int));
+                }
             }
 
             if (_method.IsVirtual) {

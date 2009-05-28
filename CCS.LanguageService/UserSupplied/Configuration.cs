@@ -56,6 +56,14 @@ namespace Babel
             ColorToken((int)Tokens.PROC, TokenType.Keyword, proc, TokenTriggers.None);
             ColorToken((int)Tokens.NUMBER, TokenType.Literal, TokenColor.String, TokenTriggers.None);
             ColorToken((int)Tokens.KWUSE, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWIF, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWELSE, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWTHEN, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWAND, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWOR, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWXOR, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWTRUE, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            ColorToken((int)Tokens.KWFALSE, TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
             ColorToken((int)Tokens.METHOD, TokenType.Keyword, method, TokenTriggers.None);
             ColorToken((int)Tokens.FULLCLASS, TokenType.Keyword, fullclass, TokenTriggers.None);
             ColorToken((int)Tokens.STRING, TokenType.Keyword, stringColor, TokenTriggers.None);

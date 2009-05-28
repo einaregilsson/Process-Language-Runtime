@@ -146,6 +146,14 @@ namespace CCS.LanguageService
 
             //Keywords
             completions.Add(new Declaration(" use\n\n A keyword to be followed by a fully qualified class name ", "use", 206, "use"));
+            completions.Add(new Declaration(" true\n\n The boolean constant 'true' ", "true", 206, "true"));
+            completions.Add(new Declaration(" false\n\n The boolean constant 'false' ", "false", 206, "false"));
+            completions.Add(new Declaration(" and\n\n The logical operation 'and' ", "and", 206, "and"));
+            completions.Add(new Declaration(" or\n\n The logical operation 'or' ", "or", 206, "or"));
+            completions.Add(new Declaration(" xor\n\n The logical operation 'xor' ", "xor", 206, "xor"));
+            completions.Add(new Declaration(" if\n\n The start token of a conditional process, e.g. 'if <cond> then <proc1> else <proc2>' ", "if", 206, "if"));
+            completions.Add(new Declaration(" then\n\n The then token in an if process, e.g. 'if <cond> then <proc1> else <proc2>' ", "then", 206, "then"));
+            completions.Add(new Declaration(" else\n\n The else token in an if process, e.g. 'if <cond> then <proc1> else <proc2>' ", "else", 206, "else"));
             completions.Add(new Declaration(" 0\n\n Terminate a process by turning into the nil process, 0 ", "0", 206, "0"));
 
             completions.Sort(delegate(Declaration d1, Declaration d2) {

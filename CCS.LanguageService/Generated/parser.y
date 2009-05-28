@@ -26,10 +26,9 @@
     }
 %}
 
-%token OUTACTION PROC KWUSE METHOD FULLCLASS STRING
+%token OUTACTION PROC METHOD FULLCLASS STRING
 %token IDENTIFIER LCASEIDENT
-%token KWIF KWELSE KWWHILE KWFOR KWCONTINUE KWBREAK KWRETURN
-%token KWEXTERN KWSTATIC KWAUTO KWINT KWVOID 
+%token KWIF KWELSE KWTHEN KWUSE KWAND KWOR KWXOR KWTRUE KWFALSE
 %token NUMBER
 
   // %token ',' ';' '(' ')' '{' '}' '=' 
@@ -149,6 +148,7 @@ ActionPrefix
     | OUTACTION ExprParams '.' ActionPrefix
     | METHOD '(' MethodExprParamList ')' '.' ActionPrefix { Match(@2, @4); }
     | PROC Relabel Restrict
+    | KWIF Expr KWTHEN Process KWELSE Process
     | NUMBER { if (((Babel.Lexer.Scanner)this.scanner).yytext != "0") CallHdlr( "Expected 0 or a process" , @1); }
       Relabel Restrict 
     | '(' NonDeterministicChoice ')' Relabel Restrict {  Match(@1, @3); }
@@ -156,18 +156,52 @@ ActionPrefix
 
 
 Expr
-    : Factor
-    | Expr '+' Factor
-    | Expr '-' Factor
-    | Expr '*' Factor
-    | Expr '/' Factor
-    | Expr '%' Factor
+    : OrTerm
+    | Expr KWOR OrTerm
     ;
-    
-Factor
-    : NUMBER
+ 
+
+OrTerm
+    : AndTerm
+    | OrTerm KWAND AndTerm
+    ;
+
+
+AndTerm
+    : RelationalTerm
+    | AndTerm KWXOR RelationalTerm
+    ;
+
+RelationalTerm
+    : ArithmeticExpression
+    | ArithmeticExpression EQ ArithmeticExpression
+    | ArithmeticExpression NEQ ArithmeticExpression
+    | ArithmeticExpression GT ArithmeticExpression
+    | ArithmeticExpression GTE ArithmeticExpression
+    | ArithmeticExpression LT ArithmeticExpression
+    | ArithmeticExpression LTE ArithmeticExpression
+    ;
+
+ArithmeticExpression
+    : PlusMinusTerm
+    | ArithmeticExpression '+' PlusMinusTerm
+    | ArithmeticExpression '-' PlusMinusTerm
+    ;
+
+PlusMinusTerm
+    : UnaryMinusTerm
+    | PlusMinusTerm '*' UnaryMinusTerm
+    | PlusMinusTerm '/' UnaryMinusTerm
+    | PlusMinusTerm '%' UnaryMinusTerm
+    ;
+
+UnaryMinusTerm
+    : '-' UnaryMinusTerm
+    | NUMBER
     | '(' Expr ')'  { Match(@1, @3); }
     | LCASEIDENT
+    | KWTRUE
+    | KWFALSE
     ;
     
 %%

@@ -119,6 +119,7 @@ namespace PLR.Compilation {
                         if (paramTypes == null) {
                             method = type.GetMethod(methodName);
                         } else {
+                            Type t;
                             method = type.GetMethod(methodName, paramTypes);
                         }
 

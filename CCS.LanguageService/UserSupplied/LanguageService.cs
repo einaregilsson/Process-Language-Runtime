@@ -103,7 +103,6 @@ namespace Babel
         }
 
         public override int ValidateBreakpointLocation(IVsTextBuffer buffer, int line, int col, TextSpan[] pCodeSpan) {
-            return Microsoft.VisualStudio.VSConstants.S_OK;
 
             if (pCodeSpan != null) {
                 pCodeSpan[0].iStartLine = line;
@@ -121,8 +120,8 @@ namespace Babel
                     if (text.IndexOf('#') != -1) {
                         text = text.Substring(0, text.IndexOf('#'));//Cut out comments
                     }
-                    
-                    Match m = Regex.Match(text, @"_[a-z][a-z0-9]*_|\b[a-z][a-z0-9]*\b|\b0\b|:[a-zA-Z]\w*");
+
+                    Match m = Regex.Match(text, @"_[a-z][a-z0-9]*_|\b[a-z][a-z0-9]*\b|\b0\b|:[a-zA-Z]\w*|\b[A-Z]\w*\b");
                     if (m.Success && m.Value != "use") {
                         pCodeSpan[0].iStartIndex = m.Index;
                         pCodeSpan[0].iEndIndex = m.Index+m.Value.Length;
