@@ -50,7 +50,7 @@ def quit(filename):
 
 def walk(func):
     for root, folders, files in os.walk(BASE_FOLDER):
-        if not '.svn' in root and not '\\obj\\' in root:
+        if not '.svn' in root and not '\\obj\\' in root and not '\\ProjectBase\\' in root and not '\\ManagedBabel\\' in root:
             for file in files:
                 if file.endswith('.cs'):
                     func(join(root, file))
