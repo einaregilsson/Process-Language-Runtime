@@ -49,67 +49,150 @@
 	and distribute it for free, the shell is the Visual Studio program itself 
 	without any language services. This makes it possible to offer the CCS 
 	development environment free of charge to anyone who wishes to use it.
-
+	
 \section{Building a language service}
 	
-	\subsection{Language Service basics}	
-	The COM extensibility API for Visual Studio is fairly complicated and 
-	unfriendly to use. With the Visual Studio SDK (Software Development Kit) 
-	Microsoft has included a system called the Managed Babel System 
-	\cite{babel}. This is a wrapper around the Visual Studio COM API 
-	specifically meant to simplify writing language services in managed 
-	languages such as C\#. It implements most of the tedious boilerplate code 
-	necessary to create the language service. The first step in creating a 
-	language service is registering it with Visual Studio. For this the 
-	programmer has to supply a language name, a file extension for the language 
-	and a globally unique identifier (GUID). After the language service has been 
-	registered with Visual Studio it will call into the language service 
-	whenever a file with the registered extensions is opened in the Visual 
-	Studio text editor. The additional features of the language service are 
-	described in the following sections.
+	The goal of this integration was to be able to use Visual Studio to manage 
+	all aspects of working with the CCS language. To achieve that the following 
+	features needed to be implemented:
 	
-	\subsection{Syntax highlighting and visual syntax warnings}
+	\begin{enumerate}
+		\item \textbf{CCS Projects}. The ability to create new projects 
+		specifically for CCS applications.
+
+		\item \textbf{Syntax highlighting}. To have different tokens of the 
+		language colored differently so that it is easier to see and understand 
+		the structure of the code.
+		
+		\item \textbf{Real time syntax checking}. Visual warnings about 
+		incorrect syntax in the code as it is being written. 
+	
+		\item \textbf{Match parentheses}. When working with large expressions it 
+		can be hard to see which parentheses match, and missing parentheses are a 
+		common syntax error. Visual Studio can highlight the matching parentheses 
+		automatically, if the language service provides it with the necessary 
+		information about which parentheses match each other.
+		
+		\item \textbf{Build support}. To be able to compile the code being written 
+		from within Visual Studio, using its \textit{Build} menu items and 
+		commands. A part of that is being able to use Visual Studio's built in 
+		mechanism to search for and add references to other .NET assemblies that 
+		the application uses, and pass those references to the compiler at compile 
+		time.
+		
+		\item \textbf{Debugger support}. Launching the application after it had 
+		been built and attaching the Visual Studio debugger to the running 
+		executable. Also the ability to set breakpoints and step through the code 
+		as it is executing.
+		
+	\end{enumerate}
+	
+	The implementation of these features is described in the following 
+	sections.
+
+	
+	\subsection{Visual Studio API}	
+	The COM extensibility API for Visual Studio is fairly complicated and 
+	unfriendly to use. It is also poorly documented. Fortunately Microsoft has 
+	recently released a framework called the Managed Package Framework, or MPF 
+	for short. This comes as part of the Visual Studio SDK (Software Development 
+	Kit) and is a collection of .NET classes that wrap a lot of the underlying 
+	COM interface, making it easier to work with in .NET languages. 
+	The MPF classes implement much of the tedious boilerplate code which is 
+	necessary and common to all language services. Parts of the Managed Package 
+	Framework are released only as source code and are meant to be included 
+	directly in language service projects when they are being built. In the 
+	source code repository for this project, these files have been marked 
+	specifically with a header stating that they are supplied by Microsoft to 
+	avoid confusion about which code is original work and which code is 
+	borrowed. 
+
+	\subsection{Syntax Highlighting}
 	Syntax highlighting is when different tokens in a language are given 
 	different color to help differentiate them when looking at code. This
 	is very helpful when looking at code to quickly sense the structure and
 	identify problems, and has been a standard feature of development 
 	environments as well as most advanced text editors for many years. In many
 	common text editors this is simply implemented as lists of tokens and 
-	colors for them. Visual Studio however requires a full lexer and parser for
-	a language in order to provide syntax highlighting. This also enables it to
-	give error messages for syntax errors in the code before compiling. These
-	are shown both as text error messages in an error message window, as well
-	as red curvy lines under the places in code where the syntax errors occurs.
-	This makes it extremely easy to look at a page of code and determine whether
-	it is syntactically correct.
+	colors for them. The Managed Package Framework however requires that the 
+	language service provides an implementation of an interface named 
+	\textsf{IScanner}, with two methods named \textsf{SetSource} and
+	\textsf{ScanTokenAndProvideInfoAboutIt}. The \textsf{SetSource} method is 
+	called by Visual Studio and provides the \textsf{IScanner} with one line of 
+	source code at a time, it then repeatedly calls 
+	\textsf{ScanTokenAndProvideInfoAboutIt} to get information about each of the 
+	tokens in that line. For this project the \textsf{IScanner} interface was 
+	implemented using a lexer class, how that class was generated is described 
+	further in Section~\ref{sec:syntax_checking}. The tokens of the language 
+	were divided up into eight distinct color classes and colored as follows:
 	
-	The Managed Babel System ships with two programs called MPLex.exe and 
-	MPPG.exe. These are .NET implementations of the well known parser generator 
-	tools Lex and YACC. These tools take as input a \textsf{lexer.lex} file and
+	\begin{itemize}
+		\item Process constants - Greenblue
+		\item Output actions on channels	- Dark gray
+		\item Method calls - Magenta
+		\item Comments - Dark green
+		\item Strings - Maroon
+		\item Keywords - Blue
+		\item Numbers - Red
+		\item All other tokens - Black
+	\end{itemize}
+
+	An example of the syntax highlighting can be seen in 
+	Figure~\ref{fig:syntaxcheck}.
+	
+	\subsection{Real time syntax checking}\label{sec:syntax_checking}
+	A very useful feature of Visual Studio is its ability to show the user 
+	errors in their code in real time, as they are typing. These errors (or 
+	warnings) are shown both as text error messages in an error message window, 
+	as well as red curvy lines under the places in code where the syntax errors 
+	occurs. This makes it extremely easy to look at a page of code and determine 
+	whether it is syntactically correct. Figure~\ref{fig:syntaxcheck} shows an 
+	example of this feature in action.
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.7]{syntaxcheck.jpg}
+		\caption{Syntax checking for CCS in Visual Studio}
+		\label{fig:syntaxcheck}
+	\end{figure}
+
+	The component in Visual Studio that is responsible for syntax highlighting 
+	and syntax checking is named Babel. As part of the Managed Package Framework 
+	there is a collection of classes to wrap this component, these are called 
+	the Managed Babel System. With the Managed Babel System come two programs 
+	called MPLex.exe and MPPG.exe, these acronyms stand for \textit{Managed 
+	Package Lex} and \textit{Managed Package Parser Generator}. These are .NET 
+	implementations of the well known parser generator tools Lex and YACC and 
+	derive directly from the \textit{Garden Point Parser Generator} \cite{gppg} 
+	developed at the Queensland University of Technology. These tools take as 
+	input a \textsf{lexer.lex} file and
 	\textsf{parser.y} file. The lexer file defines the tokens of the language
 	with regular expressions, and the parser file describes the syntax of the
 	language in extended Backus-Naur form, or EBNF. From these input files 
 	MPLex.exe and MPPG.exe generate C\# code for a lexer and a parser for the 
-	language. A more detailed explanation of Lex and YACC is outside the scope 
-	of this paper but a useful book on the subject is \cite{lexyacc}. 
-	The generated lexer and parser are called repeatedly in the background while
-	code is being edited and any syntax errors are highlighted and displayed to
-	the user. Colors for different tokens are defined in a special 
-	\textsf{Configuration} class which is a part of the language service.
-
-	When implementing the CCS compiler a EBNF definition was defined for the
-	parser generator Coco/R. Porting that definition to Lex/YACC was not 
-	complicated to do, as the underlying principles are the same. The tokens of 
-	CCS were divided into six distinct classes, and were colored as follows
+	language. A more detailed explanation of Lex and YACC-like tools is outside 
+	the scope of this paper but a useful book on the subject is \cite{lexyacc}. 
 	
-	\begin{itemize}
-		\item Process constants - Blue
-		\item Synchronization on channels	- Red
-		\item Method calls - Bluegreen
-		\item Comments - Green
-		\item Strings - Maroon
-		\item Operators - Black
-	\end{itemize}
+	Once the generated lexer and parser have been built, Visual Studio is 
+	responsible for calling them repeatedly in the background while the user is 
+	typing code. Visual Studio then gets a collection of errors and warnings 
+	from the parser and displays them to the user. 
+
+	As we saw in Chapter~\ref{ch:ccs_implementation} the parser used by the CCS 
+	compiler itself was written using the Coco/R parser generator. It would have 
+	been preferable to re-use that parser directly, instead of defining a new 
+	parser for the same input language. While it would have been possible, the 
+	fact is that MPLex.exe and MPPG.exe are optimized for generating parsers 
+	that work well with the Managed Babel System, and the Managed Babel 
+	infrastructure expects parsers and lexers that conform to a certain 
+	interface. For that reason MPLex and MPPG were used to create a new parser 
+	and lexer instead of re-using the existing ones. The drawback to this is of 
+	course that two implementations of the same language need to be maintained 
+	and kept in sync. However, the input language for both these parser 
+	generators is based on EBNF syntax and so it is fairly trivial to port from 
+	one to the other. In hindsight the best approach would have been to use MPPG 
+	and MPLex for the CCS compiler as well as the language service.
+	
 	
 	\subsection{IntelliSense}
 	\TODO{Implement and describe intellisense}
