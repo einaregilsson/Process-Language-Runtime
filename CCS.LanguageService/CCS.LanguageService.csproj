@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{697144D5-DC3B-484B-9747-E79CB6D7AC97}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -49,8 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Generated\ErrorHandler.cs" />
-    <Compile Include="Generated\LexDefs.cs" />
+    <Compile Include="ManagedBabel\ErrorHandler.cs" />
+    <Compile Include="ManagedBabel\LexDefs.cs" />
     <Compile Include="ManagedBabel\Configuration.cs" />
     <Compile Include="ManagedBabel\Declaration.cs" />
     <Compile Include="ManagedBabel\Declarations.cs" />
@@ -73,11 +73,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="UserSupplied\AuthoringScope.cs" />
-    <Compile Include="UserSupplied\Configuration.cs" />
-    <Compile Include="UserSupplied\LanguageService.cs" />
-    <Compile Include="UserSupplied\Package.cs" />
-    <Compile Include="UserSupplied\Resolver.cs" />
+    <Compile Include="CCS.LanguageService\AuthoringScope.cs" />
+    <Compile Include="CCS.LanguageService\Configuration.cs" />
+    <Compile Include="CCS.LanguageService\CCSLanguage.cs" />
+    <Compile Include="CCS.LanguageService\Package.cs" />
+    <Compile Include="CCS.LanguageService\Resolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -87,12 +87,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <MPLexCompile Include="Generated\lexer.lex" />
-    <MPPGCompile Include="Generated\parser.y" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="testfiles\short.myc" />
-    <None Include="testfiles\thing.ccs" />
+    <MPLexCompile Include="ParserGeneration\lexer.lex" />
+    <MPPGCompile Include="ParserGeneration\parser.y" />
   </ItemGroup>
   <PropertyGroup>
     <!--

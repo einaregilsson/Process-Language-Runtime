@@ -27,9 +27,9 @@ namespace Babel
             ServiceCreatorCallback callback = new ServiceCreatorCallback(
                 delegate(IServiceContainer container, Type serviceType)
                 {
-                    if (typeof(Babel.LanguageService) == serviceType)
+                    if (typeof(CCS.LanguageService.CCSLanguage) == serviceType)
                     {
-                        Babel.LanguageService language = new Babel.LanguageService();
+                        CCS.LanguageService.CCSLanguage language = new CCS.LanguageService.CCSLanguage();
                         language.SetSite(this);
 
                         // register for idle time callbacks
@@ -56,7 +56,7 @@ namespace Babel
                 });
 
             // proffer the LanguageService
-            (this as IServiceContainer).AddService(typeof(Babel.LanguageService), callback, true);
+            (this as IServiceContainer).AddService(typeof(CCS.LanguageService.CCSLanguage), callback, true);
         }
 
         protected override void Dispose(bool disposing)
@@ -87,7 +87,7 @@ namespace Babel
 
         public int FDoIdle(uint grfidlef)
         {
-            BabelLanguageService ls = GetService(typeof(Babel.LanguageService)) as BabelLanguageService;
+            BabelLanguageService ls = GetService(typeof(CCS.LanguageService.CCSLanguage)) as BabelLanguageService;
             
             if (ls != null)
             {
