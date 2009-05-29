@@ -60,7 +60,6 @@ namespace CCS.LanguageService {
                     }
                 }
             }
-
             switch (req.Reason) {
                 case ParseReason.Check:
                 case ParseReason.HighlightBraces:

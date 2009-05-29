@@ -15,43 +15,63 @@
 \section{Choice of Integrated Development Environment}
 	
 	When choosing which IDE would be most suitable for CCS two environments 
-	stood out. First there is Microsoft's Visual Studio which is the most 
-	popular environment for .NET development. Visual Studio versions are 
-	released alongside new version of the .NET framework itself and each new 
-	version takes full advantage of and supports all the new features in the 
-	.NET framework. The latest version as of this writing is Visual Studio 2008 
-	which supports the .NET framework 3.5. Visual Studio has an extensibility 
-	API based on COM technology, an older technology for interaction between 
-	programs written in different programming languages. Languages are 
-	integrated by creating \textit{language services}, the Visual Studio program 
-	itself is simply a host for these services. The languages that come with 
-	Visual Studio, C\# and Visual Basic.NET have their own language services 
-	that do not have any special access to Visual Studio, this implies that a 
-	language service for a new language can be made to offer all the same 
-	features as those supported by the built in languages.
+	stood out, Microsoft Visual Studio 2008 and SharpDevelop. Eclipse 
+	was briefly considered as well since it provides good plugin support, but 
+	was dismissed since it is built on Java and since this project is focused on 
+	integrating with the .NET framework it seemed natural to go with a .NET 
+	development environment. Below the two candidate environments are described 
+	and reasons given for choosing one of them.
 	
+	\subsection{Microsoft Visual Studio 2008}
+	Microsoft's Visual Studio is the most popular environment for .NET 
+	development. Visual Studio versions are released alongside new version of 
+	the .NET framework itself and each new version takes full advantage of and 
+	supports all the new features in the .NET framework. The latest version as +
+	of this writing is Visual Studio 2008 which supports the .NET framework 3.5. 
+	Visual Studio has an extensive extensibility API based on COM technology, an 
+	older technology for interaction between programs written in different 
+	programming languages. Languages are integrated by creating \textit{language 
+	services}, the Visual Studio program itself is simply a host for these 
+	services. The languages that come with Visual Studio, C\# and Visual 
+	Basic.NET have their own language services that do not have any special 
+	access to Visual Studio, this implies that a language service for a new 
+	language can be made to offer all the same features as those supported by 
+	the built in languages. The downside of Visual Studio is that its 
+	extensibility API is fairly complicated and hard to work with. Another 
+	drawback is that even though there exist a fair number of samples for 
+	language services, the professional level services for languages like C\# 
+	and Visual Basic.NET are not available as open source so it is not possible 
+	to look at them for inspiration.
+	
+	\subsection{SharpDevelop}
 	The second candidate for a CCS development environment was SharpDevelop, an 
 	open source IDE written entirely in C\#. SharpDevelop is very similar to 
-	Visual Studio and offers many of the same features. Its extensibility API is 
-	entirely in .NET and is in many ways cleaner and clearer than Visual 
-	Studio's API. It also has the benefit of being open source software, so it 
-	is easy to get a clearer picture of its architecture, and view the source 
-	for other language services. The architecture of SharpDevelop itself has 
-	even been the subject of a book, \cite{sharpdevelop}. The drawbacks
-	are that its debugger is inferior to Visual Studio's, the application itself
-	is slower, and it is not as well known as Visual Studio.
+	Visual Studio in look and feel, and offers many of the same features. Its 
+	extensibility API is entirely in .NET and is in many ways cleaner and 
+	clearer than Visual Studio's API. It also has the benefit of being open 
+	source software, so it is easy to get a clearer picture of its architecture, 
+	and view the source for other language services, even the built in ones for 
+	C\# and Visual Basic.NET. The architecture of SharpDevelop itself has even 
+	been the subject of a book, \cite{sharpdevelop}. The drawbacksare that its 
+	debugger is inferior to Visual Studio's, the application itself is slower, 
+	and it is not as well known as Visual Studio. It also does not offer all the 
+	same features as Visual Studio, a notable feature that is missing is the 
+	ability to highlight syntax errors as the user types in code.
 	
+	\subsection{Chosen environment}
 	After researching both environments, Visual Studio 2008 was chosen as the one
 	to implement CCS's language service in. This was based primarily on the fact
-	that Visual Studio is the IDE of choice for most .NET developers, it is fast 
-	and offers great debugging support. While the standard versions of Visual 
-	Studio are not free, it is possible to download only the Visual Studio shell 
-	and distribute it for free, the shell is the Visual Studio program itself 
-	without any language services. This makes it possible to offer the CCS 
-	development environment free of charge to anyone who wishes to use it.
+	that Visual Studio is the IDE of choice for most .NET developers, it is 
+	fast, offers great debugging support and real time syntax checking. While 
+	the standard versions of Visual Studio are not free, it is possible to 
+	download only the Visual Studio shell and distribute it for free. The shell 
+	is the Visual Studio program itself without any language services. This 
+	makes it possible to offer the CCS development environment free of charge to 
+	anyone who wishes to use it. 
 	
 \section{Building a language service}
 	
+	\subsection{Goal}
 	The goal of this integration was to be able to use Visual Studio to manage 
 	all aspects of working with the CCS language. To achieve that the following 
 	features needed to be implemented:
@@ -64,14 +84,20 @@
 		language colored differently so that it is easier to see and understand 
 		the structure of the code.
 		
-		\item \textbf{Real time syntax checking}. Visual warnings about 
+		\item \textbf{Real time syntax checking}. Display visual warnings about 
 		incorrect syntax in the code as it is being written. 
 	
-		\item \textbf{Match parentheses}. When working with large expressions it 
-		can be hard to see which parentheses match, and missing parentheses are a 
-		common syntax error. Visual Studio can highlight the matching parentheses 
-		automatically, if the language service provides it with the necessary 
-		information about which parentheses match each other.
+		\item \textbf{IntelliSense}. Allow the developer to press a keyboard 
+		shortcut and get a list of all available channel names, keywords, variable 
+		names and process names in the current application, and insert them at the 
+		current location in code. 
+		
+		\item \textbf{Match braces}. When working with large expressions it 
+		can be hard to see which braces (parentheses, curly braces, angle 
+		brackets) match, and missing parentheses are a common syntax error. Visual 
+		Studio can highlight the matching braces automatically, if the language +
+		service provides it with the necessary information about which braces 
+		match each other.
 		
 		\item \textbf{Build support}. To be able to compile the code being written 
 		from within Visual Studio, using its \textit{Build} menu items and 
@@ -87,9 +113,14 @@
 		
 	\end{enumerate}
 	
-	The implementation of these features is described in the following 
-	sections.
-
+	Visual Studio offers the front end for all these features, that is the 
+	graphical user interface to display them and the infrastructure that calls 
+	into the language service's code to get the data necessary for the features 
+	to work. However, Visual Studio of course has no knowledge of specific 
+	languages and so it is the responsibility of each language service to 
+	provide the back end, the code that understands the language, its tokens, 
+	its syntax, which items to display in IntelliSense and so on. The 
+	implementation of these features is described in the following sections.
 	
 	\subsection{Visual Studio API}	
 	The COM extensibility API for Visual Studio is fairly complicated and 
@@ -107,6 +138,53 @@
 	avoid confusion about which code is original work and which code is 
 	borrowed. 
 
+	\subsection{CCS Projects}
+	To allow the user to create new project of type CCS project four main things 
+	needed to be implemented.
+	
+	\begin{enumerate}
+		\item A class named \textsf{CCSProjectPackage}, this class inherits from 
+		a \textsf{ProjectPackage} that is provided in the Managed Package 
+		Framework. It provides information about the project file ending, the 
+		project name and a path to the project templates described in item 4 in 
+		this list. It doesn't contain any real code, it only provides the 
+		necessary properties for Visual Studio to recognize that a new type of 
+		project has been registered. To ensure uniqueness of the package it has a 
+		globally unique identifier (GUID).
+		
+		\item A class named \textsf{CCSProjectFactory}, this class inherits from 
+		a \textsf{ProjectFactory} class from the Managed Package Framework. It 
+		also contains a globally unique identifier and overrides only one method, 
+		\textsf{CreateProject()} which returns a \textsf{ProjectNode} instance.
+		
+		\item A class named \textsf{CCSProjectNode}. This class represents the 
+		project once it has been created, it inherits from \textsf{ProjectNode}, 
+		again from Managed Package Framework. In this class it is possible to 
+		override a lot of behavior, such as what happens when build dependencies 
+		are added to the project, which items can be deleted from the project, how 
+		to clean the project and many more. This implementation did not require a 
+		lot of overrides, since each project only contains one source file so most 
+		project possibilities are simply not enabled.
+		
+		\item Templates for the project needed to be created. The main template is 
+		for the project file. The project file defines which items are included 
+		and which MSBuild targets (See Section~\ref{msbuild}) should be used to
+		build the project. Another template is for a default CCS source file that 
+		is included in every project, and contains some simple sample code to get 
+		people started. Finally there is a file named \textit{CCS 
+		Project.vstemplate}, this contains some metadata about the templates and 
+		is the file used by Visual Studio to determine which items to show when 
+		new projects are created.
+	
+	\end{enumerate}
+	
+	In addition to these items that needed to be implemented, a lot of source 
+	code from the Managed Package Framework is necessary to build the project 
+	package successfully. These are standard implementations of a number of 
+	interfaces Visual Studio requires, they can be overridden for more complex 
+	projects than the CCS projects. It was surprising how much source code is 
+	needed to do a relatively simple thing like creating a new project type.
+	
 	\subsection{Syntax Highlighting}
 	Syntax highlighting is when different tokens in a language are given 
 	different color to help differentiate them when looking at code. This
@@ -116,15 +194,26 @@
 	common text editors this is simply implemented as lists of tokens and 
 	colors for them. The Managed Package Framework however requires that the 
 	language service provides an implementation of an interface named 
-	\textsf{IScanner}, with two methods named \textsf{SetSource} and
-	\textsf{ScanTokenAndProvideInfoAboutIt}. The \textsf{SetSource} method is 
-	called by Visual Studio and provides the \textsf{IScanner} with one line of 
-	source code at a time, it then repeatedly calls 
-	\textsf{ScanTokenAndProvideInfoAboutIt} to get information about each of the 
-	tokens in that line. For this project the \textsf{IScanner} interface was 
-	implemented using a lexer class, how that class was generated is described 
-	further in Section~\ref{sec:syntax_checking}. The tokens of the language 
-	were divided up into eight distinct color classes and colored as follows:
+	\textsf{IScanner}, shown in Listing~\ref{iscanner}. 
+
+	\begin{lstlisting}[caption=IScanner interface,label=iscanner]
+  public interface IScanner {
+    bool ScanTokenAndProvideInfoAboutIt(
+    		TokenInfo tokenInfo, ref int state);
+    void SetSource(string source, int offset);
+  }	
+\end{lstlisting}
+
+	The \textsf{SetSource} method of the interface is called by Visual Studio 
+	and provides the \textsf{IScanner} with one line of source code at a time, 
+	Visual Studio then repeatedly calls \textsf{ScanTokenAndProvideInfoAboutIt} 
+	to get information about each of the tokens in that line. This is done on a 
+	line-by-line basis so that only lines that change need to be re-colored, as 
+	it is a relatively expensive operation. For this project the 
+	\textsf{IScanner} interface was implemented using a lexer class, how that 
+	class was generated is described further in 
+	Section~\ref{sec:syntax_checking}. The tokens of the language were divided 
+	up into eight distinct color classes and colored as follows:
 	
 	\begin{itemize}
 		\item Process constants - Greenblue
@@ -165,18 +254,25 @@
 	implementations of the well known parser generator tools Lex and YACC and 
 	derive directly from the \textit{Garden Point Parser Generator} \cite{gppg} 
 	developed at the Queensland University of Technology. These tools take as 
-	input a \textsf{lexer.lex} file and
-	\textsf{parser.y} file. The lexer file defines the tokens of the language
-	with regular expressions, and the parser file describes the syntax of the
-	language in extended Backus-Naur form, or EBNF. From these input files 
-	MPLex.exe and MPPG.exe generate C\# code for a lexer and a parser for the 
-	language. A more detailed explanation of Lex and YACC-like tools is outside 
-	the scope of this paper but a useful book on the subject is \cite{lexyacc}. 
+	input a \textsf{lexer.lex} file and \textsf{parser.y} file. The lexer file 
+	defines the tokens of the language with regular expressions, and the parser 
+	file describes the syntax of the language in extended Backus-Naur form, or 
+	EBNF. From these input files MPLex.exe and MPPG.exe generate C\# code for a 
+	lexer and a parser for the language. A more detailed explanation of Lex and 
+	YACC-like tools is outside the scope of this paper but a useful book on the 
+	subject is \cite{lexyacc}. 
 	
 	Once the generated lexer and parser have been built, Visual Studio is 
 	responsible for calling them repeatedly in the background while the user is 
-	typing code. Visual Studio then gets a collection of errors and warnings 
-	from the parser and displays them to the user. 
+	typing code. Visual Studio calls a method named 
+	\textsf{ParseSource(ParseRequest req)} which is a method of the 
+	\textsf{CCSLanguage} class. That class inherits from 
+	\textsf{BabelLanguageService} and overrides its \textsf{ParseSource} 
+	method. Inside this method the parser and lexer are instantiated and parse 
+	the source code which is a part of the \textsf{ParseRequest} instance passed 
+	to the method. The parser then logs every error it encounters, with file 
+	name and line numbers, and Visual Studio is responible for displaying these 
+	errors to the user.
 
 	As we saw in Chapter~\ref{ch:ccs_implementation} the parser used by the CCS 
 	compiler itself was written using the Coco/R parser generator. It would have 
@@ -193,46 +289,225 @@
 	one to the other. In hindsight the best approach would have been to use MPPG 
 	and MPLex for the CCS compiler as well as the language service.
 	
-	
 	\subsection{IntelliSense}
-	\TODO{Implement and describe intellisense}
+	IntelliSense (or automatic word completion) is one of the most useful 
+	features of Visual Studio. When the programmer presses the keyboard 
+	combination CTRL+SPACE at some point in the source code, the environment 
+	shows a list of items that the programmer might wish to insert at that 
+	point, and a description of them. This includes (in CCS's case) channel 
+	names, process names, imported .NET method names and CCS keywords. If the 
+	programmer invokes IntelliSense once the caret is positioned after a half 
+	completed word, such as \textit{cof} and there is only one candidate that 
+	starts with \textit{cof}, namely the channel \textit{coffee}, then the word 
+	is completed automatically and the list of possibilities is not even shown.
+	
+	This behaviour is implemented through two main classes, 
+	\textsf{AuthoringScope} and \textsf{Resolver}. \textsf{AuthoringScope} is 
+	the class that is returned from the \textsf{ParseSource} method we learned 
+	about in Section~\ref{sec:syntax_checking}, part of its interface is the 
+	method \textsf{GetDeclarations}. This method is called when the user has 
+	pressed CTRL+SPACE and it in turns calls a method named 
+	\textsf{FindCompletions} on the \textsf{Resolver} class, which returns a 
+	list of all the items to display to the user, along with descriptions and 
+	icons. 
+	
+	To create the list of items the resolver uses the generated scanner class we 
+	learned about previously and scans all tokens in the source file to find 
+	process and channel names. For every channel name it adds an item for the 
+	output action and input action on that channel, e.g. both \texttt{coffee} 
+	and \texttt{\_coffee\_}. The resolver also adds all the language keywords 
+	(if,then,use etc.) to the list so they can be completed automatically, and 
+	to provide a reference for the user about what is possible to do. Finally 
+	the resolver tries to find all methods that the applications could call, and 
+	add them along with descriptions that include parameter names and types. To 
+	do this the resolver tries to look up all classes that are imported in the 
+	source code using the \texttt{use} keyword, as well as look for methods in 
+	the class \textsf{PLR.Runtime.BuiltIns} which contains methods that can be 
+	called without a \texttt{use} statement. The method names and parameters are 
+	found through reflection. Since the PLR only supports static methods and 
+	only strings and integers as parameters, the resolver only considers methods 
+	that fulfill that criteria. Once this has been done the list of names, 
+	keywords and methods is returned so that Visual Studio can display them to 
+	the user. Figure~\ref{fig:intellisense} shows an example of this feature in 
+	action. Note how different types of items have different icons to 
+	distinguish them from each other.
 
-	\subsection{CCS Project and item templates}
-	To enable a user to create new CCS projects inside Visual Studio it was 
-	necessary to create templates for these files. This was done by creating 
-	three files:
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.5]{intellisense.png}
+		\caption{IntelliSense for CCS in Visual Studio}
+		\label{fig:intellisense}
+	\end{figure}
 	
-	\begin{itemize}
-		\item \textbf{CCSProject.vstemplate} is a xml file that describes the 
-		project type. It contains the name of the project type, unique identifier 
-		for it and various parameters such as whether a new project should be 
-		created in a new folder. This is the file Visual Studio uses to create an 
-		item for CCS in the \textit{New project} dialog.
-		
-		\item \textbf{project.ccsproj} is a template for new CCS projects. It 
-		contains information about debug and release configurations, the name of 
-		included CCS sourc files, which assemblies should be referenced by default 
-		as well as references to the build tasks to execute to compile CCS 
-		projects. Build tasks are further explained in Section~\ref{msbuild}.
-		
-		\item \textbf{Program.ccs} is a template for CCS source files. It contains
-		nothing but a small comment explaining that CCS code should go here. 
+	\subsection{Match braces}
 	
-	\end{itemize}
-	
-	These three files are put in a zip archive which is stored in a subfolder of
-	the Visual Studio main folder. Once this has been done the user can select 
-	\textit{CCS Project} as a project type when creating new projects in Visual 
-	Studio. For more complex languages an item template could also be created to
-	allow users to add additional source files to the program. Since the current
-	CCS compiler only supports compiling a single source file this feature was 
-	not added, when a user initially creates a new project he gets one source 
-	file named \textsf{program.ccs} added automatically, all source code must go
-	inside that file.
+	This feature was fairly trivial to implement as most of it is provided by 
+	the Managed Package Framework. To get it working the generated parser needs 
+	to store information about every matching parenthpair while it is parsing 
+	the source. This is simply done by calling a \textsf{Match} method in the 
+	parser definition. Listing~\ref{lst:matchbrace} shows how the brace matching 
+	for expressions is achieved in the parser definition.
 
+\begin{lstlisting}[caption=Matching braces for expressions, label=lst:matchbrace]	
+UnaryMinusTerm
+    : '-' UnaryMinusTerm
+    | NUMBER
+    | '(' Expr ')'  { Match(@1, @3); }
+    | LCASEIDENT
+    | KWTRUE
+    | MethodCall
+    | KWFALSE
+    ;
+\end{lstlisting}
+
+	The macros @1 and @3 are converted when the parser is generated and mean 
+	that the first and third token on the lines match. The only additional thing 
+	needed to get the feature working was to check in the \textsf{ParseSource} 
+	method if the reason for the parsing was to highlight braces, and if so then 
+	use the braces found by the parser earlier and call a \textsf{MatchPair} 
+	method on the \textsf{ParseRequest} object that was passed to the method. 
+	Figure~\ref{fig:matchbraces} shows how this feature is useful when working 
+	with large expressions.
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.75]{matchbraces.png}
+		\caption{IntelliSense for CCS in Visual Studio}
+		\label{fig:matchbraces}
+	\end{figure}
+		
+	
 	\subsection{Build support}\label{msbuild}
 	
-	...
+	Visual Studio has menu items and keyboard shortcuts for a \textit{Build} 
+	command. This command is used to build (or compile) the source files of the 
+	current project into an executable file. The underlying system that does the 
+	actual building is named MSBuild, and it is a command line build tool, 
+	similar to \textit{make} which is commonly used on Unix and Linux platforms, 
+	and \textit{NAnt}, an popular open source build tool for the .NET framework. 
+	The input files for MSBuild are XML files that define what the tool should 
+	do. The three most important elements in these files are \textit{targets}, 
+	\textit{tasks} and \textit{properties}. 
+	
+	A \textit{target} is a particular action to take, for instance there can be 
+	a \textit{build} target which builds an entire project and a \textit{clean} 
+	target which deletes all intermediate files. Targets can depend on each 
+	other, for example a \textit{rebuild} target can depend on the 
+	\textit{clean} and \textit{build} targets, so that whenever \textit{rebuild} 
+	is executed the tasks it depends on are automatically executed first. 
+		
+	\textit{Tasks} are the operations performed by the targets. Each task is 
+	usually a single distinct action, for example one task might be to call a 
+	compiler, another task might be to copy files. Tasks can take parameters, 
+	for instance the names of the files to compile. Custom tasks can be written 
+	in .NET to achieve any operation and integrate it into the build process.
+	
+	\textit{Properties} are essentially variables to use in the build process, 
+	and are often passed as parameters to the tasks. A property might for 
+	instance be named \textit{Debug} and have either the values \texttt{true} or 
+	\texttt{false}. It could then be passed to a task as a parameter.
+	
+	Each language in Visual Studio has its own \textit{.targets} files which 
+	defines all the targets and tasks specific to that language. Additionally 
+	there is a common targets file, \textit{Microsoft.Common.targets} which all 
+	languages use. These \textit{.target} files are then referenced in the 
+	project files for the languages. To get CCS working with the build system it 
+	was necessary to create one custom task, to call the compiler. The task is 
+	defined in a class named \textsf{CompileTask} which inherits from MSBuild's 
+	\textsf{ToolTask} class. It has an \textsf{Execute} which calls the CCS 
+	compiler and logs all errors that the compiler emits, and four properties 
+	that can be set, \textsf{Debug}, \textsf{InputFile}, \textsf{OutputFile} and 
+	\textsf{References}. To make that task available in Visual Studio the 
+	template CCS project file references a file called \textsf{CCS.targets}. 
+	That file in its entirety is shown in Listing~\ref{lst:ccstargets}.
+	
+	\begin{figure}
+	\begin{lstlisting}[caption=The CCS.targets file,label=lst:ccstargets,language=xml,basicstyle=\footnotesize]
+<?xml version="1.0" encoding="utf-8" ?>
+<Project DefaultTargets="Build" 
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask TaskName="CCS.BuildTasks.CompileTask" 
+      AssemblyFile="$(CCS_PATH)CCS.BuildTasks.dll"/>
+    <Target Name="CoreCompile">
+        <CompileTask 
+            Debug="$(DebugSymbols)" 
+            OutputFile="@(IntermediateAssembly)" 
+            InputFile="@(Compile)" 
+            References="@(ReferencePath)"/>
+    </Target>
+    <Target Name="CreateManifestResourceNames"></Target>
+    <Target Name="Build"></Target>
+    <Target Name="Compile"></Target>
+    <Import Project="$(MSBuildBinPath)\Microsoft.Common.targets" />
+</Project>
+\end{lstlisting}
+\end{figure}
+	
+	All that is necessary to do in the \textit{CCS.targets} file is to create a 
+	target named \textit{CoreCompile}, and in that target call the custom 
+	compile task that was created for the CCS compiler. Empty implementations of 
+	the targets \textit{CreateManifestResourceNames}, \textit{Build} and 
+	\textit{Compile} are also provided, since otherwise these targets try to 
+	perform actions that aren't necessary for building CCS applications. The 
+	\textit{Debug} parameter can be set within Visual Studio and the names of 
+	the input and output files are determined by the name given to the project 
+	when it is created. References to other .NET assemblies can be added in 
+	Visual Studio and they will be passed to the compile task through the 
+	\textit{References} parameter. Having the CCS project file reference the 
+	CCS.targets file, and that file call the custom compile task is enough to 
+	get full build support from within Visual Studio.
+	
+	\subsection{Debugger support}
+	
+	Once the build support described in Section~\ref{msbuild} is in place, 
+	getting debugger support within Visual Studio is trivial. All that is needed 
+	is to select the \textit{Debug} configuration inside Visual Studio, this 
+	passes the paramater \textit{Debug=true} to the compile task and on to the 
+	compiler. We already saw how the PLR supports emitting debugging symbols in 
+	Section~\ref{debug_support}. Pressing the F5 key, or the play button, in 
+	Visual Studio will then build the project, launch the executable if the 
+	build is successful and attach the debugger. This works due to the fact that 
+	the \textit{Microsoft.Common.targets} file defines a \textit{Run} target 
+	that calls the \textit{CoreCompile} target (which \textit{CCS.targets} 
+	defines) and then launches the debugger, this action is the same for all 
+	languages, although the compile step itself may be different.
+	
+	The only additional thing done to make the debugging experience more user 
+	friendly was to implement a method named \textsf{ValidateBreakpointLocation} 
+	in the \textsf{CCSLanguage} class. When the user tries to set a breakpoint 
+	on a particular line, this method is called and is responsible for looking 
+	at the line and determining whether a breakpoint can be set there, and if 
+	so, which part of the line should be highlighted. For CCS the valid 
+	locations are actions, method calls, process invocations and expressions in 
+	\texttt{if} statements. Using the generated \textsf{Scanner} class once 
+	again, it is possible to find out which tokens are on a particular line and 
+	return their locations if they are valid points for a breakpoint. 
+	Figure~\ref{fig:breakpoint} shows how a breakpoint is highlighted. (Note 
+	that this is only relevant for the highlighting done at compile time, at run 
+	time each line is highlighted according to the sequence points in the actual 
+	compiled file.)
+
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.5]{breakpoint.png}
+		\caption{Setting breakpoints in Visual Studio}
+		\label{fig:breakpoint}
+	\end{figure}
 	
 	\section{Summary}
 	
+	There is no doubt that the tool support for programming languages is a 
+	factor in whether those languages become popular, how productive programmers 
+	are when working with them and how enjoyable they are to work with. 
+	Programming languages used in industry have for a long time now had great 
+	tool support while academic languages often suffer from bad or incomplete 
+	tools. As this chapter demonstrates, this need not be the case. Once a 
+	programming language (or any tool that takes some text files as input) has 
+	been developed, taking the extra time to develop a language service for it 
+	can be very beneficial to the end users of that language, and is relatively 
+	easy to do. One approach might even be to develop the language service 
+	first, thus enabling the author to benefit from it himself while writing the 
+	compiler. Visual Studio might not be the perfect environment for all 
+	languages, but in any case it is a good idea for the language author to 
+	research what environments are out there and evaluate if one of them could 
+	be used to offer the end user of the language a better user experience.
