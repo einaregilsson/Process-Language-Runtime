@@ -1,12 +1,4 @@
-/**
- * $Id$ 
- * 
- * This file is part of the Process Language Runtime (PLR) 
- * and is licensed under the GPL v3.0.
- * 
- * Author: Einar Egilsson (einar@einaregilsson.com) 
- */
- 
+
 using System;
 using System.IO;
 using System.Collections;
@@ -33,13 +25,13 @@ public partial class Scanner {
 		start[60] = 9; 
 		start[44] = 10; 
 		start[62] = 11; 
-		start[43] = 12; 
-		start[46] = 13; 
-		start[40] = 14; 
-		start[41] = 15; 
-		start[64] = 16; 
-		start[45] = 17; 
-		start[42] = 18; 
+		start[42] = 12; 
+		start[43] = 13; 
+		start[46] = 14; 
+		start[40] = 15; 
+		start[41] = 16; 
+		start[64] = 17; 
+		start[45] = 18; 
 		start[47] = 19; 
 		start[37] = 20; 
 		start[Buffer.EOF] = -1;
@@ -89,10 +81,10 @@ public partial class Scanner {
 
 	void CheckLiteral() {
 		switch (t.val) {
-			case "nil": t.kind = 15; break;
-			case "out": t.kind = 16; break;
-			case "in": t.kind = 18; break;
-			case "read": t.kind = 19; break;
+			case "nil": t.kind = 16; break;
+			case "out": t.kind = 17; break;
+			case "in": t.kind = 19; break;
+			case "read": t.kind = 20; break;
 			default: break;
 		}
 	}
@@ -143,15 +135,15 @@ public partial class Scanner {
 			case 12:
 				{t.kind = 10; break;}
 			case 13:
-				{t.kind = 12; break;}
+				{t.kind = 11; break;}
 			case 14:
 				{t.kind = 13; break;}
 			case 15:
 				{t.kind = 14; break;}
 			case 16:
-				{t.kind = 17; break;}
+				{t.kind = 15; break;}
 			case 17:
-				{t.kind = 20; break;}
+				{t.kind = 18; break;}
 			case 18:
 				{t.kind = 21; break;}
 			case 19:
@@ -160,7 +152,7 @@ public partial class Scanner {
 				{t.kind = 23; break;}
 			case 21:
 				if (ch == '|') {AddCh(); goto case 6;}
-				else {t.kind = 11; break;}
+				else {t.kind = 12; break;}
 
 		}
 		t.val = new String(tval, 0, tlen);

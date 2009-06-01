@@ -49,6 +49,7 @@
     <Compile Include="AST\InAction.cs" />
     <Compile Include="AST\OutAction.cs" />
     <Compile Include="AST\ReadAction.cs" />
+    <Compile Include="AST\ReplicatedProcess.cs" />
     <Compile Include="AST\VariableBinding.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="Parsing\Parser.cs" />
@@ -84,4 +85,8 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PreBuildEvent>cd \temp
+c:\temp\CocoPlugin.exe MSc\KLAIM\Parsing\KLAIM.atg</PreBuildEvent>
+  </PropertyGroup>
 </Project>

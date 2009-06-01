@@ -77,6 +77,7 @@ namespace KLAIM.AST {
 
             il.Emit(OpCodes.Stloc, tuple);
             
+            
             //Now lets bind our variables...
             for (int i = 1; i < this.ChildNodes.Count; i++) {
                 if (_children[i] is VariableBinding) {
@@ -100,6 +101,7 @@ namespace KLAIM.AST {
             il.EmitWriteLine("************** CURRENT TUPLES **************");
             il.Emit(OpCodes.Call, typeof(Net).GetMethod("Display"));
             il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("WriteLine", new Type[] { typeof(string) }));
+            //TODO: Notify possible replicated process
         }
     }
 }

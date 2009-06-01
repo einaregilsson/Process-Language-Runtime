@@ -1,11 +1,3 @@
-/**
- * $Id$ 
- * 
- * This file is part of the Process Language Runtime (PLR) 
- * and is licensed under the GPL v3.0.
- * 
- * Author: Einar Egilsson (einar@einaregilsson.com) 
- */
 using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
@@ -78,8 +70,15 @@ public partial class Parser {
 	}
 
 	void Process(out Process p, string locality) {
-		p = null; 
+		p = null; bool replicated = false; int replCount =0;
+		if (la.kind == 10) {
+			Get();
+			replicated = true; 
+			Expect(4);
+			replCount = int.Parse(t.val); 
+		}
 		NonDeterministicChoice(out p, locality);
+		if (replicated) p = new ReplicatedProcess(p, replCount); 
 	}
 
 	void Constant(out object val) {
@@ -97,7 +96,7 @@ public partial class Parser {
 		NonDeterministicChoice ndc = new NonDeterministicChoice(); Process pc = null; 
 		ParallelComposition(out pc, locality);
 		ndc.Add(pc); 
-		while (la.kind == 10) {
+		while (la.kind == 11) {
 			Get();
 			ParallelComposition(out pc, locality);
 			ndc.Add(pc); 
@@ -109,7 +108,7 @@ public partial class Parser {
 		Process ap; ParallelComposition pc = new ParallelComposition();
 		ActionPrefix(out ap, locality);
 		pc.Add(ap); 
-		while (la.kind == 11) {
+		while (la.kind == 12) {
 			Get();
 			ActionPrefix(out ap, locality);
 			pc.Add(ap); 
@@ -119,18 +118,18 @@ public partial class Parser {
 
 	void ActionPrefix(out Process proc, string locality) {
 		Process nextproc = new NilProcess(); proc = null; Action action = null;
-		if (la.kind == 16 || la.kind == 18 || la.kind == 19) {
+		if (la.kind == 17 || la.kind == 19 || la.kind == 20) {
 			Action(out action, locality);
-			if (la.kind == 12) {
+			if (la.kind == 13) {
 				Get();
 				ActionPrefix(out nextproc, locality);
 			}
 			proc = new ActionPrefix(action, nextproc); 
-		} else if (la.kind == 13) {
+		} else if (la.kind == 14) {
 			Get();
 			Process(out proc, locality);
-			Expect(14);
-		} else if (la.kind == 15) {
+			Expect(15);
+		} else if (la.kind == 16) {
 			Get();
 			proc = new NilProcess(); SetPos(proc, t); 
 		} else SynErr(27);
@@ -138,9 +137,9 @@ public partial class Parser {
 
 	void Action(out Action action, string locality) {
 		action = null; Token start = la;
-		if (la.kind == 16) {
+		if (la.kind == 17) {
 			OutAction(out action, locality);
-		} else if (la.kind == 18 || la.kind == 19) {
+		} else if (la.kind == 19 || la.kind == 20) {
 			InOrReadAction(out action, locality);
 		} else SynErr(28);
 		Token end = t; SetPos(action, start, end); 
@@ -148,8 +147,8 @@ public partial class Parser {
 
 	void OutAction(out Action action, string locality) {
 		Expression exp = null; action = new OutAction(); action.Locality = locality;  
-		Expect(16);
-		Expect(13);
+		Expect(17);
+		Expect(14);
 		OutParam(out exp);
 		action.AddExpression(exp); 
 		while (la.kind == 8) {
@@ -157,8 +156,8 @@ public partial class Parser {
 			OutParam(out exp);
 			action.AddExpression(exp); 
 		}
-		Expect(14);
-		Expect(17);
+		Expect(15);
+		Expect(18);
 		if (la.kind == 1) {
 			Get();
 			action.At = new PLRString(t.val); 
@@ -170,14 +169,14 @@ public partial class Parser {
 
 	void InOrReadAction(out Action action, string locality) {
 		Expression exp = null;   action = null; 
-		if (la.kind == 18) {
+		if (la.kind == 19) {
 			Get();
 			action = new InAction(); action.Locality = locality;
-		} else if (la.kind == 19) {
+		} else if (la.kind == 20) {
 			Get();
 			action = new ReadAction();  action.Locality = locality;
 		} else SynErr(30);
-		Expect(13);
+		Expect(14);
 		InOrReadParam(out exp);
 		action.AddExpression(exp); 
 		while (la.kind == 8) {
@@ -185,8 +184,8 @@ public partial class Parser {
 			InOrReadParam(out exp);
 			action.AddExpression(exp); 
 		}
-		Expect(14);
-		Expect(17);
+		Expect(15);
+		Expect(18);
 		if (la.kind == 1) {
 			Get();
 			action.At = new PLRString(t.val); 
@@ -210,8 +209,8 @@ public partial class Parser {
 		ArithmeticBinOp op; Expression right = null, left = null; 
 		PlusMinusTerm(out left);
 		aexp = left; 
-		while (la.kind == 10 || la.kind == 20) {
-			if (la.kind == 10) {
+		while (la.kind == 11 || la.kind == 21) {
+			if (la.kind == 11) {
 				Get();
 				op = ArithmeticBinOp.Plus; 
 			} else {
@@ -240,8 +239,8 @@ public partial class Parser {
 		ArithmeticBinOp op; Expression right = null, left = null; 
 		UnaryMinusTerm(out left);
 		aexp = left; 
-		while (la.kind == 21 || la.kind == 22 || la.kind == 23) {
-			if (la.kind == 21) {
+		while (la.kind == 10 || la.kind == 22 || la.kind == 23) {
+			if (la.kind == 10) {
 				Get();
 				op = ArithmeticBinOp.Multiply; 
 			} else if (la.kind == 22) {
@@ -258,14 +257,14 @@ public partial class Parser {
 
 	void UnaryMinusTerm(out Expression aexp) {
 		bool isMinus = false; Token minusToken = null; aexp = null; 
-		if (la.kind == 20) {
+		if (la.kind == 21) {
 			Get();
 			isMinus = true; minusToken = t; 
 		}
-		if (la.kind == 13) {
+		if (la.kind == 14) {
 			Get();
 			Expression(out aexp);
-			Expect(14);
+			Expect(15);
 			aexp.ParenCount += 1; 
 		} else if (la.kind == 4) {
 			Get();
@@ -290,8 +289,8 @@ public partial class Parser {
 	
 	static readonly bool[,] set = {
 		{T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x},
-		{x,x,x,x, x,x,x,x, x,x,x,x, x,T,x,T, T,x,T,T, x,x,x,x, x,x},
-		{x,x,T,x, T,x,x,x, x,x,x,x, x,T,x,x, x,x,x,x, T,x,x,x, x,x}
+		{x,x,x,x, x,x,x,x, x,x,T,x, x,x,T,x, T,T,x,T, T,x,x,x, x,x},
+		{x,x,T,x, T,x,x,x, x,x,x,x, x,x,T,x, x,x,x,x, x,T,x,x, x,x}
 
 	};
 } // end Parser
@@ -311,18 +310,18 @@ public partial class Errors {
 			case 7: s = "\"<\" expected"; break;
 			case 8: s = "\",\" expected"; break;
 			case 9: s = "\">\" expected"; break;
-			case 10: s = "\"+\" expected"; break;
-			case 11: s = "\"|\" expected"; break;
-			case 12: s = "\".\" expected"; break;
-			case 13: s = "\"(\" expected"; break;
-			case 14: s = "\")\" expected"; break;
-			case 15: s = "\"nil\" expected"; break;
-			case 16: s = "\"out\" expected"; break;
-			case 17: s = "\"@\" expected"; break;
-			case 18: s = "\"in\" expected"; break;
-			case 19: s = "\"read\" expected"; break;
-			case 20: s = "\"-\" expected"; break;
-			case 21: s = "\"*\" expected"; break;
+			case 10: s = "\"*\" expected"; break;
+			case 11: s = "\"+\" expected"; break;
+			case 12: s = "\"|\" expected"; break;
+			case 13: s = "\".\" expected"; break;
+			case 14: s = "\"(\" expected"; break;
+			case 15: s = "\")\" expected"; break;
+			case 16: s = "\"nil\" expected"; break;
+			case 17: s = "\"out\" expected"; break;
+			case 18: s = "\"@\" expected"; break;
+			case 19: s = "\"in\" expected"; break;
+			case 20: s = "\"read\" expected"; break;
+			case 21: s = "\"-\" expected"; break;
 			case 22: s = "\"/\" expected"; break;
 			case 23: s = "\"%\" expected"; break;
 			case 24: s = "??? expected"; break;

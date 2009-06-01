@@ -68,9 +68,13 @@ Constant<out object val>                        (. val = null; .)
     NUMBER                                      (. val = int.Parse(t.val); .)
 .
 
-Process<out Process p, string locality>         (. p = null; .)
+Process<out Process p, string locality>         (. p = null; bool replicated = false; int replCount =0;.)
 =
-    NonDeterministicChoice<out p, locality>
+	[
+	'*'											(. replicated = true; .)
+	NUMBER										(. replCount = int.Parse(t.val); .)
+	]									
+    NonDeterministicChoice<out p, locality>		(. if (replicated) p = new ReplicatedProcess(p, replCount); .)
 .
 
 
