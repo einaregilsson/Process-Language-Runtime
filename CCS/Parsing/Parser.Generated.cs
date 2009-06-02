@@ -98,11 +98,11 @@ private ProcessSystem system = new ProcessSystem();
 		if (la.kind == 10) {
 			Get();
 			Expect(3);
-			vars.Add(new Variable(t.val)); 
+			vars.Add(new Variable(t.val)); SetPos(vars[vars.Count-1], t); 
 			while (la.kind == 11) {
 				Get();
 				Expect(3);
-				vars.Add(new Variable(t.val)); 
+				vars.Add(new Variable(t.val)); SetPos(vars[vars.Count-1], t); 
 			}
 			Expect(12);
 		}
@@ -183,18 +183,18 @@ private ProcessSystem system = new ProcessSystem();
 	}
 
 	void Action(out Action act) {
-		act = null; Expression exp = null;
+		act = null; Expression exp = null;Variable v = null;
 		if (la.kind == 3) {
 			Get();
 			InAction inAct = new InAction(t.val); 
 			if (la.kind == 10) {
 				Get();
 				Expect(3);
-				inAct.AddVariable(new Variable(t.val)); 
+				v = new Variable(t.val); SetPos(v, t); inAct.AddVariable(v); 
 				while (la.kind == 11) {
 					Get();
 					Expect(3);
-					inAct.AddVariable(new Variable(t.val)); 
+					v = new Variable(t.val); SetPos(v, t); inAct.AddVariable(v); 
 				}
 				Expect(12);
 			}

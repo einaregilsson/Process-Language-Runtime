@@ -86,7 +86,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>cd \temp
-c:\temp\CocoPlugin.exe MSc\KLAIM\Parsing\KLAIM.atg</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

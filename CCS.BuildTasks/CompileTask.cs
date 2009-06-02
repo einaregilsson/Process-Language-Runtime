@@ -59,9 +59,9 @@ namespace CCS.BuildTasks {
                     column = int.Parse(parts[1]);
                 }
                 if (type == "ERROR") {
-                    this.BuildEngine.LogErrorEvent(new BuildErrorEventArgs("", "CCSError", InputFile, line, column, line, column, message, "", ""));
+                    this.BuildEngine.LogErrorEvent(new BuildErrorEventArgs("", "CCSError", InputFile, line, column, line, column+1, message, "", ""));
                 } else if (type == "WARNING") {
-                    this.BuildEngine.LogWarningEvent(new BuildWarningEventArgs("", "CCSError", InputFile, line, column, line, column, message, "", ""));
+                    this.BuildEngine.LogWarningEvent(new BuildWarningEventArgs("", "CCSError", InputFile, line, column, line, column+1, message, "", ""));
                 }
             } else {
                 this.BuildEngine.LogErrorEvent(new BuildErrorEventArgs("", "CCSError", InputFile, 0, 0,0, 0, "Unexpected message from compiler: " + singleLine, "", ""));

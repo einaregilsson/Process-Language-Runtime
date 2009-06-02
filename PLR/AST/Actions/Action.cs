@@ -6,7 +6,7 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System.Reflection;
+﻿using System.Reflection;
 using PLR.Runtime;
 
 namespace PLR.AST.Actions {

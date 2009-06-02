@@ -40,6 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis\IAnalysis.cs" />
+    <Compile Include="Analysis\NilProcessRemoval.cs" />
+    <Compile Include="Analysis\UnusedAssignments.cs" />
+    <Compile Include="Analysis\UseOfUnassignedVariables.cs" />
+    <Compile Include="Analysis\Warning.cs" />
     <Compile Include="AST\ActionHandling\ChannelRestrictions.cs" />
     <Compile Include="AST\ActionHandling\CustomPreprocess.cs" />
     <Compile Include="AST\ActionHandling\CustomRestrictions.cs" />

@@ -104,7 +104,6 @@
     <Compile Include="CCSProjectFactory.cs" />
     <Compile Include="CCSProjectNode.cs" />
     <Compile Include="GuidList.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

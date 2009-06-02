@@ -26,6 +26,14 @@ namespace PLR.AST.Expressions {
             _local = local;
         }
 
+        public override bool Equals(object obj) {
+            if (!(obj is Variable)) return false;
+
+            return this.Name == ((Variable)obj).Name;
+        }
+        public override int GetHashCode() {
+            return this.Name.GetHashCode();
+        }
         public override void Accept(AbstractVisitor visitor)
         {
             visitor.Visit(this);

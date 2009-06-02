@@ -30,6 +30,7 @@ namespace PLR.Compilation {
         public void AddType(TypeInfo type) {
             _types.Add(type.Name, type);
         }
+
         public CompileOptions Options {
             get { return _options; }
             set { _options = value; }
@@ -126,7 +127,6 @@ namespace PLR.Compilation {
                         if (paramTypes == null) {
                             method = type.GetMethod(methodName);
                         } else {
-                            Type t;
                             method = type.GetMethod(methodName, paramTypes);
                         }
 

@@ -100,9 +100,6 @@
     <MPLexCompile Include="ParserGeneration\lexer.lex" />
     <MPPGCompile Include="ParserGeneration\parser.y" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="TextFile1.ccs" />
-  </ItemGroup>
   <PropertyGroup>
     <!--
     To specify a different registry root to register your package, uncomment the TargetRegistryRoot

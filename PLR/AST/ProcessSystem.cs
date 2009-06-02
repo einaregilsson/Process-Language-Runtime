@@ -14,6 +14,7 @@ using System.IO;
 using System;
 using PLR.Compilation;
 using System.Diagnostics.SymbolStore;
+using PLR.Analysis;
 
 namespace PLR.AST {
 
@@ -44,6 +45,14 @@ namespace PLR.AST {
         }
 
         public override void Compile(CompileContext context) {
+        }
+
+        public List<Warning> Analyze(params IAnalysis[] args) {
+            var allWarnings = new List<Warning>();
+            foreach (IAnalysis analysis in args) {
+                allWarnings.AddRange(analysis.Analyze(this));
+            }
+            return allWarnings;
         }
 
         public void Compile(CompileOptions options) {

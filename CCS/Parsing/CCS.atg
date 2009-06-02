@@ -88,9 +88,9 @@ ProcessDefinition<out ProcessDefinition procdef, bool entryProc> = (. Process pr
     PROCNAME											(. name = t.val; Token startTok = t;.)
      [
 		'('
-			LCASEIDENT									(. vars.Add(new Variable(t.val)); .)
+			LCASEIDENT									(. vars.Add(new Variable(t.val)); SetPos(vars[vars.Count-1], t); .)
 			{ 
-				',' LCASEIDENT							(. vars.Add(new Variable(t.val)); .)
+				',' LCASEIDENT							(. vars.Add(new Variable(t.val)); SetPos(vars[vars.Count-1], t); .)
 			}
 		')'
     ]													(. Token endTok = t; .)
@@ -170,14 +170,14 @@ ProcessConstantInvoke<out ProcessConstant pc>           (. pc = null; Expression
     ]                                                   (. SetPos(pc, start, t); .)
 .
 
-Action<out Action act>                                  (. act = null; Expression exp = null;.)
+Action<out Action act>                                  (. act = null; Expression exp = null;Variable v = null;.)
 =
     LCASEIDENT                                          (. InAction inAct = new InAction(t.val); .)
     [
 		'('
-			LCASEIDENT									(. inAct.AddVariable(new Variable(t.val)); .)
+			LCASEIDENT									(. v = new Variable(t.val); SetPos(v, t); inAct.AddVariable(v); .)
 			{ 
-				',' LCASEIDENT							(. inAct.AddVariable(new Variable(t.val)); .)
+				',' LCASEIDENT							(. v = new Variable(t.val); SetPos(v, t); inAct.AddVariable(v); .)
 			}
 		')'
     ]													(. act = inAct; .)

@@ -19,6 +19,7 @@ using PLR.AST.Processes;
 using System.Reflection;
 using System.Security.Cryptography;
 using PLR.AST.Formatters;
+using PLR.Analysis;
 
 namespace CCS {
     class Program {
@@ -59,6 +60,10 @@ Usage: CCS [options] <filename>
                 }
                 ProcessSystem system = parser.System;
                 system.MeetTheParents();
+                List<Warning> warnings = system.Analyze(new UnusedAssignments(),new NilProcessRemoval());
+                foreach (Warning warn in warnings) {
+                    Console.Error.WriteLine("WARNING({0},{1}): {2}", warn.LexicalInfo.StartLine, warn.LexicalInfo.StartColumn, warn.Message);
+                }
 
                 CheckPrintout(options, system);
                 system.Compile(options);

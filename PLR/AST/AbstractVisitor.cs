@@ -23,16 +23,23 @@ namespace PLR.AST
             VisitRecursive(node);
         }
 
+        public bool VisitParentBeforeChildren { get; set; }
         protected virtual void VisitRecursive(Node node)
         {
             if (node == null) {
                 return;
             }
+            if (VisitParentBeforeChildren) {
+                node.Accept(this);
+            }
             foreach (Node child in node)
             {
                 VisitRecursive(child);
             }
-            node.Accept(this);
+            if (!VisitParentBeforeChildren) {
+                node.Accept(this);
+            }
+            
         }
 
         //ActionHandling
