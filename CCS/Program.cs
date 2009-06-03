@@ -60,7 +60,7 @@ Usage: CCS [options] <filename>
                 }
                 ProcessSystem system = parser.System;
                 system.MeetTheParents();
-                List<Warning> warnings = system.Analyze(new UnusedAssignments(), new UseOfUnassignedVariables(), new NilProcessWarning());
+                List<Warning> warnings = system.Analyze(new UnusedAssignments(), new UseOfUnassignedVariables(), new NilProcessWarning(), new UnmatchedChannels());
                 foreach (Warning warn in warnings) {
                     Console.Error.WriteLine("WARNING({0},{1}): {2}", warn.LexicalInfo.StartLine, warn.LexicalInfo.StartColumn, warn.Message);
                 }

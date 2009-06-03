@@ -6,17 +6,17 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
-using PLR.AST.Interfaces;
 
 namespace PLR.AST.Processes {
-    public class ProcessConstant : Process, IVariableReader {
+    public class ProcessConstant : Process {
+        
         public ProcessConstant(string name) {
             _name = name;
             _children.Add(new ExpressionList());
@@ -25,16 +25,23 @@ namespace PLR.AST.Processes {
         private string _name;
         public string Name { get { return _name; } }
 
-        public List<Variable> ReadVariables {
+        public override List<Variable> ReadVariables {
             get { return FindReadVariables(this.Expressions); }
+        }
+        
+        public override List<Process> FlowsTo {
+            get {
+                return new List<Process>();
+            }
         }
 
         public ExpressionList Expressions { get { return (ExpressionList)_children[2]; } }
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
-            visitor.Visit((IVariableReader)this);
+            base.Accept(visitor);
         }
+
         public override bool Equals(object obj) {
             if (!(obj is ProcessConstant)) {
                 return false;
@@ -71,5 +78,6 @@ namespace PLR.AST.Processes {
         public override string ToString() {
             return this.Name;
         }
+
     }
 }

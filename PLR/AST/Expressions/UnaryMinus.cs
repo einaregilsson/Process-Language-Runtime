@@ -22,9 +22,9 @@ namespace PLR.AST.Expressions {
             _exp = exp;
             _children.Add(exp);
         }
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
         
         public override string ToString() {

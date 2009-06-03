@@ -18,8 +18,16 @@ namespace PLR.AST.Processes {
         public void Add(Process p) {
             _children.Add(p);
         }
+
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
+        }
+
+        public override List<Process> FlowsTo {
+            get {
+                return this.Processes;
+            }
         }
 
         public List<Process> Processes {

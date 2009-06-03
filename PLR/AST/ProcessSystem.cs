@@ -40,8 +40,10 @@ namespace PLR.AST {
         public void Add(ProcessDefinition pd) {
             _children.Add(pd);
         }
+
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
 
         public override void Compile(CompileContext context) {

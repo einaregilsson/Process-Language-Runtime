@@ -18,6 +18,7 @@ namespace PLR.AST.ActionHandling {
     public abstract class ActionRestrictions : Node {
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
 
         protected void OverrideRestrict(CompileContext context, MethodInfo newMethod) {

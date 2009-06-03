@@ -157,17 +157,17 @@ InOrReadAction<out Action action, string locality>                            (.
     ')'
     '@'
     (
-        LOCALITY                                            (. action.At = new PLRString(t.val); .)
+        LOCALITY                                            (. action.At = new PLRString(t.val); SetPos(action.At, t); .)
         |
-        VARIABLE                                            (. action.At = new Variable(t.val); .)
+        VARIABLE                                            (. action.At = new Variable(t.val); SetPos(action.At, t);.)
      )                                     
 . 
 
 InOrReadParam<out Expression exp>                       (. exp = null; .)
 = 
-    LOCALITY                                            (. exp = new PLRString(t.val); .)
+    LOCALITY                                            (. exp = new PLRString(t.val); SetPos(exp, t);.)
     |
-    VARBINDING                                          (. exp = new VariableBinding(t.val.Replace("!", "")); .)
+    VARBINDING                                          (. exp = new VariableBinding(t.val.Replace("!", "")); SetPos(exp, t);.)
     |
     Expression<out exp>
 .

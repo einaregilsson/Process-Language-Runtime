@@ -124,7 +124,7 @@ public partial class Parser {
 				Get();
 				ActionPrefix(out nextproc, locality);
 			}
-            proc = new ActionPrefix(action, nextproc); CopyPos(proc, action, t);
+			proc = new ActionPrefix(action, nextproc); CopyPos(proc, action, t);
 		} else if (la.kind == 14) {
 			Get();
 			Process(out proc, locality);
@@ -188,10 +188,10 @@ public partial class Parser {
 		Expect(18);
 		if (la.kind == 1) {
 			Get();
-			action.At = new PLRString(t.val); 
+			action.At = new PLRString(t.val); SetPos(action.At, t); 
 		} else if (la.kind == 2) {
 			Get();
-			action.At = new Variable(t.val); 
+			action.At = new Variable(t.val); SetPos(action.At, t);
 		} else SynErr(31);
 	}
 
@@ -226,10 +226,10 @@ public partial class Parser {
 		exp = null; 
 		if (la.kind == 1) {
 			Get();
-			exp = new PLRString(t.val); 
+			exp = new PLRString(t.val); SetPos(exp, t);
 		} else if (la.kind == 3) {
 			Get();
-			exp = new VariableBinding(t.val.Replace("!", "")); 
+			exp = new VariableBinding(t.val.Replace("!", "")); SetPos(exp, t);
 		} else if (StartOf(2)) {
 			Expression(out exp);
 		} else SynErr(33);

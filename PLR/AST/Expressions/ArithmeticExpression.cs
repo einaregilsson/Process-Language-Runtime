@@ -20,6 +20,7 @@ namespace PLR.AST.Expressions {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
     }
 }

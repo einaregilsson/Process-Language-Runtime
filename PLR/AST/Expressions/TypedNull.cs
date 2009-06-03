@@ -24,6 +24,11 @@ namespace PLR.AST.Expressions {
             get { return _nullType; }
         }
 
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+            base.Accept(visitor);
+        }
+
         public override string ToString() {
             return "null";
         }

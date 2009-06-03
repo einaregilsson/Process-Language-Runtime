@@ -20,6 +20,10 @@ namespace PLR.AST.Expressions {
         public NewObject(Type objectType, params object[] args) : base(args) {
             _constructor = objectType.GetConstructor(GetArgTypes());
         }
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+            base.Accept(visitor);
+        }
 
         public override Type Type {
             get { return _constructor.DeclaringType; }

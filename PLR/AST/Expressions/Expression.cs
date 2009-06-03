@@ -16,6 +16,7 @@ namespace PLR.AST.Expressions {
     public abstract class Expression : Node{
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
         public abstract Type Type { get; }
     }

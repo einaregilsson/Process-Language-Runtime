@@ -12,15 +12,15 @@ using PLR.Compilation;
 
 namespace PLR.AST.Expressions {
 
-    public class Number : ArithmeticExpression{
+    public class Number : ArithmeticExpression {
         private int _number;
         public Number(int number) {
             _number = number;
         }
 
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
 
         public void Print(string s) { }

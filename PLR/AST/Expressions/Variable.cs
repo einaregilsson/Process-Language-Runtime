@@ -34,9 +34,9 @@ namespace PLR.AST.Expressions {
         public override int GetHashCode() {
             return this.Name.GetHashCode();
         }
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
         public override Type Type {
             get {

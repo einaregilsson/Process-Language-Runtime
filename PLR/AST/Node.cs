@@ -18,13 +18,17 @@ namespace PLR.AST {
 
     public abstract class Node : IEnumerable<Node> {
 
-        public abstract void Accept(AbstractVisitor visitor);
+        public virtual void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+        }
         //Source file contextrmation
         
         protected readonly LexicalInfo _lexInfo = new LexicalInfo();
         public LexicalInfo LexicalInfo {
             get { return _lexInfo; }
         }
+
+        public object Tag { get; set; }
 
         private Node _parent;
         public Node Parent {

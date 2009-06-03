@@ -14,15 +14,14 @@ using System.Text.RegularExpressions;
 using PLR.Compilation;
 using PLR.Runtime;
 using PLR.AST.Expressions;
-using PLR.AST.Interfaces;
 
 namespace PLR.AST.Actions {
-    public class InAction : Action, IVariableAssignment {
+    public class InAction : Action {
         public InAction(string name) : base(name) { }
-        
+
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
-            visitor.Visit((IVariableAssignment)this);
+            base.Accept(visitor);
         }
 
         public void AddVariable(Variable var) {
@@ -67,7 +66,7 @@ namespace PLR.AST.Actions {
             }
         }
 
-        public List<Variable> AssignedVariables {
+        public override List<Variable> AssignedVariables {
             get {
                 var list = new List<Variable>();
                 foreach (Variable v in this.ChildNodes) {
@@ -76,6 +75,5 @@ namespace PLR.AST.Actions {
                 return list;
             }
         }
-
     }
 }

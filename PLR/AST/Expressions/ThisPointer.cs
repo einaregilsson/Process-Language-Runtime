@@ -14,7 +14,7 @@ using System.Reflection.Emit;
 using PLR.Compilation;
 
 namespace PLR.AST.Expressions {
-    public class ThisPointer : Expression{
+    public class ThisPointer : Expression {
         private Type _thisType;
 
         public ThisPointer(Type thisType) {
@@ -24,6 +24,10 @@ namespace PLR.AST.Expressions {
             get { return _thisType; }
         }
 
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+            base.Accept(visitor);
+        }
         public override string ToString() {
             return "this";
         }

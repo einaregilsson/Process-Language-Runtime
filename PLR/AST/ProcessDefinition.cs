@@ -14,7 +14,6 @@ using System;
 using System.Reflection.Emit;
 using System.Reflection;
 using PLR.Runtime;
-using PLR.AST.Interfaces;
 
 public struct Foo {
     public object a;
@@ -29,7 +28,7 @@ public class Bar {
 }
 namespace PLR.AST {
 
-    public class ProcessDefinition : Node, IVariableAssignment {
+    public class ProcessDefinition : Node {
 
 
         protected string _name;
@@ -68,7 +67,7 @@ namespace PLR.AST {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
-            visitor.Visit((IVariableAssignment)this);
+            base.Accept(visitor);
         }
 
 

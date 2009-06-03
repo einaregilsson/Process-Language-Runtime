@@ -25,6 +25,10 @@ namespace PLR.AST.Processes {
             _children.Add(null); //Restrict
         }
 
+        public virtual List<Process> FlowsTo { get { return new List<Process>(); } }
+        public virtual List<Variable> ReadVariables { get { return new List<Variable>(); } }
+        public virtual List<Variable> AssignedVariables { get { return new List<Variable>(); } }
+
         public PreProcessActions PreProcessActions {
             get { return (PreProcessActions) _children[0]; }
             set { _children[0] = value; }
@@ -85,6 +89,11 @@ namespace PLR.AST.Processes {
                     Variables.Add(var);
                 }
             }
+        }
+
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+            base.Accept(visitor);
         }
 
         /// <summary>

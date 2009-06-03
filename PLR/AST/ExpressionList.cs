@@ -25,6 +25,7 @@ namespace PLR.AST {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
 
         public override void Compile(CompileContext context) {

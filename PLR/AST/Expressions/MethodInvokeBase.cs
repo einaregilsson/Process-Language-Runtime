@@ -31,6 +31,11 @@ namespace PLR.AST.Expressions {
             }
         }
 
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+            base.Accept(visitor);
+        }
+
         protected Type[] GetArgTypes() {
             Type[] types = new Type[_children.Count];
             for (int i = 0; i < _children.Count; i++) {

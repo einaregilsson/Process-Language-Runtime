@@ -8,12 +8,14 @@
  */
 using System.Reflection.Emit;
 using PLR.Compilation;
+using System.Collections.Generic;
 
 namespace PLR.AST.Processes {
     public class NilProcess : Process{
-        public override void Accept(AbstractVisitor visitor)
-        {
+
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
 
         public override void Compile(CompileContext context) {

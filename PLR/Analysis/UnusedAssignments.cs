@@ -6,53 +6,47 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
-using System;
 using System.Collections.Generic;
-using System.Text;
 using PLR.AST;
+using PLR.AST.Processes;
 using PLR.AST.Expressions;
-using PLR.AST.Actions;
-using PLR.AST.Interfaces;
 
 namespace PLR.Analysis {
 
     public class UnusedAssignments : AbstractVisitor, IAnalysis {
-    
-        private List<Variable> _readVariables = new List<Variable>();
+
         private List<Warning> _warnings;
 
         public List<Warning> Analyze(ProcessSystem system) {
+            base.VisitParentBeforeChildren = false; //Backwards analysis
             _warnings = new List<Warning>();
             this.Start(system);
             return _warnings;
         }
 
-        public override void Visit(ProcessDefinition node) {
-            foreach (Variable var in node.Variables) {
-                if (!_readVariables.Contains(var)) {
-                    _warnings.Add(new Warning(var.LexicalInfo, "Variable " + var.Name + " is never read in the process " + node.Name));
-                };
-            }
-            //Now clear so everything is ready for the next proc def
-            _readVariables.Clear();
-        }
-
-        public override void Visit(IVariableAssignment ass) {
-            if (!(ass is ProcessDefinition)) {
-                foreach (Variable var in ass.AssignedVariables) {
-                    if (!_readVariables.Contains(var)) {
-                        _warnings.Add(new Warning(var.LexicalInfo, "Variable " + var.Name + " is never read after assignment"));
-                    }
+        public override void Visit(ProcessDefinition def) {
+            foreach (Variable var in def.Variables) {
+                if (!((Set)def.Process.Tag).Contains(var) && var.Name != "dummy") {
+                    _warnings.Add(new Warning(var.LexicalInfo, "The initial value of " + var.Name + " which is passed to " + def.Name + " is never read in the process"));
                 }
             }
         }
 
-        public override void Visit(IVariableReader reader) {
-            foreach (Variable v in reader.ReadVariables) {
-                if (!_readVariables.Contains(v)) {
-                    _readVariables.Add(v);
-                }
+        public override void Visit(Process p) {
+            Set set = new Set();
+            foreach (Process child in p.FlowsTo) {
+                set.AddRange((Set)child.Tag);
             }
+
+            set.AddRange(p.ReadVariables);
+
+            foreach (Variable var in p.AssignedVariables) {
+                if (!set.Contains(var) && var.Name != "dummy") {
+                    _warnings.Add(new Warning(var.LexicalInfo, "This assignment to variable " + var.Name + " has no effect, it is never read"));
+                }
+                set.Remove(var);
+            }
+            p.Tag = set;
         }
     }
 }

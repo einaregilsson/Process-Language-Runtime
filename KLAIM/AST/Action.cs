@@ -26,6 +26,12 @@ namespace KLAIM.AST {
             _children.Add(new PLRString("DUMMY"));
         }
 
+        public override System.Collections.Generic.List<Variable> ReadVariables {
+            get {
+                return FindReadVariables(this);
+            }
+        }
+
         public void AddExpression(Expression exp) {
             _children.Add(exp);
         }

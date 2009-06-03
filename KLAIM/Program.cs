@@ -15,6 +15,7 @@ using KLAIM.Runtime;
 using PLR.Compilation;
 using System.Reflection.Emit;
 using System.IO;
+using PLR.Analysis;
 
 namespace KLAIM {
     class Program {
@@ -49,6 +50,12 @@ Usage: kc [options] <filename>
             Parser parser = new Parser(new Scanner(new FileStream(filename, FileMode.Open)));
             parser.Parse();
             Compiler compiler = new Compiler();
+            parser.Processes.MeetTheParents();
+            List<Warning> warnings = parser.Processes.Analyze(new UnusedAssignments(), new UseOfUnassignedVariables());
+            foreach (Warning warn in warnings) {
+                Console.Error.WriteLine("WARNING({0},{1}): {2}", warn.LexicalInfo.StartLine, warn.LexicalInfo.StartColumn, warn.Message);
+            }
+
             compiler.Compile(parser.LocatedTuples, parser.Processes, options);
             return 0;
         }

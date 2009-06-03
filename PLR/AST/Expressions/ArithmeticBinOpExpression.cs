@@ -56,7 +56,9 @@ namespace PLR.AST.Expressions {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
+
         public override void Compile(CompileContext context) {
             ILGenerator il = context.ILGenerator;
             Left.Compile(context); if (Left is Variable) il.Emit(OpCodes.Unbox_Any, typeof(int));

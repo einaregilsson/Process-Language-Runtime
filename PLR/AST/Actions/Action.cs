@@ -7,11 +7,21 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
 ﻿using System.Reflection;
+using System.Collections.Generic;
 using PLR.Runtime;
+using PLR.AST.Expressions;
 
 namespace PLR.AST.Actions {
 
     public abstract class Action : Node{
+
+        public virtual List<Variable> ReadVariables { get { return new List<Variable>(); } }
+        public virtual List<Variable> AssignedVariables { get { return new List<Variable>(); } }
+
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+            base.Accept(visitor);
+        }
 
         protected string _name;
         public string Name {

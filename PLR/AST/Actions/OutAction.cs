@@ -14,24 +14,22 @@ using System.Text.RegularExpressions;
 using PLR.Compilation;
 using PLR.AST.Expressions;
 using PLR.Runtime;
-using PLR.AST.Interfaces;
 
 namespace PLR.AST.Actions
 {
-    public class OutAction : Action, IVariableReader
+    public class OutAction : Action
     {
         public OutAction(string name) : base(Regex.Replace(name, "^_|_$","")) { }
-        public override void Accept(AbstractVisitor visitor)
-        {
+        public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
-            visitor.Visit((IVariableReader)this);
+            base.Accept(visitor);
         }
 
         public void AddExpression(Expression exp) {
             _children.Add(exp);
         }
 
-        public List<Variable> ReadVariables {
+        public override List<Variable> ReadVariables {
             get { return FindReadVariables(this); }
         }
 

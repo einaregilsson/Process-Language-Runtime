@@ -29,6 +29,12 @@ namespace PLR.AST.Processes {
             set { _children[2] = value; }
         }
 
+        public override List<Process> FlowsTo {
+            get {
+                return  new List<Process>(){this.Process};
+            }
+        }
+
         public Process Process {
             get { return (Process)_children[3];}
             set {  _children[3] = value; }
@@ -40,6 +46,7 @@ namespace PLR.AST.Processes {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            base.Accept(visitor);
         }
 
         public override void Compile(CompileContext context) {
@@ -59,6 +66,17 @@ namespace PLR.AST.Processes {
             return Action.ToString() + " . " + Process.ToString();
         }
 
+        public override List<Variable> AssignedVariables {
+            get {
+                return this.Action.AssignedVariables;
+            }
+        }
+
+        public override List<Variable> ReadVariables {
+            get {
+                return this.Action.ReadVariables;
+            }
+        }
     }
 }
 

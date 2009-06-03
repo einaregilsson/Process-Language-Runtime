@@ -12,10 +12,9 @@ using System.Text;
 using PLR.AST.Expressions;
 using System.Reflection.Emit;
 using PLR.Compilation;
-using PLR.AST.Interfaces;
 
 namespace PLR.AST.Processes {
-    public class BranchProcess : Process, IVariableReader {
+    public class BranchProcess : Process{
 
 
         public BranchProcess(Expression exp, Process ifBranch, Process elseBranch) {
@@ -24,9 +23,16 @@ namespace PLR.AST.Processes {
             _children.Add(elseBranch);
         }
 
-        public List<Variable> ReadVariables {
+        public override List<Process> FlowsTo {
+            get {
+                return new List<Process>() { IfBranch, ElseBranch };
+            }
+        }
+
+        public override List<Variable> ReadVariables {
             get { return FindReadVariables(this.Expression); }
         }
+
         public Expression Expression {
             get { return (Expression)_children[2]; }
         }
@@ -45,7 +51,7 @@ namespace PLR.AST.Processes {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
-            visitor.Visit((IVariableReader)this);
+            base.Accept(visitor);
         }
 
         public override void Compile(CompileContext context) {

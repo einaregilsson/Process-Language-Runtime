@@ -1,12 +1,13 @@
 ﻿/**
- * $Id: ReadAction.cs 172 2009-06-01 11:25:27Z eboeg $ 
+ * $Id$ 
  * 
  * This file is part of the Process Language Runtime (PLR) 
  * and is licensed under the GPL v3.0.
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
@@ -28,6 +29,23 @@ namespace KLAIM.AST {
         private string _methodName;
         public InputAction(string methodName) {
             _methodName = methodName;
+        }
+
+        public override System.Collections.Generic.List<Variable> AssignedVariables {
+            get {
+                var list = new List<Variable>();
+                foreach (Expression exp in this.ChildNodes) {
+                    if (exp is VariableBinding) {
+                        Variable v = new Variable(((VariableBinding)exp).Name);
+                        v.LexicalInfo.StartLine = exp.LexicalInfo.StartLine;
+                        v.LexicalInfo.StartColumn = exp.LexicalInfo.StartColumn+1;
+                        v.LexicalInfo.EndLine = exp.LexicalInfo.EndLine;
+                        v.LexicalInfo.EndColumn = exp.LexicalInfo.EndColumn;
+                        list.Add(v);
+                    }
+                }
+                return list;
+            }
         }
 
         public override void Compile(CompileContext context) {
