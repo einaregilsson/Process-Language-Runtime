@@ -65,7 +65,7 @@ namespace PLR.AST.Processes {
                 }
             }
             context.MarkSequencePoint(this.LexicalInfo);
-            EmitRunProcess(context, context.GetType(this.FullName).Constructor, false, LexicalInfo, false);
+            EmitRunProcess(context, context.GetType(this.FullName), false, LexicalInfo, false);
         }
 
         public override string ToString() {

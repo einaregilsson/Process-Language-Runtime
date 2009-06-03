@@ -124,7 +124,7 @@ public partial class Parser {
 				Get();
 				ActionPrefix(out nextproc, locality);
 			}
-			proc = new ActionPrefix(action, nextproc); 
+            proc = new ActionPrefix(action, nextproc); CopyPos(proc, action, t);
 		} else if (la.kind == 14) {
 			Get();
 			Process(out proc, locality);

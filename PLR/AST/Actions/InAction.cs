@@ -50,16 +50,20 @@ namespace PLR.AST.Actions {
             for (int i = 0; i < _children.Count; i++) {
                 Variable var = (Variable) _children[i];
 
-                //Load the variables field on the current process
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldfld, context.Type.VariablesField);
-
                 //Get the value to assign to it...
                 il.Emit(OpCodes.Ldloc, syncObject);
                 il.Emit(OpCodes.Ldc_I4, i);
                 il.Emit(OpCodes.Call, typeof(ChannelSyncAction).GetMethod("GetValue"));
                 //...and assign it
-                il.Emit(OpCodes.Stfld, context.CurrentMasterType.GetField(var.Name));
+                LocalBuilder local = context.Type.GetLocal(var.Name);
+                if (local == null) { //Inactions can be defining occurrences, so just create it...
+                    local = context.ILGenerator.DeclareLocal(typeof(object));
+                    if (context.Options.Debug) {
+                        local.SetLocalSymInfo(var.Name);
+                    }
+                    context.Type.Locals.Add(var.Name, local);
+                }
+                il.Emit(OpCodes.Stloc, local);
             }
         }
 

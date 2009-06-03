@@ -44,7 +44,7 @@ namespace PLR.AST.Processes {
 
         public override void Compile(CompileContext context) {
             Action.Compile(context);
-            ConstructorBuilder inner = null;
+            TypeInfo inner = null;
             if (Process.HasRestrictionsOrPreProcess) {
                 inner = Process.CompileNewProcessStart(context, "Inner");
             }

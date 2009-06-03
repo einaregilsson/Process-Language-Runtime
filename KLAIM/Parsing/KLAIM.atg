@@ -98,7 +98,7 @@ ParallelComposition<out Process proc, string locality>  (. Process ap; ParallelC
 ActionPrefix <out Process proc, string locality>        (. Process nextproc = new NilProcess(); proc = null; Action action = null;.)
 =
         Action<out action, locality>
-        [ '.' ActionPrefix<out nextproc, locality> ]    (. proc = new ActionPrefix(action, nextproc); .)
+        [ '.' ActionPrefix<out nextproc, locality> ]    (. proc = new ActionPrefix(action, nextproc); CopyPos(proc, action, t);.)
         |
         '(' Process<out proc, locality> ')'                                                        
         |

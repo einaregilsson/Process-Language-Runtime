@@ -16,11 +16,10 @@ namespace PLR.Compilation {
 
     public class TypeInfo {
         private TypeBuilder _type;
-        private TypeBuilder _variablesType;
         private List<FieldBuilder> _fields = new List<FieldBuilder>();
+        private Dictionary<string, LocalBuilder> _locals = new Dictionary<string, LocalBuilder>();
         private ConstructorBuilder _constructor;
-        private FieldBuilder _variablesField;
-        private ConstructorBuilder _variablesConstructor;
+        private List<string> _constructorParamNames = new List<string>();
         private bool _isRestricted;
         private bool _isPreProcessed;
 
@@ -34,16 +33,6 @@ namespace PLR.Compilation {
             set { _isPreProcessed = value; }
         }
         
-        public FieldBuilder VariablesField {
-            get { return _variablesField; }
-            set { _variablesField = value; }
-        }
-
-        public ConstructorBuilder VariablesConstructor {
-            get { return _variablesConstructor; }
-            set { _variablesConstructor = value; }
-        }
-
         public TypeBuilder Builder {
             get { return _type; }
             set { _type = value; }
@@ -53,15 +42,24 @@ namespace PLR.Compilation {
             get { return _type.FullName; }
         }
 
-        public TypeBuilder Variables {
-            get { return _variablesType; }
-            set { _variablesType = value; }
+        public List<string> ConstructorParameters {
+            get { return _constructorParamNames; }
         }
-
         public ConstructorBuilder Constructor {
             get { return _constructor; }
             set { _constructor = value; }
         }
+
+        public Dictionary<string, LocalBuilder> Locals {
+            get { return _locals; }
+        }
+        public LocalBuilder GetLocal(string name) {
+            if (_locals.ContainsKey(name)) {
+                return _locals[name];
+            }
+            return null;
+        }
+
 
         public List<FieldBuilder> Fields {
             get { return _fields; }

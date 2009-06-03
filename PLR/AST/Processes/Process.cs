@@ -39,20 +39,20 @@ namespace PLR.AST.Processes {
             get { return false; } //Most processes won't need a try catch around them.
         }
 
-        protected void EmitRunProcess(CompileContext context, ConstructorBuilder con, bool setGuidOnProc, LexicalInfo lexInfo, bool loadVariables) {
+        protected void EmitRunProcess(CompileContext context, TypeInfo procType, bool setGuidOnProc, LexicalInfo lexInfo, bool loadVariables) {
             if (context.Type == null || context.ILGenerator == null) {
                 return; //Are at top level and so can't run the process
             }
             ILGenerator il = context.ILGenerator;
 
-            LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
 
-            if (context.Type.VariablesField != null && loadVariables) {
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldfld, context.Type.VariablesField);
+            if (loadVariables) {
+                foreach (string paramName in procType.ConstructorParameters) {
+                    il.Emit(OpCodes.Ldloc, context.Type.GetLocal(paramName));
+                }
             }
-
-            il.Emit(OpCodes.Newobj, con);
+            LocalBuilder loc = il.DeclareLocal(typeof(ProcessBase));
+            il.Emit(OpCodes.Newobj, procType.Constructor);
             il.Emit(OpCodes.Stloc, loc);
             il.Emit(OpCodes.Ldloc, loc);
             il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
@@ -78,12 +78,27 @@ namespace PLR.AST.Processes {
             il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "Run"));
         }
 
+        private class VariableCollection : AbstractVisitor {
+            public List<Variable> Variables = new List<Variable>();
+            public override void Visit(Variable var) {
+                if (!Variables.Contains(var)) {
+                    Variables.Add(var);
+                }
+            }
+        }
 
         /// <summary>
         /// Compiles the start block of
         /// </summary>
         /// <param name="context"></param>
-        public ConstructorBuilder CompileNewProcessStart(CompileContext context, string name) {
+        public TypeInfo CompileNewProcessStart(CompileContext context, string name) {
+            
+            //Get this before we push a new type on the stack, we are going to need it...
+            Dictionary<string, LocalBuilder> currentLocals = null;
+            
+            if (context.Type != null) {
+                currentLocals = context.Type.Locals; 
+            }
 
             if (context.CurrentMasterType != null) { //Are in a type, so let's create a nested one
                 TypeInfo nestedType = new TypeInfo();
@@ -113,23 +128,50 @@ namespace PLR.AST.Processes {
             }
 
             if (context.Type.Constructor == null) { //Nested type which hasn't defined its constructor yet
-                if (context.CurrentMasterType.Variables != null) {
-                    context.Type.Constructor = context.Type.Builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new Type[] { context.CurrentMasterType.Variables });
-                    context.Type.VariablesField = context.Type.Builder.DefineField("_variables", context.CurrentMasterType.Variables, FieldAttributes.Private);
-                    ILGenerator ilCon = context.Type.Constructor.GetILGenerator();
-                    ilCon.Emit(OpCodes.Ldarg_0);
-                    ilCon.Emit(OpCodes.Call, typeof(ProcessBase).GetConstructor(new Type[] { }));
 
+                VariableCollection col = new VariableCollection();
+                col.Start(this);
+                List<Type> paramTypes = new List<Type>();
+                List<Variable> constructorParams = new List<Variable>();
+                foreach (Variable v in col.Variables) {
+                    if (currentLocals != null && currentLocals.ContainsKey(v.Name)) { //We have defined this local variable and so should pass it to the new process
+                        paramTypes.Add(typeof(object));
+                        constructorParams.Add(v);
+                        context.Type.ConstructorParameters.Add(v.Name); //Needed to pass the right parameters along later
+                        context.Type.Fields.Add(context.Type.Builder.DefineField(v.Name, typeof(object), FieldAttributes.Private));
+                    }
+                }
+                context.Type.Constructor = context.Type.Builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, paramTypes.ToArray());
+                ILGenerator ilCon = context.Type.Constructor.GetILGenerator();
+                ilCon.Emit(OpCodes.Ldarg_0);
+                ilCon.Emit(OpCodes.Call, typeof(ProcessBase).GetConstructor(new Type[] { }));
+
+                for (int i = 0; i < constructorParams.Count; i++) {
+                    context.Type.Constructor.DefineParameter(i + 1, ParameterAttributes.None, constructorParams[i].Name);
                     //save the variables argument we got passed in
                     ilCon.Emit(OpCodes.Ldarg_0);
-                    ilCon.Emit(OpCodes.Ldarg_1);
-                    ilCon.Emit(OpCodes.Stfld, context.Type.VariablesField);
-                    ilCon.Emit(OpCodes.Ret);
-                } else {
-                    context.Type.Constructor = context.Type.Builder.DefineDefaultConstructor(MethodAttributes.Public);
+                    ilCon.Emit(OpCodes.Ldarg, i + 1);
+                    ilCon.Emit(OpCodes.Stfld, context.Type.GetField(constructorParams[i].Name));
                 }
+                ilCon.Emit(OpCodes.Ret);
             }
-            return context.Type.Constructor;
+
+            //Do this after the constructor has been defined, because the fields
+            //of the object are defined in the constructor...
+            foreach (FieldBuilder field in context.Type.Fields) {
+                LocalBuilder local = context.ILGenerator.DeclareLocal(typeof(object));
+                if (context.Options.Debug) {
+                    local.SetLocalSymInfo(field.Name);
+                }
+                context.Type.Locals.Add(field.Name, local);
+                //Add the field value to the local variable, so we can concentrate on only local vars
+                context.ILGenerator.Emit(OpCodes.Ldarg_0);
+                context.ILGenerator.Emit(OpCodes.Ldfld, field);
+                context.ILGenerator.Emit(OpCodes.Stloc, local);
+
+            }
+
+            return context.Type;
         }
 
         internal bool HasRestrictionsOrPreProcess {

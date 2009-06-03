@@ -29,14 +29,14 @@ namespace KLAIM.AST {
         public override void Compile(CompileContext context) {
             string innerTypeName = "Repl_" + context.CurrentMasterType.Name;
 
-            ConstructorBuilder con = null;
-            con = Process.CompileNewProcessStart(context, innerTypeName);
+            TypeInfo newType  = null;
+            newType = Process.CompileNewProcessStart(context, innerTypeName);
             Process.Compile(context);
             Process.CompileNewProcessEnd(context);
             Label loopStart = context.ILGenerator.DefineLabel();
             context.ILGenerator.MarkLabel(loopStart);
             for (int i = 0; i < _maxCount; i++) {
-                EmitRunProcess(context, con, false, Process.LexicalInfo, true);
+                EmitRunProcess(context, newType, false, Process.LexicalInfo, true);
                 context.ILGenerator.Emit(OpCodes.Ldc_I4, 100);
                 context.ILGenerator.Emit(OpCodes.Call, typeof(System.Threading.Thread).GetMethod("Sleep", new Type[] {typeof(int)}));
                 context.ILGenerator.Emit(OpCodes.Br, loopStart);

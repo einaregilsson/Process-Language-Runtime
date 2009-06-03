@@ -105,9 +105,6 @@ namespace PLR.AST {
             foreach (ProcessDefinition procdef in this) {
                 context.CurrentMasterType = null;
                 procdef.Compile(context);
-                if (context.CurrentMasterType.Variables != null) {
-                    context.CurrentMasterType.Variables.CreateType();
-                }
                 context.CurrentMasterType = null;
             }
             List<LocalBuilder> initial = new List<LocalBuilder>();

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{BD33F5D2-72EC-4B9E-B4F5-1B9B85B4663E}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="AST\Action.cs" />
     <Compile Include="AST\InAction.cs" />
+    <Compile Include="AST\InputAction.cs" />
     <Compile Include="AST\OutAction.cs" />
     <Compile Include="AST\ReadAction.cs" />
     <Compile Include="AST\ReplicatedProcess.cs" />

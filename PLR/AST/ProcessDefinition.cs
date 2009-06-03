@@ -92,22 +92,14 @@ namespace PLR.AST {
             ConstructorBuilder constructor;
             newTypeInfo.Builder = type;
 
-            //Find all variables used in this process...
-            VariableCollection varCollection = new VariableCollection();
-            varCollection.Start(this);
-            bool hasVariables = varCollection.vars.Count > 0;
             //If there are variables then define a type for them ...
-            if (hasVariables) {
-                TypeBuilder variables = type.DefineNestedType("Variables", TypeAttributes.BeforeFieldInit | TypeAttributes.NestedFamily | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.Class);
+            if (_expressions.Count > 0) {
 
-                newTypeInfo.Variables = variables;
-                newTypeInfo.VariablesConstructor = variables.DefineDefaultConstructor(MethodAttributes.Assembly);
-                newTypeInfo.VariablesField = type.DefineField("_variables", newTypeInfo.Variables, FieldAttributes.Private);
-                foreach (string variableName in varCollection.vars) {
-                    FieldBuilder field = variables.DefineField(variableName, typeof(object), FieldAttributes.Assembly);
+                foreach (Variable v in this.Variables) {
+                    FieldBuilder field = type.DefineField(v.Name, typeof(object), FieldAttributes.Assembly);
                     newTypeInfo.AddField(field);
                 }
-                variables.CreateType();
+                
                 Type[] paramTypes = new Type[this.Variables.Count];
                 for (int i = 0; i < paramTypes.Length; i++) {
                     paramTypes[i] = typeof(object);
@@ -118,16 +110,12 @@ namespace PLR.AST {
                 ilCon.Emit(OpCodes.Ldarg_0);
                 ilCon.Emit(OpCodes.Call, conBase);
 
-                //Create a new variables object and save it to field
-                ilCon.Emit(OpCodes.Ldarg_0);
-                ilCon.Emit(OpCodes.Newobj, newTypeInfo.VariablesConstructor);
-                ilCon.Emit(OpCodes.Stfld, newTypeInfo.VariablesField);
-                variables.CreateType();
-                //For every variable in the constructor, set it on the variables object
+                //For every variable in the constructor, set it on the corresponding field
                 for (int i = 0; i < this.Variables.Count; i++) {
                     Variable var = (Variable)this.Variables[i];
+                    constructor.DefineParameter(i + 1, ParameterAttributes.None, var.Name);
+                    newTypeInfo.ConstructorParameters.Add(var.Name);
                     ilCon.Emit(OpCodes.Ldarg_0);
-                    ilCon.Emit(OpCodes.Ldfld, newTypeInfo.VariablesField);
                     ilCon.Emit(OpCodes.Ldarg, i + 1);
                     ilCon.Emit(OpCodes.Stfld, newTypeInfo.GetField(var.Name));
                 }
@@ -150,7 +138,7 @@ namespace PLR.AST {
         }
 
         public override void Compile(CompileContext context) {
-            ConstructorBuilder inner = this.Process.CompileNewProcessStart(context, this.FullName);
+            this.Process.CompileNewProcessStart(context, this.FullName);
             this.Process.Compile(context);
             this.Process.CompileNewProcessEnd(context);
         }

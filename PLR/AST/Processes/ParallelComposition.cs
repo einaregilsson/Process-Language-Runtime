@@ -42,15 +42,15 @@ namespace PLR.AST.Processes {
                 Process p = this.Processes[i];
                 string innerTypeName = "Parallel" + (i + 1);
 
-                ConstructorBuilder con = null;
+                TypeInfo newProcType = null;
                 if (p.HasRestrictionsOrPreProcess || !(p is ProcessConstant)) {
-                    con = p.CompileNewProcessStart(context, innerTypeName);
+                    newProcType = p.CompileNewProcessStart(context, innerTypeName);
                 }
-                p.Compile(context); 
-                
-                if (con != null) {
+                p.Compile(context);
+
+                if (newProcType != null) {
                     p.CompileNewProcessEnd(context);
-                    EmitRunProcess(context, con,false, p.LexicalInfo, true);
+                    EmitRunProcess(context, newProcType, false, p.LexicalInfo, true);
                 }
             }
         }
