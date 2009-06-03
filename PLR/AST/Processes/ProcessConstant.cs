@@ -13,10 +13,10 @@ using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
+using PLR.AST.Interfaces;
 
-namespace PLR.AST.Processes
-{
-    public class ProcessConstant : Process {
+namespace PLR.AST.Processes {
+    public class ProcessConstant : Process, IVariableReader {
         public ProcessConstant(string name) {
             _name = name;
             _children.Add(new ExpressionList());
@@ -25,15 +25,18 @@ namespace PLR.AST.Processes
         private string _name;
         public string Name { get { return _name; } }
 
-        public ExpressionList Expressions { get { return (ExpressionList)_children[2]; } }
-        public override void Accept(AbstractVisitor visitor)
-        {
-            visitor.Visit(this);
+        public List<Variable> ReadVariables {
+            get { return FindReadVariables(this.Expressions); }
         }
-        public override bool Equals(object obj)
-        {
-            if (!(obj is ProcessConstant))
-            {
+
+        public ExpressionList Expressions { get { return (ExpressionList)_children[2]; } }
+
+        public override void Accept(AbstractVisitor visitor) {
+            visitor.Visit(this);
+            visitor.Visit((IVariableReader)this);
+        }
+        public override bool Equals(object obj) {
+            if (!(obj is ProcessConstant)) {
                 return false;
             }
             ProcessConstant other = (ProcessConstant)obj;

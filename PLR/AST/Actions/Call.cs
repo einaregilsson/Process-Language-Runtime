@@ -14,9 +14,10 @@ using System.Reflection.Emit;
 using PLR.AST.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
+using PLR.AST.Interfaces;
 
 namespace PLR.AST.Actions {
-    public class Call : Action{
+    public class Call : Action, IVariableReader{
         
         public Call(MethodCallExpression callExpr)
             : base(callExpr.ToString()) {
@@ -25,7 +26,13 @@ namespace PLR.AST.Actions {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            visitor.Visit((IVariableReader)this);
         }
+
+        public List<Variable> ReadVariables {
+            get { return FindReadVariables(this.MethodCallExpr); }
+        }
+
         public MethodCallExpression MethodCallExpr {
             get { return (MethodCallExpression)_children[0]; }
         }

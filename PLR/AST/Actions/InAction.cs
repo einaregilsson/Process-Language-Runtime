@@ -6,19 +6,23 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using PLR.Compilation;
 using PLR.Runtime;
 using PLR.AST.Expressions;
+using PLR.AST.Interfaces;
 
 namespace PLR.AST.Actions {
-    public class InAction : Action {
+    public class InAction : Action, IVariableAssignment {
         public InAction(string name) : base(name) { }
+        
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            visitor.Visit((IVariableAssignment)this);
         }
 
         public void AddVariable(Variable var) {
@@ -58,5 +62,16 @@ namespace PLR.AST.Actions {
                 il.Emit(OpCodes.Stfld, context.CurrentMasterType.GetField(var.Name));
             }
         }
+
+        public List<Variable> AssignedVariables {
+            get {
+                var list = new List<Variable>();
+                foreach (Variable v in this.ChildNodes) {
+                    list.Add(v);
+                }
+                return list;
+            }
+        }
+
     }
 }

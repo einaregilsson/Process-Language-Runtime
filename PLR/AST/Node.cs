@@ -67,6 +67,20 @@ namespace PLR.AST {
             return _children.GetEnumerator();
         }
 
+
+        private class VariableCollection : AbstractVisitor {
+            public List<Variable> Variables = new List<Variable>();
+            public override void Visit(Variable var) {
+                if (!Variables.Contains(var)) {
+                    Variables.Add(var);
+                }
+            }
+        }
+        protected List<Variable> FindReadVariables(Node n) {
+            var collect = new VariableCollection();
+            collect.Start(n);
+            return collect.Variables;
+        }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();

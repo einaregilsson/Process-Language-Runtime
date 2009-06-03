@@ -1,5 +1,5 @@
 ﻿/**
- * $Id$ 
+ * $Id: NilProcessRemoval.cs 173 2009-06-02 11:33:34Z eboeg $ 
  * 
  * This file is part of the Process Language Runtime (PLR) 
  * and is licensed under the GPL v3.0.
@@ -16,7 +16,7 @@ using PLR.AST.Processes;
 
 namespace PLR.Analysis {
 
-    public class NilProcessRemoval : AbstractVisitor, IAnalysis {
+    public class NilProcessWarning : AbstractVisitor, IAnalysis {
 
         private List<Warning> _warnings;
 

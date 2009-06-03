@@ -13,10 +13,12 @@ using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.AST.Actions;
 using PLR.AST.Processes;
+using PLR.AST.Interfaces;
 
 namespace PLR.Analysis {
+    
     public class UseOfUnassignedVariables : AbstractVisitor, IAnalysis {
-        private ProcessDefinition _currentProc;
+    
         private List<string> _declaredVariables = new List<string>();
         private List<Warning> _warnings;
         
@@ -26,34 +28,25 @@ namespace PLR.Analysis {
             return _warnings;
         }
 
-        public override void Visit(ProcessDefinition node) {
-            _currentProc = node;
-            _declaredVariables.Clear();
-            foreach (Variable var in node.Variables) {
-                _declaredVariables.Add(var.Name);
+        public override void Visit(IVariableReader reader) {
+            Node parent = ((Node)reader).Parent;
+            List<Variable> readVars = reader.ReadVariables;
+            if (readVars.Count == 0) {
+                return;
             }
-        }
 
-        public override void Visit(NonDeterministicChoice ndc) {
-        }
-
-        public override void Visit(ParallelComposition pc) {
-        }
-
-        public override void Visit(BranchProcess bp) {
-        }
-
-        public override void Visit(InAction act) {
-            foreach (Variable var in act) {
-                _declaredVariables.Add(var.Name);
-            }
-        }
-
-        public override void Visit(Variable var) {
-            if (!(var.Parent is InAction || (var.Parent is ExpressionList && var.Parent.Parent is ProcessDefinition))) {
-                if (!_declaredVariables.Contains(var.Name)) {
-                    _warnings.Add(new Warning(var.LexicalInfo, "Use of unassigned variable " + var.Name));
+            while (parent != null) {
+                if (parent is IVariableAssignment) {
+                    foreach (Variable v in ((IVariableAssignment)parent).AssignedVariables) {
+                        if (readVars.Contains(v)) {
+                            readVars.Remove(v);
+                        }
+                    }
                 }
+                parent = parent.Parent;
+            }
+            foreach (Variable v in readVars) {
+                _warnings.Add(new Warning(v.LexicalInfo, "Variable " + v.Name + " is used without being assigned first"));
             }
         }
     }

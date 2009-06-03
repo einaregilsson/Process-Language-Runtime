@@ -14,10 +14,22 @@ using System;
 using System.Reflection.Emit;
 using System.Reflection;
 using PLR.Runtime;
+using PLR.AST.Interfaces;
 
+public struct Foo {
+    public object a;
+    public object c;
+
+}
+public class Bar {
+    Foo f;
+    public Bar(Foo f) {
+        this.f = f;
+    }
+}
 namespace PLR.AST {
 
-    public class ProcessDefinition : Node {
+    public class ProcessDefinition : Node, IVariableAssignment {
 
 
         protected string _name;
@@ -56,6 +68,7 @@ namespace PLR.AST {
 
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
+            visitor.Visit((IVariableAssignment)this);
         }
 
 
@@ -85,16 +98,16 @@ namespace PLR.AST {
             bool hasVariables = varCollection.vars.Count > 0;
             //If there are variables then define a type for them ...
             if (hasVariables) {
-                TypeBuilder variables = type.DefineNestedType("Variables", TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.NestedFamily);
+                TypeBuilder variables = type.DefineNestedType("Variables", TypeAttributes.BeforeFieldInit | TypeAttributes.NestedFamily | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.Class);
+
                 newTypeInfo.Variables = variables;
                 newTypeInfo.VariablesConstructor = variables.DefineDefaultConstructor(MethodAttributes.Assembly);
                 newTypeInfo.VariablesField = type.DefineField("_variables", newTypeInfo.Variables, FieldAttributes.Private);
-
                 foreach (string variableName in varCollection.vars) {
                     FieldBuilder field = variables.DefineField(variableName, typeof(object), FieldAttributes.Assembly);
                     newTypeInfo.AddField(field);
                 }
-
+                variables.CreateType();
                 Type[] paramTypes = new Type[this.Variables.Count];
                 for (int i = 0; i < paramTypes.Length; i++) {
                     paramTypes[i] = typeof(object);
@@ -109,7 +122,7 @@ namespace PLR.AST {
                 ilCon.Emit(OpCodes.Ldarg_0);
                 ilCon.Emit(OpCodes.Newobj, newTypeInfo.VariablesConstructor);
                 ilCon.Emit(OpCodes.Stfld, newTypeInfo.VariablesField);
-
+                variables.CreateType();
                 //For every variable in the constructor, set it on the variables object
                 for (int i = 0; i < this.Variables.Count; i++) {
                     Variable var = (Variable)this.Variables[i];
@@ -141,5 +154,19 @@ namespace PLR.AST {
             this.Process.Compile(context);
             this.Process.CompileNewProcessEnd(context);
         }
+
+        #region IVariableAssignment Members
+
+        public List<Variable> AssignedVariables {
+            get {
+                List<Variable> list = new List<Variable>();
+                foreach (Variable v in _expressions) {
+                    list.Add(v);
+                }
+                return list;
+            }
+        }
+
+        #endregion
     }
 }

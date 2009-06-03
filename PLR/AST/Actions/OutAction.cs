@@ -6,28 +6,34 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using PLR.Compilation;
 using PLR.AST.Expressions;
 using PLR.Runtime;
+using PLR.AST.Interfaces;
 
 namespace PLR.AST.Actions
 {
-    public class OutAction : Action
+    public class OutAction : Action, IVariableReader
     {
         public OutAction(string name) : base(Regex.Replace(name, "^_|_$","")) { }
         public override void Accept(AbstractVisitor visitor)
         {
             visitor.Visit(this);
+            visitor.Visit((IVariableReader)this);
         }
 
         public void AddExpression(Expression exp) {
             _children.Add(exp);
         }
 
+        public List<Variable> ReadVariables {
+            get { return FindReadVariables(this); }
+        }
 
         public override void Compile(CompileContext context) {
             Type procType = typeof(ProcessBase);

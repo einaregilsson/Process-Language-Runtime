@@ -14,6 +14,7 @@ using PLR.AST.Actions;
 using PLR.AST.ActionHandling;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
+using PLR.AST.Interfaces;
 
 namespace PLR.AST
 {
@@ -88,5 +89,8 @@ namespace PLR.AST
         public virtual void Visit(ExpressionList node) { }
         public virtual void Visit(ProcessDefinition node) { }
         public virtual void Visit(Node node) { }
+
+        public virtual void Visit(IVariableAssignment assign) {}
+        public virtual void Visit(IVariableReader reader) { }
     }
 }

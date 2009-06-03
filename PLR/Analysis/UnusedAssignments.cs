@@ -12,6 +12,7 @@ using System.Text;
 using PLR.AST;
 using PLR.AST.Expressions;
 using PLR.AST.Actions;
+using PLR.AST.Interfaces;
 
 namespace PLR.Analysis {
 
@@ -29,25 +30,27 @@ namespace PLR.Analysis {
         public override void Visit(ProcessDefinition node) {
             foreach (Variable var in node.Variables) {
                 if (!_readVariables.Contains(var)) {
-                    _warnings.Add(new Warning(var.LexicalInfo, "Variable " + var.Name + " is never read in the process"));
+                    _warnings.Add(new Warning(var.LexicalInfo, "Variable " + var.Name + " is never read in the process " + node.Name));
                 };
             }
             //Now clear so everything is ready for the next proc def
             _readVariables.Clear();
         }
 
-        public override void Visit(InAction act) {
-            foreach (Variable var in act) {
-                if (!_readVariables.Contains(var)) {
-                    _warnings.Add(new Warning(var.LexicalInfo, "Variable " + var.Name + " is never read after assignment"));
+        public override void Visit(IVariableAssignment ass) {
+            if (!(ass is ProcessDefinition)) {
+                foreach (Variable var in ass.AssignedVariables) {
+                    if (!_readVariables.Contains(var)) {
+                        _warnings.Add(new Warning(var.LexicalInfo, "Variable " + var.Name + " is never read after assignment"));
+                    }
                 }
             }
         }
 
-        public override void Visit(Variable var) {
-            if (!(var.Parent is InAction || (var.Parent is ExpressionList && var.Parent.Parent is ProcessDefinition))) {
-                if (!_readVariables.Contains(var)) {
-                    _readVariables.Add(var);
+        public override void Visit(IVariableReader reader) {
+            foreach (Variable v in reader.ReadVariables) {
+                if (!_readVariables.Contains(v)) {
+                    _readVariables.Add(v);
                 }
             }
         }
