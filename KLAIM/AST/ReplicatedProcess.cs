@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PLR.AST;
-using PLR.AST.Processes;
+using PLR.Analysis;
+using PLR.Analysis.Processes;
 using PLR.Compilation;
 using System.Reflection.Emit;
 using System.Threading;

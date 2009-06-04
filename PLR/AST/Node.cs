@@ -10,14 +10,18 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using PLR.AST.Expressions;
+using PLR.Analysis.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.AST {
+namespace PLR.Analysis {
 
     public abstract class Node : IEnumerable<Node> {
 
+
+        public Node() {
+            IsUsed = true;
+        }
         public virtual void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
         }
@@ -28,23 +32,20 @@ namespace PLR.AST {
             get { return _lexInfo; }
         }
 
+        public void Replace(Node oldChild, Node newChild) {
+            int pos = this.ChildNodes.IndexOf(oldChild);
+            if (pos == -1) {
+                throw new Exception("Parameter 'oldChild' is not a child of this node!");
+            }
+            this.ChildNodes[pos] = newChild;
+        }
+
         public object Tag { get; set; }
-
-        private Node _parent;
-        public Node Parent {
-            get { return _parent; }
-            set { _parent = value; }
-        }
-
-        protected int _parenCount;
-        public int ParenCount
-        {
-            get { return _parenCount; }
-            set { _parenCount = value; }
-        }
+        public Node Parent { get; set;}
+        public int ParenCount {get;set;}
+        public bool IsUsed { get; set; }
 
         public bool HasParens { get { return ParenCount > 0; } }
-
         protected List<Node> _children = new List<Node>();
 
         public virtual int Count

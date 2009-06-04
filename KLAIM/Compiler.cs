@@ -10,7 +10,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PLR.AST;
+using PLR.Analysis;
 using PLR.Compilation;
 using KLAIM.Runtime;
 using System.Reflection.Emit;
@@ -25,7 +25,7 @@ namespace KLAIM {
             this.processes.MeetTheParents();
             this.tuples = tuples;
             this.processes.MainMethodStart += new CompileEventHandler(CompileTupleSpaces);
-            PLR.AST.Expressions.PLRString.DisplayWithoutQuotes = true; //To make localities look right...
+            PLR.Analysis.Expressions.PLRString.DisplayWithoutQuotes = true; //To make localities look right...
             processes.Compile(options);
         }
 

@@ -11,11 +11,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
-using PLR.AST.Expressions;
+using PLR.Analysis.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.AST.Actions {
+namespace PLR.Analysis.Actions {
     public class Call : Action{
         
         public Call(MethodCallExpression callExpr)

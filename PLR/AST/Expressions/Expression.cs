@@ -12,7 +12,7 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace PLR.AST.Expressions {
+namespace PLR.Analysis.Expressions {
     public abstract class Expression : Node{
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);

@@ -51,12 +51,27 @@ Usage: kc [options] <filename>
             parser.Parse();
             Compiler compiler = new Compiler();
             parser.Processes.MeetTheParents();
-            List<Warning> warnings = parser.Processes.Analyze(new UnusedAssignments(), new UseOfUnassignedVariables());
+            
+            List<Warning> warnings = parser.Processes.Analyze(new ReachingDefinitions());
+
+            if (warnings.Count > 0) {
+                foreach (Warning warn in warnings) {
+                    Console.Error.WriteLine("ERROR({0},{1}): {2}", warn.LexicalInfo.StartLine, warn.LexicalInfo.StartColumn, warn.Message);
+                }
+                return 1; //This is an error so we die before attempting to compile
+            }
+
+            //These are just warnings, so just warn...
+            warnings = parser.Processes.Analyze(new LiveVariables(), new NilProcessWarning());
             foreach (Warning warn in warnings) {
                 Console.Error.WriteLine("WARNING({0},{1}): {2}", warn.LexicalInfo.StartLine, warn.LexicalInfo.StartColumn, warn.Message);
             }
 
-            compiler.Compile(parser.LocatedTuples, parser.Processes, options);
+            try {
+                compiler.Compile(parser.LocatedTuples, parser.Processes, options);
+            } catch (Exception ex) {
+                DieIf(true, "ERROR: " +ex.Message);
+            }
             return 0;
         }
 

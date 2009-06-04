@@ -14,7 +14,7 @@ using PLR.Compilation;
 using PLR.Runtime;
 
 
-namespace PLR.AST.ActionHandling {
+namespace PLR.Analysis.ActionHandling {
     public abstract class ActionRestrictions : Node {
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);

@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 
-namespace PLR.AST.Expressions {
+namespace PLR.Analysis.Expressions {
     public class NewObject : MethodInvokeBase {
 
         private ConstructorInfo _constructor;

@@ -11,7 +11,7 @@ using System.Reflection.Emit;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.AST.Processes {
+namespace PLR.Analysis.Processes {
 
     public class NonDeterministicChoice : Process {
 
@@ -41,8 +41,15 @@ namespace PLR.AST.Processes {
         }
         public override void Compile(CompileContext context) {
 
-            for (int i = 0; i < this.Processes.Count; i++) { //First two items are ActionRestriction and PreProcess
-                Process p = (Process) this.Processes[i];
+            List<Process> processes = this.Processes;
+            
+            for (int i = 0; i < processes.Count; i++) {
+                Process p = (Process)processes[i];
+
+                if (context.Options.Optimize && !p.IsUsed) {
+                    continue;
+                }
+
                 if (p is ProcessConstant && !p.HasRestrictionsOrPreProcess) {
                     //Don't need to create a special proc just for wrapping this
                     ProcessConstant pc = (ProcessConstant)p;

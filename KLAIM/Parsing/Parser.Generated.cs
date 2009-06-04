@@ -1,7 +1,7 @@
-using PLR.AST;
-using PLR.AST.Expressions;
-using PLR.AST.Processes;
-using PLR.AST.ActionHandling;
+using PLR.Analysis;
+using PLR.Analysis.Expressions;
+using PLR.Analysis.Processes;
+using PLR.Analysis.ActionHandling;
 using KLAIM.AST;
 using Action = KLAIM.AST.Action;
 using System.Collections.Generic;

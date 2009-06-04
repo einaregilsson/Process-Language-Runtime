@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 
-namespace PLR.AST.Expressions {
+namespace PLR.Analysis.Expressions {
 
     public class PLRString : Expression {
         public static bool DisplayWithoutQuotes { get; set; }

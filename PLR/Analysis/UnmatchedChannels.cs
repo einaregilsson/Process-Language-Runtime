@@ -7,12 +7,12 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
 using System.Collections.Generic;
-using PLR.AST;
-using PLR.AST.Processes;
-using PLR.AST.Expressions;
-using PLR.AST.Actions;
+using PLR.Analysis;
+using PLR.Analysis.Processes;
+using PLR.Analysis.Expressions;
+using PLR.Analysis.Actions;
 using ActionCollection = System.Collections.IEnumerable;
-using PLR.AST.ActionHandling;
+using PLR.Analysis.ActionHandling;
 
 namespace PLR.Analysis {
 
@@ -65,8 +65,10 @@ namespace PLR.Analysis {
                 }
                 if (!hasMatch && hasMatchWithWrongParamCount) {
                     _warnings.Add(new Warning(checkAct.LexicalInfo, "This action will block forever, as there is no possible " + type + " on channel " + checkAct.Name + " which has " + checkAct.ChildNodes.Count + " parameters"));
+                    ((ActionPrefix)checkAct.Parent).Process.IsUsed = false;
                 } else if (!hasMatch) {
                     _warnings.Add(new Warning(checkAct.LexicalInfo, "This action will block forever, as there is no " + type + " on channel " + checkAct.Name));
+                    ((ActionPrefix)checkAct.Parent).Process.IsUsed = false;
                 }
             }
         }

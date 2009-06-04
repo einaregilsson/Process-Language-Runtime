@@ -10,7 +10,7 @@
 using System.Reflection.Emit;
 using PLR.Compilation;
 
-namespace PLR.AST.Expressions {
+namespace PLR.Analysis.Expressions {
 
     public class Number : ArithmeticExpression {
         private int _number;

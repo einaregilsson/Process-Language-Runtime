@@ -7,60 +7,35 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
  ﻿using System.Collections.Generic;
-using PLR.AST.Processes;
-using PLR.AST.Expressions;
+using PLR.Analysis.Processes;
+using PLR.Analysis.Expressions;
 using PLR.Compilation;
 using System;
 using System.Reflection.Emit;
 using System.Reflection;
 using PLR.Runtime;
 
-public struct Foo {
-    public object a;
-    public object c;
-
-}
-public class Bar {
-    Foo f;
-    public Bar(Foo f) {
-        this.f = f;
-    }
-}
-namespace PLR.AST {
+namespace PLR.Analysis {
 
     public class ProcessDefinition : Node {
 
-
-        protected string _name;
-        public String Name {
-            get { return _name; }
-            set { _name = value; }
-        }
-
-        protected ExpressionList _expressions = new ExpressionList();
+        public String Name { get; set;}
 
         public ExpressionList Variables {
-            get { return _expressions; }
+            get { return (ExpressionList)_children[0]; }
         }
 
-        protected Process _proc;
         public Process Process {
-            get { return _proc; }
-            set { _proc = value; }
+            get { return (Process) _children[1]; }
+            set { _children[1] = value; }
         }
 
-        protected bool _entryProc;
-        public bool EntryProc {
-            get { return _entryProc; }
-            set { _entryProc = value; }
-        }
-
+        public bool EntryProc {get;set;}
 
         public ProcessDefinition(Process proc, string name, bool entryProc) {
-            _name = name;
-            _proc = proc;
-            _entryProc = entryProc;
-            _children.Add(_expressions);
+            Name = name;
+            EntryProc = entryProc;
+            _children.Add(new ExpressionList());
             _children.Add(proc);
         }
 
@@ -68,16 +43,6 @@ namespace PLR.AST {
         public override void Accept(AbstractVisitor visitor) {
             visitor.Visit(this);
             base.Accept(visitor);
-        }
-
-
-        private class VariableCollection : AbstractVisitor {
-            public List<string> vars = new List<string>();
-            public override void Visit(Variable var) {
-                if (!vars.Contains(var.Name)) {
-                    vars.Add(var.Name);
-                }
-            }
         }
 
         public void CompileSignature(ModuleBuilder module, CompileContext context) {
@@ -92,9 +57,12 @@ namespace PLR.AST {
             newTypeInfo.Builder = type;
 
             //If there are variables then define a type for them ...
-            if (_expressions.Count > 0) {
+            if (this.Variables.Count > 0) {
 
                 foreach (Variable v in this.Variables) {
+                    if (context.Options.Optimize && !v.IsUsed) {
+                        continue;
+                    }
                     FieldBuilder field = type.DefineField(v.Name, typeof(object), FieldAttributes.Assembly);
                     newTypeInfo.AddField(field);
                 }
@@ -114,6 +82,10 @@ namespace PLR.AST {
                     Variable var = (Variable)this.Variables[i];
                     constructor.DefineParameter(i + 1, ParameterAttributes.None, var.Name);
                     newTypeInfo.ConstructorParameters.Add(var.Name);
+
+                    if (context.Options.Optimize && !var.IsUsed) {
+                        continue;
+                    }
                     ilCon.Emit(OpCodes.Ldarg_0);
                     ilCon.Emit(OpCodes.Ldarg, i + 1);
                     ilCon.Emit(OpCodes.Stfld, newTypeInfo.GetField(var.Name));
@@ -147,7 +119,7 @@ namespace PLR.AST {
         public List<Variable> AssignedVariables {
             get {
                 List<Variable> list = new List<Variable>();
-                foreach (Variable v in _expressions) {
+                foreach (Variable v in Variables) {
                     list.Add(v);
                 }
                 return list;

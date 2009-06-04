@@ -11,9 +11,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
-using PLR.AST.Actions;
-using PLR.AST.Expressions;
-using PLR.AST;
+using PLR.Analysis.Actions;
+using PLR.Analysis.Expressions;
+using PLR.Analysis;
 using PLR.Compilation;
 using KLAIM.Runtime;
 using PLR.Runtime;
@@ -36,12 +36,7 @@ namespace KLAIM.AST {
                 var list = new List<Variable>();
                 foreach (Expression exp in this.ChildNodes) {
                     if (exp is VariableBinding) {
-                        Variable v = new Variable(((VariableBinding)exp).Name);
-                        v.LexicalInfo.StartLine = exp.LexicalInfo.StartLine;
-                        v.LexicalInfo.StartColumn = exp.LexicalInfo.StartColumn+1;
-                        v.LexicalInfo.EndLine = exp.LexicalInfo.EndLine;
-                        v.LexicalInfo.EndColumn = exp.LexicalInfo.EndColumn;
-                        list.Add(v);
+                        list.Add((Variable)exp);
                     }
                 }
                 return list;
@@ -99,10 +94,13 @@ namespace KLAIM.AST {
             //We might be blocked at this location for a very long time...
 
             il.Emit(OpCodes.Stloc, tuple);
-            //Now lets bind our variables...
+            //Now lets bind our variables... if they are used in the process
             for (int i = 1; i < this.ChildNodes.Count; i++) {
-                if (_children[i] is VariableBinding) {
+                if (_children[i] is VariableBinding ) {
                     VariableBinding var = (VariableBinding)_children[i];
+                    if (context.Options.Optimize && !var.IsUsed) {
+                        continue;
+                    }
 
                     //Get the value to assign to it...
                     il.Emit(OpCodes.Ldloc, tuple);

@@ -8,14 +8,14 @@
  */
  ﻿using System;
 using System.Collections.Generic;
-using PLR.AST.Actions;
-using PLR.AST.Expressions;
+using PLR.Analysis.Actions;
+using PLR.Analysis.Expressions;
 using PLR.Runtime;
 using PLR.Compilation;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace PLR.AST.Processes {
+namespace PLR.Analysis.Processes {
 
     public class ActionPrefix : Process {
 
@@ -51,6 +51,11 @@ namespace PLR.AST.Processes {
 
         public override void Compile(CompileContext context) {
             Action.Compile(context);
+
+            if (context.Options.Optimize && !this.Process.IsUsed) {
+                return; //Will never reach this process, so just don't compile it...
+            }
+
             TypeInfo inner = null;
             if (Process.HasRestrictionsOrPreProcess) {
                 inner = Process.CompileNewProcessStart(context, "Inner");

@@ -20,6 +20,7 @@ namespace PLR.Compilation {
         static CompileOptions() {
             AddOption("d", "debug");
             AddOption("e", "embedPLR");
+            AddOption("op", "optimize");
             AddOptionWithArgument("r", "reference", "");
             AddOptionWithArgument("o", "out", "");
         }
@@ -43,6 +44,12 @@ namespace PLR.Compilation {
             get { return this.Contains("debug"); }
             set { this["debug"] = ""; }
         }
+
+        public bool Optimize {
+            get { return this.Contains("optimize"); }
+            set { this["optimize"] = ""; }
+        }
+
         public bool EmbedPLR { 
             get { return this.Contains("embedPLR"); }
             set { this["embedPLR"] = ""; }

@@ -10,17 +10,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PLR.AST.Expressions;
+using PLR.Analysis.Expressions;
 using System.Reflection.Emit;
 
 namespace KLAIM.AST {
-    public class VariableBinding : Expression{
-        public string Name { get; set; }
-        public VariableBinding(string name) {
-            this.Name = name;
-        }
-        public override Type Type {
-            get { throw new NotImplementedException(); }
+    public class VariableBinding : Variable{
+        public VariableBinding(string name) : base(name){
         }
 
         public override string ToString() {

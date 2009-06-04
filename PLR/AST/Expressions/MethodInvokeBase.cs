@@ -12,7 +12,7 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace PLR.AST.Expressions {
+namespace PLR.Analysis.Expressions {
     public abstract class MethodInvokeBase : Expression {
 
         public MethodInvokeBase(params object[] args) {

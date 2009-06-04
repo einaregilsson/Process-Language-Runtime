@@ -12,9 +12,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 using PLR.Runtime;
-using PLR.AST.Expressions;
+using PLR.Analysis.Expressions;
 
-namespace PLR.AST.Processes {
+namespace PLR.Analysis.Processes {
 
     public class ParallelComposition : Process{
 
@@ -45,10 +45,15 @@ namespace PLR.AST.Processes {
 
         public override void Compile(CompileContext context) {
 
-            for (int i = 0; i < this.Processes.Count; i++) {
-                Process p = this.Processes[i];
+            List<Process> processes = this.Processes;
+
+            for (int i = 0; i < processes.Count; i++) {
+                Process p = processes[i];
                 string innerTypeName = "Parallel" + (i + 1);
 
+                if (context.Options.Optimize && !p.IsUsed) {
+                    continue;
+                }
                 TypeInfo newProcType = null;
                 if (p.HasRestrictionsOrPreProcess || !(p is ProcessConstant)) {
                     newProcType = p.CompileNewProcessStart(context, innerTypeName);

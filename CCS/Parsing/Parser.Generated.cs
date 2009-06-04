@@ -1,9 +1,9 @@
-using PLR.AST;
-using PLR.AST.Expressions;
-using PLR.AST.Processes;
-using PLR.AST.Actions;
-using PLR.AST.ActionHandling;
-using Action = PLR.AST.Actions.Action;
+using PLR.Analysis;
+using PLR.Analysis.Expressions;
+using PLR.Analysis.Processes;
+using PLR.Analysis.Actions;
+using PLR.Analysis.ActionHandling;
+using Action = PLR.Analysis.Actions.Action;
 using System.Collections.Generic;
 
 using System;
@@ -24,40 +24,6 @@ public partial class Parser {
 	public const int _STRING = 8;
 	public const int maxT = 41;
 
-
-private ProcessSystem system = new ProcessSystem();
-    public ProcessSystem System {get { return this.system;}}
-    
-    private void SetPos(Node n, Token t) {
-        n.LexicalInfo.StartLine = t.line;
-        n.LexicalInfo.StartColumn = t.col;
-        n.LexicalInfo.EndLine = t.line;
-        n.LexicalInfo.EndColumn = t.col+t.val.Length;
-    }
-
-    private void SetPos(Node n, Token start, Token end) {
-        n.LexicalInfo.StartLine = start.line;
-        n.LexicalInfo.StartColumn = start.col;
-        n.LexicalInfo.EndLine = end.line;
-        n.LexicalInfo.EndColumn = end.col+end.val.Length;
-    }
-    
-    private void SetStartPos(Node n, Token t) {
-        n.LexicalInfo.StartLine = t.line;
-        n.LexicalInfo.StartColumn = t.col;
-    }
-
-    private void SetEndPos(Node n, Token t) {
-        n.LexicalInfo.EndLine = t.line;
-        n.LexicalInfo.EndColumn = t.col;
-    }
-    
-    private void CopyPos(Node n, Node source, Token end) {
-        n.LexicalInfo.StartLine = source.LexicalInfo.StartLine;
-        n.LexicalInfo.StartColumn = source.LexicalInfo.StartColumn;
-        n.LexicalInfo.EndLine = end.line;
-        n.LexicalInfo.EndColumn = end.col+end.val.Length;
-    }
 
 
 

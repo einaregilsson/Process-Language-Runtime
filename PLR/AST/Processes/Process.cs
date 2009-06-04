@@ -6,18 +6,18 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
-using PLR.AST;
-using PLR.AST.Actions;
+using PLR.Analysis;
+using PLR.Analysis.Actions;
 using PLR.Runtime;
-using PLR.AST.ActionHandling;
-using PLR.AST.Expressions;
+using PLR.Analysis.ActionHandling;
+using PLR.Analysis.Expressions;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 using System;
 
-namespace PLR.AST.Processes {
+namespace PLR.Analysis.Processes {
     public abstract class Process : Node {
 
         public Process() {

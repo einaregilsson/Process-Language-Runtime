@@ -44,8 +44,9 @@
     <Compile Include="Analysis\NilProcessWarning.cs" />
     <Compile Include="Analysis\Set.cs" />
     <Compile Include="Analysis\UnmatchedChannels.cs" />
-    <Compile Include="Analysis\UnusedAssignments.cs" />
-    <Compile Include="Analysis\UseOfUnassignedVariables.cs" />
+    <Compile Include="Analysis\LiveVariables.cs" />
+    <Compile Include="Analysis\ReachingDefinitions.cs" />
+    <Compile Include="Analysis\UnusedProcesses.cs" />
     <Compile Include="Analysis\Warning.cs" />
     <Compile Include="AST\ActionHandling\ChannelRestrictions.cs" />
     <Compile Include="AST\ActionHandling\CustomPreprocess.cs" />
@@ -61,7 +62,7 @@
     <Compile Include="AST\Actions\OutAction.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\ExpressionFolder.cs" />
+    <Compile Include="Analysis\ConstantExpressions.cs" />
     <Compile Include="AST\Expressions\ArithmeticBinOpExpression.cs">
       <SubType>Code</SubType>
     </Compile>

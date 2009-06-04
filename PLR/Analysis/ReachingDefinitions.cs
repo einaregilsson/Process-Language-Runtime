@@ -7,13 +7,13 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
 using System.Collections.Generic;
-using PLR.AST;
-using PLR.AST.Processes;
-using PLR.AST.Expressions;
+using PLR.Analysis;
+using PLR.Analysis.Expressions;
+using PLR.Analysis.Processes;
 
 namespace PLR.Analysis {
 
-    public class UseOfUnassignedVariables : AbstractVisitor, IAnalysis {
+    public class ReachingDefinitions : AbstractVisitor, IAnalysis {
 
         private List<Warning> _warnings;
 

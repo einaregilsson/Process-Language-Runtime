@@ -7,13 +7,13 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
 using System.Collections.Generic;
-using PLR.AST;
-using PLR.AST.Processes;
-using PLR.AST.Expressions;
+using PLR.Analysis;
+using PLR.Analysis.Processes;
+using PLR.Analysis.Expressions;
 
 namespace PLR.Analysis {
 
-    public class UnusedAssignments : AbstractVisitor, IAnalysis {
+    public class LiveVariables : AbstractVisitor, IAnalysis {
 
         private List<Warning> _warnings;
 
@@ -26,8 +26,9 @@ namespace PLR.Analysis {
 
         public override void Visit(ProcessDefinition def) {
             foreach (Variable var in def.Variables) {
-                if (!((Set)def.Process.Tag).Contains(var) && var.Name != "dummy") {
+                if (!((Set)def.Process.Tag).Contains(var) && var.Name != Variable.NotUsedName) {
                     _warnings.Add(new Warning(var.LexicalInfo, "The initial value of " + var.Name + " which is passed to " + def.Name + " is never read in the process"));
+                    var.IsUsed = false;
                 }
             }
         }
@@ -41,8 +42,9 @@ namespace PLR.Analysis {
             set.AddRange(p.ReadVariables);
 
             foreach (Variable var in p.AssignedVariables) {
-                if (!set.Contains(var) && var.Name != "dummy") {
+                if (!set.Contains(var) && var.Name != Variable.NotUsedName) {
                     _warnings.Add(new Warning(var.LexicalInfo, "This assignment to variable " + var.Name + " has no effect, it is never read"));
+                    var.IsUsed = false;
                 }
                 set.Remove(var);
             }

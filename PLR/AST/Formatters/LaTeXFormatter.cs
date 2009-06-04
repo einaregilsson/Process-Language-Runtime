@@ -6,14 +6,14 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using PLR.AST;
-using PLR.AST.Actions;
-using PLR.AST.Processes;
-using PLR.AST.ActionHandling;
+ ﻿using PLR.Analysis;
+using PLR.Analysis.Actions;
+using PLR.Analysis.Processes;
+using PLR.Analysis.ActionHandling;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PLR.AST.Formatters {
+namespace PLR.Analysis.Formatters {
 
     public class LaTeXFormatter : BaseFormatter {
 

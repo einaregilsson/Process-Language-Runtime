@@ -9,12 +9,12 @@
  ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.AST.ActionHandling;
-using PLR.AST.Actions;
-using PLR.AST.Expressions;
-using PLR.AST.Processes;
+using PLR.Analysis.ActionHandling;
+using PLR.Analysis.Actions;
+using PLR.Analysis.Expressions;
+using PLR.Analysis.Processes;
 
-namespace PLR.AST.Formatters {
+namespace PLR.Analysis.Formatters {
 
     public class BaseFormatter : AbstractVisitor{
 

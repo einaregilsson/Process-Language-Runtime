@@ -14,11 +14,11 @@ using CCS.Parsing;
 using PLR;
 using PLR.Runtime;
 using PLR.Compilation;
-using PLR.AST;
-using PLR.AST.Processes;
+using PLR.Analysis;
+using PLR.Analysis.Processes;
 using System.Reflection;
 using System.Security.Cryptography;
-using PLR.AST.Formatters;
+using PLR.Analysis.Formatters;
 using PLR.Analysis;
 
 namespace CCS {
@@ -60,9 +60,30 @@ Usage: CCS [options] <filename>
                 }
                 ProcessSystem system = parser.System;
                 system.MeetTheParents();
-                List<Warning> warnings = system.Analyze(new UnusedAssignments(), new UseOfUnassignedVariables(), new NilProcessWarning(), new UnmatchedChannels());
+                List<Warning> warnings = system.Analyze(new ReachingDefinitions());
+
+                if (warnings.Count > 0) {
+                    foreach (Warning warn in warnings) {
+                        Console.Error.WriteLine("ERROR({0},{1}): {2}", warn.LexicalInfo.StartLine, warn.LexicalInfo.StartColumn, warn.Message);
+                    }
+                    return 1; //This is an error so we die before attempting to compile
+                }
+
+                //These are just warnings, so just warn...
+                warnings = system.Analyze(
+                    new LiveVariables(), 
+                    new NilProcessWarning(), 
+                    new UnmatchedChannels(), 
+                    new UnusedProcesses(options.Optimize)
+                );
+
                 foreach (Warning warn in warnings) {
                     Console.Error.WriteLine("WARNING({0},{1}): {2}", warn.LexicalInfo.StartLine, warn.LexicalInfo.StartColumn, warn.Message);
+                }
+
+                //This optimizes the tree before compilation, only do if we should optimize
+                if (options.Optimize) {
+                    system.Analyze(new FoldConstantExpressions());
                 }
 
                 CheckPrintout(options, system);

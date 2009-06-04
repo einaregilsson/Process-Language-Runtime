@@ -14,7 +14,7 @@ using System.Reflection.Emit;
 using PLR.Compilation;
 
 
-namespace PLR.AST.ActionHandling {
+namespace PLR.Analysis.ActionHandling {
     public class CustomPreprocess : PreProcessActions {
 
         public CustomPreprocess(string methodName) {

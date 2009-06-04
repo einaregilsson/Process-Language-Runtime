@@ -13,9 +13,9 @@ using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using PLR.Compilation;
 using PLR.Runtime;
-using PLR.AST.Expressions;
+using PLR.Analysis.Expressions;
 
-namespace PLR.AST.Actions {
+namespace PLR.Analysis.Actions {
     public class InAction : Action {
         public InAction(string name) : base(name) { }
 
@@ -47,8 +47,11 @@ namespace PLR.AST.Actions {
 
             //Save values to variables
             for (int i = 0; i < _children.Count; i++) {
-                Variable var = (Variable) _children[i];
+                Variable var = (Variable)_children[i];
 
+                if (context.Options.Optimize && !var.IsUsed) {
+                    continue;
+                }
                 //Get the value to assign to it...
                 il.Emit(OpCodes.Ldloc, syncObject);
                 il.Emit(OpCodes.Ldc_I4, i);

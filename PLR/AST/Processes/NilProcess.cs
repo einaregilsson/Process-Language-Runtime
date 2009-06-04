@@ -10,7 +10,7 @@ using System.Reflection.Emit;
 using PLR.Compilation;
 using System.Collections.Generic;
 
-namespace PLR.AST.Processes {
+namespace PLR.Analysis.Processes {
     public class NilProcess : Process{
 
         public override void Accept(AbstractVisitor visitor) {

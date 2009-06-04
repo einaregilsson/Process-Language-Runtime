@@ -9,13 +9,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.AST;
-using PLR.AST.Actions;
-using PLR.AST.ActionHandling;
-using PLR.AST.Expressions;
-using PLR.AST.Processes;
+using PLR.Analysis;
+using PLR.Analysis.Actions;
+using PLR.Analysis.ActionHandling;
+using PLR.Analysis.Expressions;
+using PLR.Analysis.Processes;
 
-namespace PLR.AST
+namespace PLR.Analysis
 {
     public abstract class AbstractVisitor
     {
@@ -32,9 +32,9 @@ namespace PLR.AST
             if (VisitParentBeforeChildren) {
                 node.Accept(this);
             }
-            foreach (Node child in node)
-            {
-                VisitRecursive(child);
+            for (int i = 0; i < node.ChildNodes.Count; i++) {
+
+                VisitRecursive(node.ChildNodes[i]);
             }
             if (!VisitParentBeforeChildren) {
                 node.Accept(this);

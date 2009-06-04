@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.AST;
+using PLR.Analysis;
 
 namespace PLR.Analysis {
     public interface IAnalysis {

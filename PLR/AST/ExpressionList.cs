@@ -9,10 +9,10 @@
  ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.AST.Expressions;
+using PLR.Analysis.Expressions;
 using PLR.Compilation;
 
-namespace PLR.AST {
+namespace PLR.Analysis {
     public class ExpressionList : Node {
 
         public void Add(Expression exp) {

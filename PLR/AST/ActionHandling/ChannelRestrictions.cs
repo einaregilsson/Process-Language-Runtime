@@ -11,11 +11,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
-using PLR.AST.Expressions;
+using PLR.Analysis.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.AST.ActionHandling {
+namespace PLR.Analysis.ActionHandling {
     public class ChannelRestrictions : ActionRestrictions{
         private List<string> _channelNames = new List<string>();
         public List<string> ChannelNames { get { return _channelNames; } }

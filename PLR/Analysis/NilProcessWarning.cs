@@ -1,5 +1,5 @@
 ﻿/**
- * $Id: NilProcessRemoval.cs 173 2009-06-02 11:33:34Z eboeg $ 
+ * $Id$ 
  * 
  * This file is part of the Process Language Runtime (PLR) 
  * and is licensed under the GPL v3.0.
@@ -9,10 +9,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.AST;
-using PLR.AST.Expressions;
-using PLR.AST.Actions;
-using PLR.AST.Processes;
+using PLR.Analysis;
+using PLR.Analysis.Expressions;
+using PLR.Analysis.Actions;
+using PLR.Analysis.Processes;
 
 namespace PLR.Analysis {
 
@@ -29,8 +29,10 @@ namespace PLR.Analysis {
         public override void Visit(NilProcess np) {
             if (np.Parent is NonDeterministicChoice) {
                 _warnings.Add(new Warning(np.LexicalInfo, "Nil process will never be chosen in non deterministic choice. P+0 == 0"));
+                np.IsUsed = false;
             } else if (np.Parent is ParallelComposition) {
                 _warnings.Add(new Warning(np.LexicalInfo, "A nil process has no effect in parallel composition. P | 0 == 0"));
+                np.IsUsed = false;
             } else if (np.Parent is ProcessDefinition) {
                 string procName = ((ProcessDefinition)np.Parent).Name;
                 _warnings.Add(new Warning(np.Parent.LexicalInfo, "Process " + procName + " has no effect and can be replaced with the nil process as appropriate"));

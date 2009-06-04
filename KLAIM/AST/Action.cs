@@ -6,12 +6,12 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using PLR.AST.Expressions;
+ ﻿using PLR.Analysis.Expressions;
 using System.Text;
 
 namespace KLAIM.AST {
 
-    public abstract class Action : PLR.AST.Actions.Action {
+    public abstract class Action : PLR.Analysis.Actions.Action {
         public string Locality { get; set; }
         public Expression At {
             get {
@@ -28,7 +28,7 @@ namespace KLAIM.AST {
 
         public override System.Collections.Generic.List<Variable> ReadVariables {
             get {
-                return FindReadVariables(this);
+                return FindReadVariables(this).FindAll(delegate(Variable v) { return !(v is VariableBinding);});
             }
         }
 
