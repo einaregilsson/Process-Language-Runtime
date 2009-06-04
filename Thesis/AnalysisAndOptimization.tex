@@ -1,0 +1,113 @@
+\chapter{Analysis and Optimization}\label{ch:analysis_and_optimization}
+
+	In this chapter we look at the static analyses performed on the PLR syntax 
+	tree before compilation, these include some classical dataflow analyses 
+	as well as some analyses that are more specific to the process algebra 
+	domain. The results of these analyses can be used to optimize the 
+	compilation process, the optimizations are presented and explained, and 
+	their implications for debugging support are discussed.
+	
+\section{Analysing process algebra}
+	
+	\subsection{Traditional data flow analysis}
+	Many of the most useful static analyses that compilers perform are based on 
+	\textit{data flow analysis}. For these types of analyses it is necessary to 
+	build up a \textit{control flow graph} of the program being analysed. The 
+	control flow graph shows which program points lead directly to which other 
+	program points, in some cases the reverse control flow graph is needed, 
+	which shows for a program point $p$ what its immediate predecessors are. The 
+	following snippet of typical imperative code is an example:
+	\begin{Exa}
+	\label{ex:control_flow}
+	\begin{verbatim}
+	
+                     1: y := 2
+                     2: x := 1
+                     3: while x < 6 do
+                     4: 	  x := x + 1   
+                        od
+                     5: print x
+	\end{verbatim}
+	\end{Exa}
+	
+	In this example the program points are labelled from 1-5. Program points are 
+	those points in the program where something happens, expression are 
+	evaluated, variables are assigned, etc. The control flow for this example 
+	would be (1,2), (2,3), (3,4), (3,5), (4,3) and (4,5). The analysis is then 
+	typically performed by having each program point have an input set and an 
+	output set, the input set represents the state of the program as the point 
+	is reached and is based on the state of its predecessors, the output set 
+	represents the state of the program after the program point has been 
+	evaluated, and is based on the points input set with some modifications 
+	based on what happened at the program point. 
+	
+	To give a concrete example suppose we have an analysis which is determining 
+	for the code snippet in Example~\ref{ex:control_flow} which variables have 
+	been assigned at each point in the program. For the program point labelled 1 
+	(x := 1), its input set would be $\{y\}$ as $y$ is the only variable that 
+	has been assigned at that point. Since program point 1 assigns to the 
+	variable $x$ then its output set would be the union of its input set and 
+	$\{x\}$, or $\{x,y\}$. The functions used to modify the input set to create 
+	the output set are commonly called \textit{Kill} and \textit{Gen}, the 
+	\textit{Kill} function removes items from the input set and the \textit{Gen} 
+	function adds new items to the output set. 
+	
+	To get the final result of the analysis these calculations must be repeated 
+	for each point in the program until the input and output sets of each become 
+	stable. To accomplish this there are many iterative worklist algorithms that 
+	can be used, they keep track of which program points change and what other 
+	program points must then be re-calculated. There is a lot more to data flow 
+	analysis than explained here, for instance whether output sets of 
+	predecessors are combined using the union or intersection operator, and what 
+	the initial content of the input sets are, but we will not go into more 
+	detail on how data flow analysis generally works here. A good resource on 
+	the subject is \cite{program_analysis}.
+	
+	\subsection{Data flow analysis in process algebra}
+	
+	Two properties of process algebra make it different from imperative 
+	languages when it comes to data flow analysis.
+	
+	\begin{enumerate}
+		\item There are no looping constructs. The reason that data flow analysis 
+		on imperative languages needs iterative worklist algorithms is because of 
+		looping. When looping is not a part of the language then the whole program 
+		can be analyzed from top to bottom (or bottom to top) in one pass, each 
+		program point only needs to be calculated once.
+		
+		\item There are branches, but they are never re-joined later in the 
+		program. This implies that at every point in the program is is possible to 
+		know exactly what path was taken to get to that point. Note that this only 
+		holds for forward analysis. Backwards analysis can be seen as multiple 
+		branches joining, and so in a backward analysis it is not possible to know 
+		at program point $p$ from which branch a particular item in $p$'s input 
+		set originates.
+		
+	\end{enumerate}
+
+	These two properties might not hold for all process algebras in existence, 
+	but they certainly hold for both CCS and KLAIM, as well as some other 
+	prominent algebras such as CSP, and they do simplify the implementation of 
+	these analyses for process algebra. Sections \ref{live_variables} and 
+	\ref{reaching_definitions} discuss one backward and one forward data flow 
+	analysis and how they were implemented in an extensible way for the PLR.
+	
+\section{Analyses}
+\subsection{Live Variables}\label{live_variables}
+
+  \textit{Live Variables Analysis} is a classic dataflow analysis. Its purpose is to identify at each program point which variables are \textit{live}, that is which variables will be used later on in the program in the paths that follow the program point in question.
+
+\subsection{Reaching Definitions}\label{reaching_definitions}
+
+\subsection{Constant Expressions}
+
+
+
+\subsection{Nil Process Elimination}
+
+\subsection{Unmatched Channels}
+
+\subsection{Unused Processes}
+
+
+	
