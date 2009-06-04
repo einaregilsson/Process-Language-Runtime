@@ -47,9 +47,9 @@ namespace PLR.Analysis {
             if (p.Expression is Bool) { //Has been optimized completely away...
                 bool value = ((Bool)p.Expression).Value;
                 if (value) {
-                    p.Parent.Replace(p, p.IfBranch);
+                    p.ElseBranch.IsUsed = false;
                 } else {
-                    p.Parent.Replace(p, p.ElseBranch);
+                    p.IfBranch.IsUsed = false;
                 }
             }
         }

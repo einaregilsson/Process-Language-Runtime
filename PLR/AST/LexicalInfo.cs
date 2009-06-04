@@ -14,13 +14,28 @@ namespace PLR.Analysis {
     public class LexicalInfo {
         public LexicalInfo() { }
 
-        public int s;
-        public int StartLine {
-            get { return s; }
-            set {
-                if (value == 0) Console.WriteLine("SET TO 0" + new System.Diagnostics.StackTrace()); s = value;
+
+        public override bool Equals(object obj) {
+            if (!(obj is LexicalInfo)) {
+                return false;
             }
+
+            LexicalInfo other = (LexicalInfo)obj;
+            return this.ToString() == other.ToString();
         }
+
+        public override int GetHashCode() {
+            return this.ToString().GetHashCode();
+        }
+
+        public void Copyfrom(LexicalInfo other) {
+            this.StartLine = other.StartLine;
+            this.StartColumn = other.StartColumn;
+            this.EndLine = other.EndLine;
+            this.EndColumn = other.EndColumn;
+        }
+
+        public int StartLine { get; set; }
         public int StartColumn { get; set; }
         public int EndLine { get; set; }
         public int EndColumn { get; set; }

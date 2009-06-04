@@ -55,6 +55,14 @@ namespace PLR.Analysis.Processes {
         }
 
         public override void Compile(CompileContext context) {
+
+            if (context.Options.Optimize && !ElseBranch.IsUsed) {
+                IfBranch.Compile(context);
+                return;
+            } else if (context.Options.Optimize && !IfBranch.IsUsed) {
+                ElseBranch.Compile(context);
+                return;
+            }
             Label elseStart = context.ILGenerator.DefineLabel();
             Label elseEnd = context.ILGenerator.DefineLabel();
             context.MarkSequencePoint(Expression.LexicalInfo);
