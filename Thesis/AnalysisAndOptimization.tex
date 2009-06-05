@@ -50,22 +50,32 @@
 	$\{x\}$, or $\{x,y\}$. The functions used to modify the input set to create 
 	the output set are commonly called \textit{Kill} and \textit{Gen}, the 
 	\textit{Kill} function removes items from the input set and the \textit{Gen} 
-	function adds new items to the output set. 
+	function adds new items to the output set. This can be shown as (for program 
+	point $p$):
+	
+	\begin{center}
+	$p_{output} = p_{input}\ \cup\ Gen(p)\ \setminus\ Kill(p) $
+	\end{center}
 	
 	To get the final result of the analysis these calculations must be repeated 
 	for each point in the program until the input and output sets of each become 
-	stable. To accomplish this there are many iterative worklist algorithms that 
-	can be used, they keep track of which program points change and what other 
-	program points must then be re-calculated. There is a lot more to data flow 
-	analysis than explained here, for instance whether output sets of 
-	predecessors are combined using the union or intersection operator, and what 
-	the initial content of the input sets are, but we will not go into more 
-	detail on how data flow analysis generally works here. A good resource on 
-	the subject is \cite{program_analysis}.
+	stable. The result is an approximation, either overapproximation (something 
+	\textit{may} happen on the path to the program point) or an underapproximation
+	(something \textit{must} have happened on the path to the program point).  To 
+	calculate the input and output sets of each program points an iterative 
+	worklist algorithm is used. There are many variations of these algorithms, 
+	they keep track of which program points change and which other program points 
+	must then be re-calculated. There is a lot more to data flow analysis than 
+	explained here, for instance whether output sets of predecessors are combined 
+	using the union or intersection operator, and what the initial content of the 
+	input sets are, but we will not go into more detail on how data flow analysis 
+	generally works here, this is meant only as a brief introduction before 
+	explaining the analyses performed in the PLR. A more formal introduction to 
+	the subject of data flow analysis can be found in \cite{program_analysis}.
 	
 	\subsection{Data flow analysis in process algebra}
 	
-	Two properties of process algebra make it different from imperative 
+	Two properties of process algebra make it different from imperative 	
 	languages when it comes to data flow analysis.
 	
 	\begin{enumerate}
@@ -93,15 +103,114 @@
 	analysis and how they were implemented in an extensible way for the PLR.
 	
 \section{Analyses}
+
 \subsection{Live Variables}\label{live_variables}
 
-  \textit{Live Variables Analysis} is a classic dataflow analysis. Its purpose is to identify at each program point which variables are \textit{live}, that is which variables will be used later on in the program in the paths that follow the program point in question.
+  \textit{Live Variables Analysis} is a classic data flow analysis. Its purpose 
+  is to identify at each program point which variables are \textit{live}, that 
+  is which variables will be read later on in the program in the paths that 
+  follow the program point in question. This is a backward analysis and is 
+  traditionally used to identify assignments to variables that have no effect,
+  for instance if the variable $x$ is assigned at program point $p$, but along 
+  all paths that follow $p$ the variable is either never read, or assigned to 
+  again before being read then the assignment at $p$ has no effect and can be 
+  eliminated. The analysis is an over-approximation, we cannot safely eliminate 
+  the assignment to $x$ if there \textit{may} be a path after $p$ where $x$ is
+  read. This implies that the input set of $p$ will be the \textit{union} of the
+  output sets of its pre-decessors (here the pre-decessors actually mean the 
+  program points that follow $p$ as it is a backward analysis).
+  
+  In the analysis of the PLR syntax tree, a process is considered a program 
+  point. Additionally, syntax nodes that represent a process constant being 
+  defined are considered program points, as they may contain defining occurences
+  of variables. For instance, in $ CS(x,y) \defeq a . 0$ we would consider 
+  $CS(x,y)$ a program point, since it defines the variables $x$ and $y$, and it
+  can be beneficial at that point to know whether the initial value of those 
+  variables was ever used in the process. We have two helper functions, 
+  \textit{assigned(x)} takes in an action and returns a set of the variables 
+  assigned in that action. An action in this case can be the receiving of 
+  values through a channel or sending values through a channel. The other 
+  helper function, \textit{read(x)} takes in an expression and returns all 
+  variables evaluated in that expression, or takes in an action and returns
+  all variables evaluated in that action. Figure~\ref{fig:read_assigned} 
+  shows some examples of the use of \textit{read} and \textit{assigned}, 
+  Figure~\ref{fig:killgen_livevariables} shows how the \textit{Kill} and
+  \textit{Gen} functions are defined for each of the process types in the
+  PLR syntax tree.
+  
+	\begin{figure}[h!]
+	\label{fig:read_assigned}
+	\caption{Examples of the \textit{read} and \textit{assigned} functions}
+	\begin{ARRAY}{r l l}
+  assigned(\mathrm{channel}(x,y)) & = & \{x,y\} \vspace{5pt}\\
+  read(\overline{(\mathrm{channel}(z+1,a-b)}) & = & \{z,a,b\} \vspace{5pt}\\
+  read(x+1/z) & = & \{x,z\} \\
+	\end{ARRAY}
+	\end{figure}
+  
+  \begin{figure}[h!]
+  \label{fig:killgen_livevariables}
+  \caption{\textit{Kill} and \textit{Gen} functions for Live Variables}
+  \begin{ARRAY}{r l l}
+  		
+  		Kill(a.P) & = & assigned(a) \\
+  		Gen(a.P) & =& read(a) \vspace{7pt}\\
+      
+      Kill(P \mid Q) & = & \emptyset \\
+      Gen(P \mid Q) & = & \emptyset \vspace{7pt}\\
+   
+      Kill(P + Q) & = & \emptyset \\
+      Gen(P + Q) & = & \emptyset \vspace{7pt}\\
+  
+      Kill(0) & = & \emptyset \\
+      Gen(0) & = & \emptyset \vspace{7pt}\\
+      
+      Kill(\mathrm{if}\ bexp\ \mathrm{then}\ P\ \mathrm{else}\ Q) & = & \emptyset\\
+      Gen(\mathrm{if}\ bexp\ \mathrm{then}\ P\ \mathrm{else}\ Q) & = & read(bexp)\vspace{7pt}\\
+
+      (\mathrm{process\ definitions}) & &\\
+      Kill(K(x,y,z) \defeq) & = & \{x,y,z\} \\
+      Gen(K(x,y,z) \defeq) & = & \emptyset \vspace{7pt}\\
+
+      (\mathrm{process\ invocations}) & &\\
+      Kill(K(exp_1,...,exp_n)) & = & \emptyset \\
+      Gen(K(exp_1,...,exp_n)) & = & read(exp_1) \cup ... \cup\ read(exp_n) \\
+
+  
+  \end{ARRAY} 
+  \end{figure}
+  
+  The actual implementation of the \textit{assigned()} and \textit{read()} 
+  functions is done with two properties that are present on all syntax nodes
+  that derive from either \textsf{Process} or \texts{Action}. These properties
+  are \textsf{AssignedVariables} and \textsf{ReadVariables} and return the
+  assigned and read variables of a process or action. Having these as properties
+  of the syntax nodes instead of as part of the implementation of the analysis 
+  allows for greater extensibility. Languages implemented using the PLR that 
+  have their own custom syntax nodes simply need to override these properties
+  and can then use the analysis without further modifications. This is  
+  the case in the KLAIM implementation discussed in Chapter~\ref{ch:klaim}, 
+  it has its own custom actions and a custom process type and they simply 
+  implement these properties.
+  
+  Constructing the flow graph is trivial, since there are no loops or joining
+  branches. In fact, a special flow graph is not constructed, instead the PLR
+  syntax tree is used directly. To make it simpler, each \textsf{Process} node
+  is required to implement a \textsf{FlowsTo} property which is a list of all
+  the processes it can flow to. For an \texttt{if-else} process these are the 
+  if and else branches, for parallel composition these are the composed 
+  processes, etc. In addition each node in the syntax tree has a \textsf{Parent} 
+  property which references its parent and can be used as a reverse flow graph.
+  Again, having these properties directly on the syntax tree is useful so
+  that additional process types can be added without having to modify the
+  analysis code. The input and output sets are stored in a a \textsf{Tag} property
+  which is also on each syntax node, this is a generic object reference which
+  analyses may use temporarily to store data associated with each node.
+  
 
 \subsection{Reaching Definitions}\label{reaching_definitions}
 
 \subsection{Constant Expressions}
-
-
 
 \subsection{Nil Process Elimination}
 
