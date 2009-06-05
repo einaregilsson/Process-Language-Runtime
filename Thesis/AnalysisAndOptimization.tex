@@ -205,18 +205,192 @@
   that additional process types can be added without having to modify the
   analysis code. The input and output sets are stored in a a \textsf{Tag} property
   which is also on each syntax node, this is a generic object reference which
-  analyses may use temporarily to store data associated with each node.
+  analyses may use to temporarily store data associated with each node.
   
+  Instead of an iterative worklist algorithm the analysis itself uses the
+  visitor pattern discussed in Section~\ref{sec:visitor}. It simply inherits
+  from \textsf{AbstractVisitor} and overrides the \texttt{Visit(Process p)} 
+  method which ensures that it will be called for every node in the syntax 
+  tree that inherits from \textsf{Process}. The visitor does a depth-first 
+  recursive traversal of  the syntax tree, the \textsf{Visit} is called on 
+  child nodes before parent nodes so whenever we are processing a process $p$ 
+  we know that all its child nodes have already been processed. What is needed
+  in the method itself is then:
+  
+  	\begin{enumerate}
+  		\item Construct the input set of $p$ by joining the output sets of all the
+  		processes in its \textsf{FlowsTo} property.
+  		\item Check whether any variable $x$ in \textsf{p.AssignedVariables} is not
+  		in $p$'s input set. If it is not, then the assignment at $p$ has no effect
+  		and a warning is issued, and an \textsf{IsUsed} property} on $x$ is set to 
+  		\texttt{false}. This can be used later for optimization during compilation.
+  		\item Construct the output set of $p$ by taking the input set and removing
+  		all variables that are in \textsf{p.AssignedVariables} and then adding all
+  		variables that are in \textsf{p.ReadVariables}.
+  	\end{enumerate}
+  
+  Once the analysis has been performed a number of warnings have been issued and
+  all assignments to variables that have no effect have been marked as not used.
+  In some cases it may be needed to assign to a variable that is never used 
+  because the interface of another process requires it. For instance, one process 
+  may send a value on channel $ch$, another process may wish to synchronize but
+  does not care about the value sent. In that case the variable that is bound 
+  during the synchronization can be named \textbf{notused} and then no warnings
+  will be issued.
+  
+  During the compilation stage the PLR will look at every variable that is 
+  assigned and check whether its \textsf{IsUsed} property is set to 
+  \texttt{false}. If the assignment is never used then no bytecode is emitted
+  to store a value in the variable and no variable is declared. If the 
+  assignment is unused because another assignment is made before the variable 
+  is read, then the variable is defined at that point instead of the original 
+  point. Due to the way the PLR is constructed this may save one or more
+  processes from having that variable as a field or a local variable, thus
+  reducing the size of the compiled executable.
 
 \subsection{Reaching Definitions}\label{reaching_definitions}
 
+  \textit{Reaching Definitions} is another classic data flow analysis. Its 
+  purpose is to identify which assignments may reach a given point in a program.
+  
+\begin{Exa}
+	\label{ex:reaching_definition}
+	\begin{verbatim}
+	
+                     1: x := 1
+                     2: x := 2
+                     3: print x
+	\end{verbatim}
+\end{Exa}  
+	
+	In the example above the assignment at line 2 reaches line 3. The assignment at
+	line 1 reaches line 2 but not 3, since $x$ is assigned again at line 2. So at
+	line 3 we know that the value of $x$ is that which was assigned at line 2.
+	With branching and re-joining branches there may be more than one definition
+	of a particular variable that reach a certain point, for example when a variable
+	is assigned in both branches of an \texttt{if-else} statement. However since
+	this is a forward analysis and the PLR does not have re-joining branches this
+	cannot happen in the PLR's implementation of this analysis. 
+	
+	Reaching Definitions analysis can be used for many common compiler 
+	optimizations, such as constant propagation and common subexpression 
+	elimination. However in the PLR it is used for only one thing, to detect the 
+	use of unassigned variables. Once the analysis has been performed it is 
+	possible to examine each program point $p$ and see whether all variables
+	read at $p$ have entries in $p$'s input set. If a variable $x$ is evaluated
+	at $p$ and does not exist in $p$'s input set, then there is no definition
+	of $x$ that reaches $p$ and it is being used before being assigned. The 
+	\textit{Kill} and \textit{Gen} functions are shown in 
+	Figure~\ref{fig:killgen_reachingdefinitions}. Since the assignment to variable 
+	$x$ defined at one point in the program is not the same as the assignment 
+	to variable $x$ defined at another place in the program the function 
+	\textit{named()} is used. ${Kill(a.P) = (named(assigned(a)))}$ means to
+	remove all the variables from the set which are named the same as those that
+	were assigned in $a$, whereas for the \textit{Gen} we have 
+	$Gen(a.P) = assigned(a)$ which means to add the exact variables occuring in
+	$a$ to the set. 
+	
+  \begin{figure}[h!]
+  \label{fig:killgen_reachingdefinitions}
+  \caption{\textit{Kill} and \textit{Gen} functions for Reaching Definitions}
+  \begin{ARRAY}{r l l}
+  		
+  		Kill(a.P) & = & named(assigned(a)) \\
+  		Gen(a.P) & =& assigned(a) \vspace{7pt}\\
+      
+      Kill(P \mid Q) & = & \emptyset \\
+      Gen(P \mid Q) & = & \emptyset \vspace{7pt}\\
+   
+      Kill(P + Q) & = & \emptyset \\
+      Gen(P + Q) & = & \emptyset \vspace{7pt}\\
+  
+      Kill(0) & = & \emptyset \\
+      Gen(0) & = & \emptyset \vspace{7pt}\\
+      
+      Kill(\mathrm{if}\ bexp\ \mathrm{then}\ P\ \mathrm{else}\ Q) & = & \emptyset\\
+      Gen(\mathrm{if}\ bexp\ \mathrm{then}\ P\ \mathrm{else}\ Q) & = & \emptyset\vspace{7pt}\\
+
+      (\mathrm{process\ definitions}) & &\\
+      Kill(K(x,y,z) \defeq) & = & named(x,y,z) \\
+      Gen(K(x,y,z) \defeq) & = & \{x,y,z\} \vspace{7pt}\\
+
+      (\mathrm{process\ invocations}) & &\\
+      Kill(K(exp_1,...,exp_n)) & = & \emptyset \\
+      Gen(K(exp_1,...,exp_n)) & = & \emptyset\\
+
+  
+  \end{ARRAY} 
+  \end{figure}
+
+	The implementation of Reaching Definitions is similar to that of Live Variables.
+	An analysis class inherits from \textsf{AbstractVisitor} and overrides its
+	\texttt{Visit(Process p)} method. Since this is a forward analysis the traversal
+	is a little different than in \textit{Live Variables}. Here, the property 
+	\textsf{VisitParentBeforeChildren} is set to \texttt{true} on the 
+	\textsf{AbstractVisitor}. This makes sure that the tree can be processed in
+	forward order instead of backward. Then, in the method the following steps are 
+	performed:
+	
+  	\begin{enumerate}
+  		\item Check the input set of $p$ against the property \textsf{p.ReadVariables}.
+  		If there exists a variable in \textsf{p.ReadVariables} that has no entry
+  		in $p$'s input set then it is being used before assignment and a warning is issued.
+  		
+  		\item Create the input set of each process $P_i$ in \textsf{p.FlowsTo} by taking
+  		the input set of $p$ and adding all variables from \textsf{p.AssignedVariables}, 
+  		replacing any previous entries for the same variable.
+  	\end{enumerate}
+  	
+  After the analysis has run the PLR checks whether it produced any warnings. If it
+  did then an error message to that effect is printed to the screen and the 
+  compilation is aborted.
+	
+
 \subsection{Constant Expressions}
 
-\subsection{Nil Process Elimination}
+	A simple optimization that can be performed is to calculate the expressions that
+	can be fully evaluated at compile time and replace them with a constant with
+	the result of the calculation. Granted, it is unlikely that large expressions
+	can be computed at compile time, unless some constant propagation is also 
+	performed, but it is nevertheless useful to compute those simple ones that can.
+	The implementation is simple (and was partially shown in Listing~\ref{lst:expression_folder}), 
+	simply subclass an \textsf{AbstractVisitor} and override a \textsf{Visit} method
+	for each of the binary expression nodes (arithmetic, relational and logical). 
+	Check if both the left and right childnodes are constants, if they are then
+	calculcate the result according to the operator stored in the binary node. 
+	Finally replace the binary node with a new constant node that carries the result
+	of the computation. The same goes for the unary minus node.
+	
+	The one extra thing that this analysis does is that it also visits the
+	\textsf{BranchProcess} node, which is the implementation of the \texttt{if-else}
+	statement. If the boolean expression in the \textsf{BranchProcess} has been
+	fully computed then the analysis will set the \textsf{IsUsed} flag to \texttt{false}
+	on the branch that will never been chosen, according to the result of the boolean
+	expression. During the compilation stage, if optimizations are turned on, the
+	PLR will then replace the \textsf{BranchProcess} with the branch that is 
+	guaranteed to be taken and only compile that branch.
+
+\subsection{Nil Process Warnings}
+
+	\textit{Nil Process Warnings} is a simple analysis which looks for nil processes 
+	in places where they are useless and can be eliminated. This includes nil processes
+	that are part of parallel composition ($P \mid 0 \equiv P$) and nil processes that
+	are an option in non deterministic choice (in $P+0$ the nil process will never
+	be selected). This is implemented as a visitor that visits all \textsf{NilProcess}
+	nodes, checks whether their parent nodes are \textsf{ParallelComposition} or 
+	\textsf{NonDeterministicChoice}. If they are, then a warning is issued and the
+	property \textsf{IsUsed} on the nil process nodes is set to \texttt{false}, which
+	allows the compilation to skip those processes.
+	
+	The analysis also checks for process definitions that are defined as nothing more
+	than the nil process (e.g. $P \defeq 0$) and issues a warning that states that
+	any process invocation of $P$ can be replaced with a nil process.
 
 \subsection{Unmatched Channels}
 
 \subsection{Unused Processes}
+
+	
 
 
 	
