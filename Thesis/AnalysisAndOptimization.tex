@@ -103,7 +103,19 @@
 	analysis and how they were implemented in an extensible way for the PLR.
 	
 \section{Analyses}
-
+	
+	The analyses presented here generally follow the same pattern. They implement
+	an \textsf{IAnalysis} interface and inherit from \textsf{AbstractVisitor}. 
+	They traverse the syntax tree to analyze it and issue warnings about any
+	anomalies found. In some cases they mark certain syntax nodes as not being
+	used, the compilation then uses that information for optimization, for example
+	to skip compiling certain things that are guaranteed never to be executed. 
+	These optimizations can be turned on and off in the compile options that
+	are passed to the PLR. The optimizations and debugging support are mutually
+	exclusive, this is due to the fact that the sequence points in an optimized
+	executuable may not match the actual source code file any longer, which could
+	make the debugging rather confusing.
+	
 \subsection{Live Variables}\label{live_variables}
 
   \textit{Live Variables Analysis} is a classic data flow analysis. Its purpose 
@@ -388,7 +400,57 @@
 
 \subsection{Unmatched Channels}
 
+	When a process tries to synchronize on a channel that no other process 
+	anywhere in the application ever synchronizes on then that process will be 
+	blocked forever. That scenario is not hard to detect manually in a small 
+	system, however once the system grows it becomes increasingly harder, 
+	especially when we factor in that a channel can be relabelled multiple times. 
+	
+	To attempt to detect these synchronizations which will never complete, the 
+	PLR contains an analysis named \textit{Umatched Channels}. It begins by
+	collecting the channel names of all \textsf{InAction} and \textsf{OutAction}
+	instances in the system. It then collects all the relabellings that can occur
+	(although it does not take into account relabelling that is done by custom
+	.NET methods). Every variation of channel names that are possible are then
+	created using the relabellings, this is done on a global scale without 
+	consideration for whether the relabelling has a chance of actually being
+	applied to a particular channel. Once all the variations have been created
+	the input channels are compared to the output channels, and if there is
+	an input channel that has no corresponding output channel, or vice versa,
+	then a warning is issued that the process will block forever should it 
+	attempt to synchronize on that channel. 
+	
+	Actions can only be child nodes of \textit{ActionPrefix} nodes, if an 
+	action is guaranteed to block forever, its parent \textsf{ActionPrefix}
+	node is gotten and the process that follows the action has its 
+	\textsf{IsUsed} property set to \texttt{false}. This allows the PLR to skip
+	compiling the following process entirely, as it is guaranteed never to run.
+	 
+	Clearly this analysis is an imprecise approximation of the problem itself. 
+	There could be channels that block that the analysis does not detect, because
+	it has found a relabelling that causes it to believe that the channel can 
+	synchronize, even if the relabelling actually has no chance of being applied
+	to that particular channel. Even so, the analysis does detect problems in
+	process algebra systems, and is useful for example when channel names or
+	relabellings have been mistyped.
+	
+	It would be interesting to further refine this analysis, for example by 
+	traversing through the tree and figuring out exactly which relabelling
+	could potentially be applied to which channels. Another possible refinement
+	would be to detect cases such as $P = (ch.0+\overline{ch}.0)$. Here the
+	input and output channel both exist, however since they are part of the
+	same nondeterministic choice only one of them can be chosen and so they
+	will never synchronize with each other.
+
 \subsection{Unused Processes}
+
+	\textit{Unused Processes} is an analysis that traverses the syntax tree and
+	collects the names of all defined processes, as well as all instances where
+	processes are invoked. It then proceeds to check whether all defined processes
+	are invoked at least once. If a process is never invoked a warning is issued
+	to that effect, and if optimizations are turned on the unused process is 
+	never compiled at the compilation stage, giving some space savings in the
+	compiled executable.
 
 	
 
