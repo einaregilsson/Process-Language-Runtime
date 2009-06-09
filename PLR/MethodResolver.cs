@@ -12,7 +12,7 @@ using System.Text;
 using System.Reflection;
 
 namespace PLR {
-    static class MethodResolver {
+    public static class MethodResolver {
 
         public static MethodInfo GetMethod(Type t, string name) {
 

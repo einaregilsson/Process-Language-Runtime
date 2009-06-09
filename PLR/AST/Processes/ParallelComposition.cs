@@ -12,9 +12,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 using PLR.Runtime;
-using PLR.Analysis.Expressions;
+using PLR.AST.Expressions;
 
-namespace PLR.Analysis.Processes {
+namespace PLR.AST.Processes {
 
     public class ParallelComposition : Process{
 

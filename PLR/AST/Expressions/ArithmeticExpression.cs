@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 using System.Text;
 
-namespace PLR.Analysis.Expressions {
+namespace PLR.AST.Expressions {
     public abstract class ArithmeticExpression : Expression{
 
         public override Type Type {

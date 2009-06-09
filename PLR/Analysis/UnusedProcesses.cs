@@ -7,9 +7,9 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
 using System.Collections.Generic;
-using PLR.Analysis;
-using PLR.Analysis.Processes;
-using PLR.Analysis.Expressions;
+using PLR.AST;
+using PLR.AST.Processes;
+using PLR.AST.Expressions;
 
 namespace PLR.Analysis {
 

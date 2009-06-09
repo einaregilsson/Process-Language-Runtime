@@ -15,7 +15,7 @@ using PLR.Compilation;
 using PLR.Runtime;
 
 
-namespace PLR.Analysis.ActionHandling {
+namespace PLR.AST.ActionHandling {
     public class RelabelActions : PreProcessActions{
         private Dictionary<string, string> _mapping = new Dictionary<string, string>();
         public Dictionary<string, string> Mapping { get { return _mapping; } }

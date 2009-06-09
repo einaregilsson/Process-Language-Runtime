@@ -10,11 +10,11 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using PLR.Analysis.Expressions;
+using PLR.AST.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.Analysis {
+namespace PLR.AST {
 
     public abstract class Node : IEnumerable<Node> {
 

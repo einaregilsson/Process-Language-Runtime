@@ -1,7 +1,7 @@
-using PLR.Analysis;
-using PLR.Analysis.Expressions;
-using PLR.Analysis.Processes;
-using PLR.Analysis.ActionHandling;
+using PLR.AST;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
+using PLR.AST.ActionHandling;
 using KLAIM.AST;
 using Action = KLAIM.AST.Action;
 using System.Collections.Generic;
@@ -70,15 +70,18 @@ public partial class Parser {
 	}
 
 	void Process(out Process p, string locality) {
-		p = null; bool replicated = false; int replCount =0;
+		p = null; bool replicated = false; int startAction = _actionNr;
 		if (la.kind == 10) {
 			Get();
 			replicated = true; 
-			Expect(4);
-			replCount = int.Parse(t.val); 
 		}
 		NonDeterministicChoice(out p, locality);
-		if (replicated) p = new ReplicatedProcess(p, replCount); 
+		if (replicated) {
+		       p = new ReplicatedProcess(p); 
+		       for (int i = startAction; i < _actionNr; i++) {
+		           ((ReplicatedProcess)p).ActionNumbers.Add(i);
+		       }
+		  }
 	}
 
 	void Constant(out object val) {
@@ -142,6 +145,7 @@ public partial class Parser {
 		} else if (la.kind == 19 || la.kind == 20) {
 			InOrReadAction(out action, locality);
 		} else SynErr(28);
+		action.Nr = _actionNr++; 
 		Token end = t; SetPos(action, start, end); 
 	}
 

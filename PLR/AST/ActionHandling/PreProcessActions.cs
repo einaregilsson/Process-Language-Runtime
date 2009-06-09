@@ -13,7 +13,7 @@ using System.Reflection.Emit;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.Analysis.ActionHandling {
+namespace PLR.AST.ActionHandling {
     public abstract class PreProcessActions : Node {
 
         public override void Accept(AbstractVisitor visitor) {

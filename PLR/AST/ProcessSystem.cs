@@ -16,7 +16,7 @@ using PLR.Compilation;
 using System.Diagnostics.SymbolStore;
 using PLR.Analysis;
 
-namespace PLR.Analysis {
+namespace PLR.AST {
 
     public delegate void CompileEventHandler(CompileContext context);
 

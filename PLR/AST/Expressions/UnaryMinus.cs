@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 
-namespace PLR.Analysis.Expressions {
+namespace PLR.AST.Expressions {
 
     public class UnaryMinus : ArithmeticExpression{
         protected Expression _exp;

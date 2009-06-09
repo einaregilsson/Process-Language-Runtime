@@ -12,7 +12,7 @@ using System.Reflection.Emit;
 using System.Reflection;
 using PLR.Compilation;
 
-namespace PLR.Analysis.Expressions {
+namespace PLR.AST.Expressions {
 
     public class Variable : Expression {
         public const string NotUsedName = "notused";

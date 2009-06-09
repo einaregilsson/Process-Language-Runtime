@@ -6,11 +6,12 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PLR.Analysis;
+using PLR.AST;
+using PLR.AST.Expressions;
 using PLR.Compilation;
 using KLAIM.Runtime;
 using System.Reflection.Emit;
@@ -25,7 +26,7 @@ namespace KLAIM {
             this.processes.MeetTheParents();
             this.tuples = tuples;
             this.processes.MainMethodStart += new CompileEventHandler(CompileTupleSpaces);
-            PLR.Analysis.Expressions.PLRString.DisplayWithoutQuotes = true; //To make localities look right...
+            PLRString.DisplayWithoutQuotes = true; //To make localities look right...
             processes.Compile(options);
         }
 

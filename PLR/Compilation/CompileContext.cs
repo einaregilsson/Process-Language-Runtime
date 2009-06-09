@@ -12,7 +12,7 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Diagnostics.SymbolStore;
-using PLR.Analysis;
+using PLR.AST;
 
 namespace PLR.Compilation {
     public class CompileContext {

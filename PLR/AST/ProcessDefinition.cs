@@ -7,15 +7,15 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
  ﻿using System.Collections.Generic;
-using PLR.Analysis.Processes;
-using PLR.Analysis.Expressions;
+using PLR.AST.Processes;
+using PLR.AST.Expressions;
 using PLR.Compilation;
 using System;
 using System.Reflection.Emit;
 using System.Reflection;
 using PLR.Runtime;
 
-namespace PLR.Analysis {
+namespace PLR.AST {
 
     public class ProcessDefinition : Node {
 

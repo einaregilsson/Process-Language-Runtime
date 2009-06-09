@@ -34,7 +34,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 ----------------------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
-using PLR.Analysis;
+using PLR.AST;
 
 namespace KLAIM.Parsing {
 
@@ -51,6 +51,7 @@ namespace KLAIM.Parsing {
         public Token la;   // lookahead token
         int errDist = minErrDist;
 
+        private static int _actionNr = 1;
         public Parser(Scanner scanner) {
             this.scanner = scanner;
             errors = new Errors();

@@ -10,9 +10,9 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
-using PLR.Analysis.Actions;
-using PLR.Analysis.Expressions;
-using PLR.Analysis;
+using PLR.AST.Actions;
+using PLR.AST.Expressions;
+using PLR.AST;
 using PLR.Compilation;
 using KLAIM.Runtime;
 using PLR.Runtime;

@@ -6,13 +6,13 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using PLR.Analysis;
-using PLR.Analysis.Actions;
-using PLR.Analysis.ActionHandling;
+ ﻿using PLR.AST;
+using PLR.AST.Actions;
+using PLR.AST.ActionHandling;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PLR.Analysis.Formatters {
+namespace PLR.AST.Formatters {
 
     public class HtmlFormatter : BaseFormatter {
 

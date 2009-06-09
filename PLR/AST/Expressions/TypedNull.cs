@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 
-namespace PLR.Analysis.Expressions {
+namespace PLR.AST.Expressions {
     public class TypedNull : Expression {
 
         private Type _nullType;

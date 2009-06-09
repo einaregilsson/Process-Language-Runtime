@@ -8,14 +8,14 @@
  */
  ﻿using System;
 using System.Collections.Generic;
-using PLR.Analysis.Actions;
-using PLR.Analysis.Expressions;
+using PLR.AST.Actions;
+using PLR.AST.Expressions;
 using PLR.Runtime;
 using PLR.Compilation;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace PLR.Analysis.Processes {
+namespace PLR.AST.Processes {
 
     public class ActionPrefix : Process {
 

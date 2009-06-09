@@ -9,9 +9,9 @@
 ﻿using System.Reflection;
 using System.Collections.Generic;
 using PLR.Runtime;
-using PLR.Analysis.Expressions;
+using PLR.AST.Expressions;
 
-namespace PLR.Analysis.Actions {
+namespace PLR.AST.Actions {
 
     public abstract class Action : Node{
 

@@ -9,12 +9,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using PLR.Analysis;
-using PLR.Analysis.Expressions;
+using PLR.AST;
+using PLR.AST.Expressions;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.Analysis.Processes {
+namespace PLR.AST.Processes {
     public class ProcessConstant : Process {
         
         public ProcessConstant(string name) {

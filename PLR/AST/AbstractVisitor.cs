@@ -9,13 +9,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.Analysis;
-using PLR.Analysis.Actions;
-using PLR.Analysis.ActionHandling;
-using PLR.Analysis.Expressions;
-using PLR.Analysis.Processes;
+using PLR.AST;
+using PLR.AST.Actions;
+using PLR.AST.ActionHandling;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
 
-namespace PLR.Analysis
+namespace PLR.AST
 {
     public abstract class AbstractVisitor
     {

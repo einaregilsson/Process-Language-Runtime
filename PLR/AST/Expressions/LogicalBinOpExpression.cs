@@ -12,7 +12,7 @@ using System.Text;
 using PLR.Compilation;
 using System.Reflection.Emit;
 
-namespace PLR.Analysis.Expressions {
+namespace PLR.AST.Expressions {
     public enum LogicalBinOp {
         And,
         Or,

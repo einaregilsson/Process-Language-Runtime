@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-using PLR.Analysis.Actions;
+using PLR.AST.Actions;
 
 namespace PLR.Runtime {
 
@@ -113,16 +113,18 @@ namespace PLR.Runtime {
             List<Match> matches = new List<Match>();
 
 
-            foreach (ProcessBase proc in _activeProcs) {
-                ProcessBase parent = proc;
-                while (parent != null) {
-                    if (!finished.Contains(parent)) {
-                        Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions: " + Util.Join(", ", parent.LocalActions));
-                        matches.AddRange(FindMatches(parent.LocalActions));
-                        finished.Add(parent);
-                    }
-                    parent = parent.Parent;
+            lock (_activeProcs) {
+                foreach (ProcessBase proc in _activeProcs) {
+                    ProcessBase parent = proc;
+                    while (parent != null) {
+                        if (!finished.Contains(parent)) {
+                            Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions: " + Util.Join(", ", parent.LocalActions));
+                            matches.AddRange(FindMatches(parent.LocalActions));
+                            finished.Add(parent);
+                        }
+                        parent = parent.Parent;
 
+                    }
                 }
             }
 

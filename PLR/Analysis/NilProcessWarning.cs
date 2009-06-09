@@ -9,10 +9,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.Analysis;
-using PLR.Analysis.Expressions;
-using PLR.Analysis.Actions;
-using PLR.Analysis.Processes;
+using PLR.AST;
+using PLR.AST.Expressions;
+using PLR.AST.Actions;
+using PLR.AST.Processes;
 
 namespace PLR.Analysis {
 

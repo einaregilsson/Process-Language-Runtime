@@ -7,11 +7,12 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
 using System.Collections.Generic;
-using PLR.Analysis.ActionHandling;
-using PLR.Analysis.Actions;
-using PLR.Analysis.Expressions;
-using PLR.Analysis.Processes;
+using PLR.AST.ActionHandling;
+using PLR.AST.Actions;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
 using System;
+using PLR.AST;
 
 namespace PLR.Analysis {
 

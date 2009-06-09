@@ -12,10 +12,10 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using PLR.Compilation;
-using PLR.Analysis.Expressions;
+using PLR.AST.Expressions;
 using PLR.Runtime;
 
-namespace PLR.Analysis.Actions
+namespace PLR.AST.Actions
 {
     public class OutAction : Action
     {

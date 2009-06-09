@@ -13,9 +13,9 @@ using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using PLR.Compilation;
 using PLR.Runtime;
-using PLR.Analysis.Expressions;
+using PLR.AST.Expressions;
 
-namespace PLR.Analysis.Actions {
+namespace PLR.AST.Actions {
     public class InAction : Action {
         public InAction(string name) : base(name) { }
 

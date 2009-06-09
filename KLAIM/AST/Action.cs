@@ -6,13 +6,35 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using PLR.Analysis.Expressions;
+ ﻿using PLR.AST.Expressions;
 using System.Text;
+using PLR.Compilation;
+using System.Reflection.Emit;
+using KLAIM.Runtime;
+using PLR;
+using PLR.Runtime;
 
 namespace KLAIM.AST {
 
-    public abstract class Action : PLR.Analysis.Actions.Action {
+    public abstract class Action : PLR.AST.Actions.Action {
         public string Locality { get; set; }
+        public int Nr { get; set; }
+
+        protected void NotifyParents(CompileContext context) {
+            ILGenerator il = context.ILGenerator;
+            Label afterNotify = il.DefineLabel();
+            il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
+            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
+            il.Emit(OpCodes.Brfalse, afterNotify);
+            il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
+            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
+            il.Emit(OpCodes.Castclass, typeof(IActionSubscriber));
+            il.Emit(OpCodes.Ldc_I4, this.Nr);
+            il.Emit(OpCodes.Callvirt, MethodResolver.GetMethod(typeof(IActionSubscriber), "NotifyAction"));
+            il.MarkLabel(afterNotify);
+        }
+
+
         public Expression At {
             get {
                 return (Expression)_children[0];

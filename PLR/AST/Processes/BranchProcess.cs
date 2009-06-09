@@ -9,11 +9,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.Analysis.Expressions;
+using PLR.AST.Expressions;
 using System.Reflection.Emit;
 using PLR.Compilation;
 
-namespace PLR.Analysis.Processes {
+namespace PLR.AST.Processes {
     public class BranchProcess : Process{
 
 

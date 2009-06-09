@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PLR.Analysis {
+namespace PLR.AST {
     public class LexicalInfo {
         public LexicalInfo() { }
 

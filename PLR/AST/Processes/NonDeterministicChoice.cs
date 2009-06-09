@@ -11,7 +11,7 @@ using System.Reflection.Emit;
 using PLR.Compilation;
 using PLR.Runtime;
 
-namespace PLR.Analysis.Processes {
+namespace PLR.AST.Processes {
 
     public class NonDeterministicChoice : Process {
 

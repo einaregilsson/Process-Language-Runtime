@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PLR.Analysis;
+using PLR.AST;
 
 namespace PLR.Analysis {
     public class Warning {

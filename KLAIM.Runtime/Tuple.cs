@@ -14,6 +14,10 @@ namespace KLAIM.Runtime {
     public class Tuple {
         private List<object> _items = new List<object>();
 
+        //These are needed to notify when a tuple is removed from a tuple space...
+        public int GeneratingActionNr { get; set; }
+        public IActionSubscriber Subscriber { get; set; }
+
         public Tuple(object[] items) {
             _items.AddRange(items);
         }

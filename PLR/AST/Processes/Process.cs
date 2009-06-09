@@ -6,18 +6,18 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
-using PLR.Analysis;
-using PLR.Analysis.Actions;
+using PLR.AST;
+using PLR.AST.Actions;
 using PLR.Runtime;
-using PLR.Analysis.ActionHandling;
-using PLR.Analysis.Expressions;
+using PLR.AST.ActionHandling;
+using PLR.AST.Expressions;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 using System;
 
-namespace PLR.Analysis.Processes {
+namespace PLR.AST.Processes {
     public abstract class Process : Node {
 
         public Process() {
@@ -63,7 +63,7 @@ namespace PLR.Analysis.Processes {
 
             //The current process doesn't have a restrict or relabel method, no reason for it
             //to continue living, set the parent process of the new proc as our own parent process
-            if (!context.Type.IsPreProcessed && !context.Type.IsRestricted) {
+            if (!context.Type.IsPreProcessed && !context.Type.IsRestricted && !context.Type.MustLiveOn) {
                 il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
             }
             il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "set_Parent"));
@@ -179,7 +179,6 @@ namespace PLR.Analysis.Processes {
                 context.ILGenerator.Emit(OpCodes.Stloc, local);
 
             }
-
             return context.Type;
         }
 

@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using PLR.Compilation;
 
-namespace PLR.Analysis.ActionHandling {
+namespace PLR.AST.ActionHandling {
     public class CustomRestrictions : ActionRestrictions{
 
         public CustomRestrictions(string methodName) {

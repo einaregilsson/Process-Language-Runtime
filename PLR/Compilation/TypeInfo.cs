@@ -15,39 +15,27 @@ using System.Reflection.Emit;
 namespace PLR.Compilation {
 
     public class TypeInfo {
-        private TypeBuilder _type;
         private List<FieldBuilder> _fields = new List<FieldBuilder>();
         private Dictionary<string, LocalBuilder> _locals = new Dictionary<string, LocalBuilder>();
         private ConstructorBuilder _constructor;
         private List<string> _constructorParamNames = new List<string>();
-        private bool _isRestricted;
-        private bool _isPreProcessed;
 
-        public bool IsRestricted {
-            get { return _isRestricted; }
-            set { _isRestricted = value; }
-        }
+        public bool IsRestricted { get; set;}
+        public bool IsPreProcessed { get; set; }
 
-        public bool IsPreProcessed {
-            get { return _isPreProcessed; }
-            set { _isPreProcessed = value; }
-        }
-        
-        public TypeBuilder Builder {
-            get { return _type; }
-            set { _type = value; }
-        }
+        //Implementations can set this to true if they want a particular process
+        //to live on after it has spawned its child processes. If set to true
+        //the process will set itself as the parent process of all its children.
+        public bool MustLiveOn { get; set; } 
+        public TypeBuilder Builder { get; set;}
+        public ConstructorBuilder Constructor { get; set; }
 
         public string Name {
-            get { return _type.FullName; }
+            get { return Builder.FullName; }
         }
 
         public List<string> ConstructorParameters {
             get { return _constructorParamNames; }
-        }
-        public ConstructorBuilder Constructor {
-            get { return _constructor; }
-            set { _constructor = value; }
         }
 
         public Dictionary<string, LocalBuilder> Locals {

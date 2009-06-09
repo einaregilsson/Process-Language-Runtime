@@ -11,9 +11,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
-using PLR.Analysis.Actions;
-using PLR.Analysis.Expressions;
-using PLR.Analysis;
+using PLR.AST.Actions;
+using PLR.AST.Expressions;
+using PLR.AST;
 using PLR.Compilation;
 using KLAIM.Runtime;
 using PLR.Runtime;
@@ -119,6 +119,26 @@ namespace KLAIM.AST {
                     il.Emit(OpCodes.Stloc, bindLoc);
                 }
             }
+            //Now lets notify our parent that this actions was just executed...
+            base.NotifyParents(context);
+
+            //..and lets notify the process that generated this tuple that it has been removed
+            //from a tuple space...
+            if (this is InAction) {
+                Label afterNotify = il.DefineLabel();
+                il.Emit(OpCodes.Ldloc, tuple);
+                il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("get_Subscriber"));
+                il.Emit(OpCodes.Brfalse, afterNotify); //if subscriber != null
+                {
+                    il.Emit(OpCodes.Ldloc, tuple);
+                    il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("get_Subscriber"));
+                    il.Emit(OpCodes.Ldloc, tuple);
+                    il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("get_GeneratingActionNr"));
+                    il.Emit(OpCodes.Callvirt, typeof(IActionSubscriber).GetMethod("NotifyAction"));
+                }
+                il.MarkLabel(afterNotify);
+            }
+
             //Now lets print out the net for fun...
 
             il.EmitWriteLine("************** CURRENT TUPLES **************");

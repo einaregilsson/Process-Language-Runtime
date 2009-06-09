@@ -32,8 +32,8 @@ namespace KLAIM.Runtime {
             get { return _tuples; }
         }
 
-        public void Out(object[] items) {
-            _tuples.Add(new Tuple(items));
+        public void Out(Tuple t) {
+            _tuples.Add(t);
         }
 
         public bool ContainsMatchingTuple(object[] items) {
@@ -51,7 +51,7 @@ namespace KLAIM.Runtime {
                         return t;
                     }
                 }
-                Thread.Sleep(250);
+                Thread.Sleep(200);
             }
         }
 
@@ -63,8 +63,7 @@ namespace KLAIM.Runtime {
                         return t;
                     }
                 }
-                Console.WriteLine("BLOCKED!");
-                Thread.Sleep(250);
+                Thread.Sleep(200);
             }
         }
 
