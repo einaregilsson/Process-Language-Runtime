@@ -13,9 +13,10 @@ using System.Text;
 using NUnit.Framework;
 using CCS.Parsing;
 using PLR.Analysis;
-using PLR.Analysis.Processes;
-using PLR.Analysis.Actions;
-using PLR.Analysis.Expressions;
+using PLR.AST.Processes;
+using PLR.AST.Actions;
+using PLR.AST.Expressions;
+using PLR.AST;
 
 namespace CCS.Tests {
     [TestFixture]

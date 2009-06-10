@@ -1,9 +1,9 @@
-using PLR.Analysis;
-using PLR.Analysis.Expressions;
-using PLR.Analysis.Processes;
-using PLR.Analysis.Actions;
-using PLR.Analysis.ActionHandling;
-using Action = PLR.Analysis.Actions.Action;
+using PLR.AST;
+using PLR.AST.Expressions;
+using PLR.AST.Processes;
+using PLR.AST.Actions;
+using PLR.AST.ActionHandling;
+using Action = PLR.AST.Actions.Action;
 using System.Collections.Generic;
 
 using System;

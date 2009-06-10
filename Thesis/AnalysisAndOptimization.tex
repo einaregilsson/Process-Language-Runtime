@@ -60,18 +60,19 @@
 	To get the final result of the analysis these calculations must be repeated 
 	for each point in the program until the input and output sets of each become 
 	stable. The result is an approximation, either overapproximation (something 
-	\textit{may} happen on the path to the program point) or an underapproximation
-	(something \textit{must} have happened on the path to the program point).  To 
-	calculate the input and output sets of each program points an iterative 
-	worklist algorithm is used. There are many variations of these algorithms, 
-	they keep track of which program points change and which other program points 
-	must then be re-calculated. There is a lot more to data flow analysis than 
-	explained here, for instance whether output sets of predecessors are combined 
-	using the union or intersection operator, and what the initial content of the 
-	input sets are, but we will not go into more detail on how data flow analysis 
-	generally works here, this is meant only as a brief introduction before 
-	explaining the analyses performed in the PLR. A more formal introduction to 
-	the subject of data flow analysis can be found in \cite{program_analysis}.
+	\textit{may} happen on the path to the program point) or an 
+	underapproximation (something \textit{must} have happened on the path to the 
+	program point).  To calculate the input and output sets of each program 
+	points an iterative worklist algorithm is used. There are many variations of 
+	these algorithms, they keep track of which program points change and which 
+	other program points must then be re-calculated. There is a lot more to data 
+	flow analysis than explained here, for instance whether output sets of 
+	predecessors are combined using the union or intersection operator, and what 
+	the initial content of the input sets are, but we will not go into more 
+	detail on how data flow analysis generally works here, this is meant only as 
+	a brief introduction before explaining the analyses performed in the PLR. A 
+	more formal introduction to the subject of data flow analysis can be found 
+	in \cite{program_analysis}.
 	
 	\subsection{Data flow analysis in process algebra}
 	
@@ -108,47 +109,48 @@
 	an \textsf{IAnalysis} interface and inherit from \textsf{AbstractVisitor}. 
 	They traverse the syntax tree to analyze it and issue warnings about any
 	anomalies found. In some cases they mark certain syntax nodes as not being
-	used, the compilation then uses that information for optimization, for example
-	to skip compiling certain things that are guaranteed never to be executed. 
-	These optimizations can be turned on and off in the compile options that
-	are passed to the PLR. The optimizations and debugging support are mutually
-	exclusive, this is due to the fact that the sequence points in an optimized
-	executuable may not match the actual source code file any longer, which could
-	make the debugging rather confusing.
+	used, the compilation then uses that information for optimization, for 
+	example to skip compiling certain things that are guaranteed never to be 
+	executed. These optimizations can be turned on and off in the compile 
+	options that are passed to the PLR. The optimizations and debugging support 
+	are mutually exclusive, this is due to the fact that the sequence points in 
+	an optimized executuable may not match the actual source code file any 
+	longer, which could make the debugging rather confusing.
 	
 \subsection{Live Variables}\label{live_variables}
 
-  \textit{Live Variables Analysis} is a classic data flow analysis. Its purpose 
-  is to identify at each program point which variables are \textit{live}, that 
-  is which variables will be read later on in the program in the paths that 
-  follow the program point in question. This is a backward analysis and is 
-  traditionally used to identify assignments to variables that have no effect,
-  for instance if the variable $x$ is assigned at program point $p$, but along 
-  all paths that follow $p$ the variable is either never read, or assigned to 
-  again before being read then the assignment at $p$ has no effect and can be 
-  eliminated. The analysis is an over-approximation, we cannot safely eliminate 
-  the assignment to $x$ if there \textit{may} be a path after $p$ where $x$ is
-  read. This implies that the input set of $p$ will be the \textit{union} of the
-  output sets of its pre-decessors (here the pre-decessors actually mean the 
-  program points that follow $p$ as it is a backward analysis).
+  \textit{Live Variables Analysis} is a classic data flow analysis. Its 
+  purpose is to identify at each program point which variables are 
+  \textit{live}, that is which variables will be read later on in the program 
+  in the paths that follow the program point in question. This is a backward 
+  analysis and is traditionally used to identify assignments to variables that 
+  have no effect, for instance if the variable $x$ is assigned at program 
+  point $p$, but along all paths that follow $p$ the variable is either never 
+  read, or assigned to again before being read then the assignment at $p$ has 
+  no effect and can be eliminated. The analysis is an over-approximation, we 
+  cannot safely eliminate the assignment to $x$ if there \textit{may} be a 
+  path after $p$ where $x$ is read. This implies that the input set of $p$ 
+  will be the \textit{union} of the output sets of its pre-decessors (here the 
+  pre-decessors actually mean the program points that follow $p$ as it is a 
+  backward analysis).
   
   In the analysis of the PLR syntax tree, a process is considered a program 
   point. Additionally, syntax nodes that represent a process constant being 
-  defined are considered program points, as they may contain defining occurences
-  of variables. For instance, in $ CS(x,y) \defeq a . 0$ we would consider 
-  $CS(x,y)$ a program point, since it defines the variables $x$ and $y$, and it
-  can be beneficial at that point to know whether the initial value of those 
-  variables was ever used in the process. We have two helper functions, 
-  \textit{assigned(x)} takes in an action and returns a set of the variables 
-  assigned in that action. An action in this case can be the receiving of 
-  values through a channel or sending values through a channel. The other 
-  helper function, \textit{read(x)} takes in an expression and returns all 
-  variables evaluated in that expression, or takes in an action and returns
-  all variables evaluated in that action. Figure~\ref{fig:read_assigned} 
-  shows some examples of the use of \textit{read} and \textit{assigned}, 
-  Figure~\ref{fig:killgen_livevariables} shows how the \textit{Kill} and
-  \textit{Gen} functions are defined for each of the process types in the
-  PLR syntax tree.
+  defined are considered program points, as they may contain defining 
+  occurences of variables. For instance, in $ CS(x,y) \defeq a . 0$ we would 
+  consider $CS(x,y)$ a program point, since it defines the variables $x$ and 
+  $y$, and it can be beneficial at that point to know whether the initial 
+  value of those variables was ever used in the process. We have two helper 
+  functions, \textit{assigned(x)} takes in an action and returns a set of the 
+  variables assigned in that action. An action in this case can be the 
+  receiving of values through a channel or sending values through a channel. 
+  The other helper function, \textit{read(x)} takes in an expression and 
+  returns all variables evaluated in that expression, or takes in an action 
+  and returns all variables evaluated in that action.
+  Figure~\ref{fig:read_assigned} shows some examples of the use of 
+  \textit{read} and \textit{assigned}, Figure~\ref{fig:killgen_livevariables} 
+  shows how the \textit{Kill} and \textit{Gen} functions are defined for each 
+  of the process types in the PLR syntax tree.
   
 	\begin{figure}[h!]
 	\label{fig:read_assigned}
@@ -194,16 +196,16 @@
   
   The actual implementation of the \textit{assigned()} and \textit{read()} 
   functions is done with two properties that are present on all syntax nodes
-  that derive from either \textsf{Process} or \texts{Action}. These properties
+  that derive from either \textsf{Process} or \textsf{Action}. These properties
   are \textsf{AssignedVariables} and \textsf{ReadVariables} and return the
-  assigned and read variables of a process or action. Having these as properties
-  of the syntax nodes instead of as part of the implementation of the analysis 
-  allows for greater extensibility. Languages implemented using the PLR that 
-  have their own custom syntax nodes simply need to override these properties
-  and can then use the analysis without further modifications. This is  
-  the case in the KLAIM implementation discussed in Chapter~\ref{ch:klaim}, 
-  it has its own custom actions and a custom process type and they simply 
-  implement these properties.
+  assigned and read variables of a process or action. Having these as 
+  properties of the syntax nodes instead of as part of the implementation of 
+  the analysis allows for greater extensibility. Languages implemented using 
+  the PLR that have their own custom syntax nodes simply need to override 
+  these properties and can then use the analysis without further 
+  modifications. This is the case in the KLAIM implementation discussed in 
+  Chapter~\ref{ch:klaim}, it has its own custom actions and a custom process 
+  type and they simply implement these properties.
   
   Constructing the flow graph is trivial, since there are no loops or joining
   branches. In fact, a special flow graph is not constructed, instead the PLR
@@ -215,9 +217,10 @@
   property which references its parent and can be used as a reverse flow graph.
   Again, having these properties directly on the syntax tree is useful so
   that additional process types can be added without having to modify the
-  analysis code. The input and output sets are stored in a a \textsf{Tag} property
-  which is also on each syntax node, this is a generic object reference which
-  analyses may use to temporarily store data associated with each node.
+  analysis code. The input and output sets are stored in a a \textsf{Tag} 
+  property which is also on each syntax node, this is a generic object 
+  reference which analyses may use to temporarily store data associated with 
+  each node.
   
   Instead of an iterative worklist algorithm the analysis itself uses the
   visitor pattern discussed in Section~\ref{sec:visitor}. It simply inherits
@@ -230,25 +233,29 @@
   in the method itself is then:
   
   	\begin{enumerate}
-  		\item Construct the input set of $p$ by joining the output sets of all the
-  		processes in its \textsf{FlowsTo} property.
-  		\item Check whether any variable $x$ in \textsf{p.AssignedVariables} is not
-  		in $p$'s input set. If it is not, then the assignment at $p$ has no effect
-  		and a warning is issued, and an \textsf{IsUsed} property} on $x$ is set to 
-  		\texttt{false}. This can be used later for optimization during compilation.
-  		\item Construct the output set of $p$ by taking the input set and removing
-  		all variables that are in \textsf{p.AssignedVariables} and then adding all
-  		variables that are in \textsf{p.ReadVariables}.
+  		\item Construct the input set of $p$ by joining the output sets of all 
+  		the processes in its \textsf{FlowsTo} property.
+
+  		\item Check whether any variable $x$ in \textsf{p.AssignedVariables} is 
+  		not in $p$'s input set. If it is not, then the assignment at $p$ has no 
+  		effect and a warning is issued, and an \textsf{IsUsed} property on $x$ 
+  		is set to \texttt{false}. This can be used later for optimization during 
+  		compilation.
+  		
+  		\item Construct the output set of $p$ by taking the input set and 
+  		removing all variables that are in \textsf{p.AssignedVariables} and then 
+  		adding all variables that are in \textsf{p.ReadVariables}.
+  	
   	\end{enumerate}
   
-  Once the analysis has been performed a number of warnings have been issued and
-  all assignments to variables that have no effect have been marked as not used.
-  In some cases it may be needed to assign to a variable that is never used 
-  because the interface of another process requires it. For instance, one process 
-  may send a value on channel $ch$, another process may wish to synchronize but
-  does not care about the value sent. In that case the variable that is bound 
-  during the synchronization can be named \textbf{notused} and then no warnings
-  will be issued.
+  Once the analysis has been performed a number of warnings have been issued 
+  and all assignments to variables that have no effect have been marked as not 
+  used. In some cases it may be needed to assign to a variable that is never 
+  used because the interface of another process requires it. For instance, one 
+  process may send a value on channel $ch$, another process may wish to 
+  synchronize but does not care about the value sent. In that case the 
+  variable that is bound during the synchronization can be named 
+  \textbf{notused} and then no warnings will be issued.
   
   During the compilation stage the PLR will look at every variable that is 
   assigned and check whether its \textsf{IsUsed} property is set to 
@@ -263,7 +270,8 @@
 \subsection{Reaching Definitions}\label{reaching_definitions}
 
   \textit{Reaching Definitions} is another classic data flow analysis. Its 
-  purpose is to identify which assignments may reach a given point in a program.
+  purpose is to identify which assignments may reach a given point in a 
+  program.
   
 \begin{Exa}
 	\label{ex:reaching_definition}
@@ -275,14 +283,15 @@
 	\end{verbatim}
 \end{Exa}  
 	
-	In the example above the assignment at line 2 reaches line 3. The assignment at
-	line 1 reaches line 2 but not 3, since $x$ is assigned again at line 2. So at
-	line 3 we know that the value of $x$ is that which was assigned at line 2.
-	With branching and re-joining branches there may be more than one definition
-	of a particular variable that reach a certain point, for example when a variable
-	is assigned in both branches of an \texttt{if-else} statement. However since
-	this is a forward analysis and the PLR does not have re-joining branches this
-	cannot happen in the PLR's implementation of this analysis. 
+	In the example above the assignment at line 2 reaches line 3. The assignment 
+	at line 1 reaches line 2 but not 3, since $x$ is assigned again at line 2. 
+	So at line 3 we know that the value of $x$ is that which was assigned at 
+	line 2. With branching and re-joining branches there may be more than one 
+	definition of a particular variable that reach a certain point, for example 
+	when a variable is assigned in both branches of an \texttt{if-else} 
+	statement. However since this is a forward analysis and the PLR does not 
+	have re-joining branches this cannot happen in the PLR's implementation of 
+	this analysis. 
 	
 	Reaching Definitions analysis can be used for many common compiler 
 	optimizations, such as constant propagation and common subexpression 
@@ -293,12 +302,12 @@
 	at $p$ and does not exist in $p$'s input set, then there is no definition
 	of $x$ that reaches $p$ and it is being used before being assigned. The 
 	\textit{Kill} and \textit{Gen} functions are shown in 
-	Figure~\ref{fig:killgen_reachingdefinitions}. Since the assignment to variable 
-	$x$ defined at one point in the program is not the same as the assignment 
-	to variable $x$ defined at another place in the program the function 
-	\textit{named()} is used. ${Kill(a.P) = (named(assigned(a)))}$ means to
-	remove all the variables from the set which are named the same as those that
-	were assigned in $a$, whereas for the \textit{Gen} we have 
+	Figure~\ref{fig:killgen_reachingdefinitions}. Since the assignment to 
+	variable $x$ defined at one point in the program is not the same as the 
+	assignment to variable $x$ defined at another place in the program the 
+	function \textit{named()} is used. ${Kill(a.P) = (named(assigned(a)))}$ 
+	means to remove all the variables from the set which are named the same as 
+	those that were assigned in $a$, whereas for the \textit{Gen} we have 
 	$Gen(a.P) = assigned(a)$ which means to add the exact variables occuring in
 	$a$ to the set. 
 	
@@ -334,69 +343,75 @@
   \end{ARRAY} 
   \end{figure}
 
-	The implementation of Reaching Definitions is similar to that of Live Variables.
-	An analysis class inherits from \textsf{AbstractVisitor} and overrides its
-	\texttt{Visit(Process p)} method. Since this is a forward analysis the traversal
-	is a little different than in \textit{Live Variables}. Here, the property 
-	\textsf{VisitParentBeforeChildren} is set to \texttt{true} on the 
-	\textsf{AbstractVisitor}. This makes sure that the tree can be processed in
-	forward order instead of backward. Then, in the method the following steps are 
-	performed:
+	The implementation of Reaching Definitions is similar to that of Live 
+	Variables. An analysis class inherits from \textsf{AbstractVisitor} and 
+	overrides its \texttt{Visit(Process p)} method. Since this is a forward 
+	analysis the traversal is a little different than in \textit{Live 
+	Variables}. Here, the property \textsf{VisitParentBeforeChildren} is set to 
+	\texttt{true} on the \textsf{AbstractVisitor}. This makes sure that the tree 
+	can be processed in forward order instead of backward. Then, in the method 
+	the following steps are performed:
 	
   	\begin{enumerate}
-  		\item Check the input set of $p$ against the property \textsf{p.ReadVariables}.
-  		If there exists a variable in \textsf{p.ReadVariables} that has no entry
-  		in $p$'s input set then it is being used before assignment and a warning is issued.
+  		\item Check the input set of $p$ against the property 
+  		\textsf{p.ReadVariables}. If there exists a variable in 
+  		\textsf{p.ReadVariables} that has no entry in $p$'s input set then it is 
+  		being used before assignment and a warning is issued.
   		
-  		\item Create the input set of each process $P_i$ in \textsf{p.FlowsTo} by taking
-  		the input set of $p$ and adding all variables from \textsf{p.AssignedVariables}, 
-  		replacing any previous entries for the same variable.
+  		\item Create the input set of each process $P_i$ in \textsf{p.FlowsTo} 
+  		by taking the input set of $p$ and adding all variables from 
+  		\textsf{p.AssignedVariables}, replacing any previous entries for the 
+  		same variable.
+  	
   	\end{enumerate}
   	
-  After the analysis has run the PLR checks whether it produced any warnings. If it
-  did then an error message to that effect is printed to the screen and the 
-  compilation is aborted.
+  After the analysis has run the PLR checks whether it produced any warnings. 
+  If it did then an error message to that effect is printed to the screen and 
+  the compilation is aborted.
 	
 
 \subsection{Constant Expressions}
 
-	A simple optimization that can be performed is to calculate the expressions that
-	can be fully evaluated at compile time and replace them with a constant with
-	the result of the calculation. Granted, it is unlikely that large expressions
-	can be computed at compile time, unless some constant propagation is also 
-	performed, but it is nevertheless useful to compute those simple ones that can.
-	The implementation is simple (and was partially shown in Listing~\ref{lst:expression_folder}), 
-	simply subclass an \textsf{AbstractVisitor} and override a \textsf{Visit} method
-	for each of the binary expression nodes (arithmetic, relational and logical). 
-	Check if both the left and right childnodes are constants, if they are then
+	A simple optimization that can be performed is to calculate the expressions 
+	that can be fully evaluated at compile time and replace them with a constant 
+	with the result of the calculation. Granted, it is unlikely that large 
+	expressions can be computed at compile time, unless some constant 
+	propagation is also performed, but it is nevertheless useful to compute 
+	those simple ones that can. The implementation is simple (and was partially 
+	shown in Listing~\ref{lst:expression_folder}), simply subclass an 
+	\textsf{AbstractVisitor} and override a \textsf{Visit} method for each of 
+	the binary expression nodes (arithmetic, relational and logical). Check if 
+	both the left and right childnodes are constants, if they are then 
 	calculcate the result according to the operator stored in the binary node. 
-	Finally replace the binary node with a new constant node that carries the result
-	of the computation. The same goes for the unary minus node.
+	Finally replace the binary node with a new constant node that carries the 
+	result of the computation. The same goes for the unary minus node.
 	
 	The one extra thing that this analysis does is that it also visits the
-	\textsf{BranchProcess} node, which is the implementation of the \texttt{if-else}
-	statement. If the boolean expression in the \textsf{BranchProcess} has been
-	fully computed then the analysis will set the \textsf{IsUsed} flag to \texttt{false}
-	on the branch that will never been chosen, according to the result of the boolean
-	expression. During the compilation stage, if optimizations are turned on, the
-	PLR will then replace the \textsf{BranchProcess} with the branch that is 
-	guaranteed to be taken and only compile that branch.
+	\textsf{BranchProcess} node, which is the implementation of the
+	\texttt{if-else} statement. If the boolean expression in the 
+	\textsf{BranchProcess} has been fully computed then the analysis will set 
+	the \textsf{IsUsed} flag to \texttt{false} on the branch that will never 
+	been chosen, according to the result of the boolean expression. During the 
+	compilation stage, if optimizations are turned on, the PLR will then replace 
+	the \textsf{BranchProcess} with the branch that is guaranteed to be taken 
+	and only compile that branch.
 
 \subsection{Nil Process Warnings}
 
-	\textit{Nil Process Warnings} is a simple analysis which looks for nil processes 
-	in places where they are useless and can be eliminated. This includes nil processes
-	that are part of parallel composition ($P \mid 0 \equiv P$) and nil processes that
-	are an option in non deterministic choice (in $P+0$ the nil process will never
-	be selected). This is implemented as a visitor that visits all \textsf{NilProcess}
-	nodes, checks whether their parent nodes are \textsf{ParallelComposition} or 
-	\textsf{NonDeterministicChoice}. If they are, then a warning is issued and the
-	property \textsf{IsUsed} on the nil process nodes is set to \texttt{false}, which
-	allows the compilation to skip those processes.
+	\textit{Nil Process Warnings} is a simple analysis which looks for nil 
+	processes in places where they are useless and can be eliminated. This 
+	includes nil processes that are part of parallel composition ($P \mid 0 
+	\equiv P$) and nil processes that are an option in non deterministic choice 
+	(in $P+0$ the nil process will never be selected). This is implemented as a 
+	visitor that visits all \textsf{NilProcess} nodes, checks whether their 
+	parent nodes are \textsf{ParallelComposition} or 
+	\textsf{NonDeterministicChoice}. If they are, then a warning is issued and 
+	the property \textsf{IsUsed} on the nil process nodes is set to 
+	\texttt{false}, which allows the compilation to skip those processes.
 	
-	The analysis also checks for process definitions that are defined as nothing more
-	than the nil process (e.g. $P \defeq 0$) and issues a warning that states that
-	any process invocation of $P$ can be replaced with a nil process.
+	The analysis also checks for process definitions that are defined as nothing 
+	more than the nil process (e.g. $P \defeq 0$) and issues a warning that 
+	states that any process invocation of $P$ can be replaced with a nil process.
 
 \subsection{Unmatched Channels}
 
@@ -404,7 +419,8 @@
 	anywhere in the application ever synchronizes on then that process will be 
 	blocked forever. That scenario is not hard to detect manually in a small 
 	system, however once the system grows it becomes increasingly harder, 
-	especially when we factor in that a channel can be relabelled multiple times. 
+	especially when we factor in that a channel can be relabelled multiple 
+	times. 
 	
 	To attempt to detect these synchronizations which will never complete, the 
 	PLR contains an analysis named \textit{Umatched Channels}. It begins by
@@ -446,11 +462,11 @@
 
 	\textit{Unused Processes} is an analysis that traverses the syntax tree and
 	collects the names of all defined processes, as well as all instances where
-	processes are invoked. It then proceeds to check whether all defined processes
-	are invoked at least once. If a process is never invoked a warning is issued
-	to that effect, and if optimizations are turned on the unused process is 
-	never compiled at the compilation stage, giving some space savings in the
-	compiled executable.
+	processes are invoked. It then proceeds to check whether all defined 
+	processes are invoked at least once. If a process is never invoked a warning 
+	is issued to that effect, and if optimizations are turned on the unused 
+	process is never compiled at the compilation stage, giving some space 
+	savings in the compiled executable.
 
 	
 

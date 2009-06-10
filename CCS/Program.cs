@@ -15,11 +15,12 @@ using PLR;
 using PLR.Runtime;
 using PLR.Compilation;
 using PLR.Analysis;
-using PLR.Analysis.Processes;
+using PLR.AST.Processes;
 using System.Reflection;
 using System.Security.Cryptography;
-using PLR.Analysis.Formatters;
+using PLR.AST.Formatters;
 using PLR.Analysis;
+using PLR.AST;
 
 namespace CCS {
     class Program {

@@ -292,10 +292,78 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	is defined as
 	\begin{center}$l::*P  \equiv l::P \mid\ *P$\end{center}
 	so essentially a replicated process is equal to infinite instances of that 
-	process. For obvious reasons the implementation can not create infinite 
-	instances so another solution was needed that mimicked this behavious as 
-	closely as possibly. The solution was \TODO{WHAT THE HELL WAS THE 
-	SOLUTION!!!???}
+	process running in parallel. For obvious reasons the implementation can not 
+	create infinite instances so another solution was needed that mimicked this 
+	behavior as closely as possibly. A number of possible approaches were 
+	considered for this problem.
+	
+	The naive approach is to let the replicated process simply keep
+	spawning new instances of itself endlessly. The way this could be 
+	implemented is by having a small delay between each instantiation of
+	the process, to avoid using up all available memory instantly. This
+	still has the problem of overshadowing everything else that is going
+	on in the system. Consider the case where the first action of a 
+	replicated process is an \textbf{out} action, e.g. 
+	$\mathbf{out}(X,Y,Z)@Loc$. Over time the $Loc$ locality will fill up
+	with $\langle X,Y,Z \rangle$, making visualization of the net difficult
+	as well as following what actions are happening. This could be partially
+	alleviated by showing tuples that are identical as just one tuple with
+	a number indicating how many of them there are, but that is still a
+	hack to cover for an inadequate solution.
+		
+	Another approach could be to change the semantics of replication
+	to that of repetition. That is, instead of defining a replicated
+	process as
+	\begin{center}$l ::\ * P  \equiv l ::\ P \ppar\ * P$\end{center}
+	it could be defined as
+	\begin{center}$l ::\ * P  \equiv l ::\ P . * P$\end{center}
+	This is certainly possible to implement and is somewhat similar to 
+	replication. There are many ways in which it is different though and
+	some hard questions are raised. What should happen to variables that
+	are bound in $P$, are their values carried on into the next iteration of 
+	$P$, or does the next iteration start with the original values (or lack
+	of values) of those variables? Another concern is that if $P$ blocks on
+	an action at any point then no new instances of $P$ are spawned until the
+	original instance of $P$ continues and finishes. 
+		
+	The third approach is to spawn new instances of the process only 
+	when needed so that it appears as though there is an infinite amount. This
+	is the approach that was ultimately chosen and is implemented in the KLAIM
+	compiler. The objective is to simulate infinite processes with as few 
+	processes as possible, in order to do that it is important to realize where
+	infinite processes give the same result as a single process:
+	
+	\begin{enumerate}
+		\item When a process $P$ is blocked doing an \textbf{in} action, it does 
+		not matter whether one instance is blocked or many. The only difference is 
+		when an instance becomes unblocked, if there was just one to begin with 
+		then no instance is blocked at that action any longer, but if there were 
+		$n$ instances blocked there are now $n-1$ instances blocked. This implies
+		that if there was just one instance blocked, and another instance was 
+		spawned as the first instance unblocked then that would give the same 
+		result as having infinite instances blocked. (This conveniently leaves
+		out the possibility that each instance might have different values in its 
+		bound variables, this will be discussed later).
+	
+		\item Since \textbf{read} actions do not change the state of tuple spaces
+		in any way, it can be assumed that having one instance of $P$ perform a
+		\textbf {read} action or having infinite instances of $P$ perform the 
+		action would have the same effect on the state of the tuple spaces, that 
+		is, not affect them at all. (Again, difference in variable values is not 
+		considered).
+		
+		\item 
+		
+		
+		
+		
+		
+	\end{enumerate}
+	
+	
+	
+		
+	\end{enumerate}
 
 \subsection{Tuple spaces}
 
@@ -410,90 +478,78 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 \begin{figure}
 \lstset{showtabs=false,showspaces=false,showstringspaces=false}
 \begin{lstlisting}[caption=Terminals of KLAIM scanner,label=lst:klaimterminals,frame=trbl,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
-  PROCNAME   = [A-Z][A-Za-z0-9]*
-  LCASEIDENT = [a-z][A-Za-z0-9]*
-  CLASSNAME  = [A-Z][A-Za-z0-9]*(\\.[A-Z][A-Za-z0-9]*)*
-  OUTACTION  = _[a-z][A-Za-z0-9]*_
-  METHOD     = :[a-zA-Z][A-Za-z0-9]*
+  LOCALITY   = [A-Z][A-Za-z0-9]*
+  VARIABLE   = [a-z][A-Za-z0-9]*
+  VARBINDING = ![a-z][A-Za-z0-9]*
   NUMBER     = [0-9]+
-  STRING     = "[^"]*"'
   \end{lstlisting}
 	\end{figure}
 	
 	\begin{figure}
 \lstset{showtabs=false,showspaces=false,showstringspaces=false}
 \begin{lstlisting}[caption=EBNF Productions of KLAIM,frame=trbl,label=lst:klaim_ebnf,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
-CCS = { ClassImport } ProcessDefinition { ProcessDefinition } 
 
-ClassImport = "use" CLASSNAME 
+KLAIM = 
+  LocatedItem { "||" LocatedItem }                
 
-ProcessDefinition = 
-  PROCNAME [ "(" LCASEIDENT {"," LCASEIDENT } ")" ] "=" Process 
+LocatedItem = 
+  LOCALITY "::" (Tuple | Process)
 
-Process = NonDeterministicChoice
+Tuple = 
+  "<" Constant { "," Constant } ">"
 
-NonDeterministicChoice = ParallelComposition { "+" ParallelComposition }
+Constant = 
+  LOCALITY | NUMBER
 
-ParallelComposition = ActionPrefix { "|" ActionPrefix } .
+Process = 
+  ["*"] NonDeterministicChoice
 
-ActionPrefix =
-  { Action "." }
-  (
-    "(" Process ")"
-    | "0"
-    | ProcessConstantInvoke
-    | BranchProcess
+NonDeterministicChoice =  
+  ParallelComposition { "+" ParallelComposition }
+
+ParallelComposition = 
+  ActionPrefix { "|" ActionPrefix }
+
+ActionPrefix = 
+  Action [ "." ActionPrefix
+  | "(" Process ")"  
+  | "nil"
+
+Action = 
+  OutAction | InOrReadAction
+
+OutAction = 
+  "out" 
+  "(" OutParam { "," OutParam } ")" 
+  "@" (LOCALITY | VARIABLE)
+
+OutParam = 
+  LOCALITY | Expression
+
+InOrReadAction = 
+  ("in"|"read") 
+  "(" InOrReadParam {"," InOrReadParam } ")" 
+  "@" (LOCALITY | VARIABLE)
+
+InOrReadParam = 
+  LOCALITY | VARBINDING | Expression
+
+Expression = 
+  PlusMinusTerm { ("+"|"-") PlusMinusTerm }
+
+PlusMinusTerm = 
+  UnaryMinusTerm { ("*"|"/"|"\%") UnaryMinusTerm }
+
+UnaryMinusTerm = 
+  ["-"] 
+  ( 
+    "(" Expression ")" 
+    | 
+    NUMBER 
+    | 
+    VARIABLE 
   )
-  [ Relabelling ]
-  [ Restriction ]
 
-BranchProcess = "if" Expression "then" Process "else" Process .
-
-ProcessConstantInvoke = 
-  PROCNAME [ "(" ArithmeticExpression {"," ArithmeticExpression } ")" ]
-
-Action =
-  LCASEIDENT [ "(" LCASEIDENT { "," LCASEIDENT } ")" ]
-  | OUTACTION [ "(" ArithmeticExpression { "," ArithmeticExpression } ")" ]
-  | METHOD "(" [ CallParam { "," CallParam } ")"
-
-CallParam = ArithmeticExpression | STRING
-
-Relabelling =
-  "[" METHOD "]"
-  | "[" LCASEIDENT "/" LCASEIDENT { "," LCASEIDENT "/" LCASEIDENT } "]"
-
-Restriction = 
-  "\" 
-  (
-    LCASEIDENT 
-    | "{" LCASEIDENT {"," LCASEIDENT } "}"
-    | METHOD
-  )        
-
-Expression = OrTerm { "or" OrTerm }
-
-OrTerm = AndTerm { "and" AndTerm }
-
-AndTerm = RelationalTerm { "xor" RelationalTerm }
-
-RelationalTerm = 
-  ArithmeticExpression [ ("=="|"!="|">"|">="|"<"|"<=") ArithmeticExpression ]
-		
-ArithmeticExpression = PlusMinusTerm { ("+" | "-") PlusMinusTerm }
-
-PlusMinusTerm = UnaryMinusTerm { ("*"|"/"|"\%") UnaryMinusTerm }
-
-UnaryMinusTerm =
-  [ "-" ]                                   
-  (
-    "(" ArithmeticExpression ")"
-    | NUMBER 
-    | "0"
-    | "true"
-    | "false"
-    | LCASEIDENT
-  )
 	\end{lstlisting}
 	\end{figure}
 	
