@@ -283,14 +283,14 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	replication and tuple spaces with their associated \textbf{in}, \textbf{out} 
 	and \textbf{read} actions. Each of these is described in the following 
 	sections.
-
+	
 \subsection{Replication}
 	
 	Replication is a construct which was quite tricky to implement 
 	according to specification. As we saw in 
-	Figure~\ref{tab:klaim_structural_congruence} the congruence of replication 
+	Figure~\ref{fig:klaim_structural_congruence} the congruence of replication 
 	is defined as
-	\begin{center}$l::*P  \equiv l::P \mid\ *P$\end{center}
+	\begin{center}$l::*P \equiv l::P \mid *P$\end{center}
 	so essentially a replicated process is equal to infinite instances of that 
 	process running in parallel. For obvious reasons the implementation can not 
 	create infinite instances so another solution was needed that mimicked this 
@@ -305,18 +305,18 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	on in the system. Consider the case where the first action of a 
 	replicated process is an \textbf{out} action, e.g. 
 	$\mathbf{out}(X,Y,Z)@Loc$. Over time the $Loc$ locality will fill up
-	with $\langle X,Y,Z \rangle$, making visualization of the net difficult
-	as well as following what actions are happening. This could be partially
-	alleviated by showing tuples that are identical as just one tuple with
-	a number indicating how many of them there are, but that is still a
+	with $\langle X,Y,Z \rangle$ tuples, making visualization of the net 
+	difficult as well as following what actions are happening. This could be 
+	partially alleviated by showing tuples that are identical as just one tuple 
+	with a number indicating how many of them there are, but that is still a
 	hack to cover for an inadequate solution.
 		
 	Another approach could be to change the semantics of replication
 	to that of repetition. That is, instead of defining a replicated
 	process as
-	\begin{center}$l ::\ * P  \equiv l ::\ P \ppar\ * P$\end{center}
+	\begin{center}$l ::\ *P  \equiv l ::\ P \ppar *P$\end{center}
 	it could be defined as
-	\begin{center}$l ::\ * P  \equiv l ::\ P . * P$\end{center}
+	\begin{center}$l ::\ *P  \equiv l ::\ P .* P$\end{center}
 	This is certainly possible to implement and is somewhat similar to 
 	replication. There are many ways in which it is different though and
 	some hard questions are raised. What should happen to variables that
@@ -326,7 +326,14 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	an action at any point then no new instances of $P$ are spawned until the
 	original instance of $P$ continues and finishes. 
 		
-	The third approach is to spawn new instances of the process only 
+	The third approach would be to replace infinity with a set number. Instead
+	of having infinite instances of $P$ the system would instead have $n$ 
+	instances, and $n$ could be configured, for instance with a command line 
+	switch. The problem with this is that it turns a behavior that is supposed
+	to continue forever into a behavior that ends at a particular time, that is 
+	when all $n$ instances have finished.
+	
+	A fourth approach is to spawn new instances of the process only 
 	when needed so that it appears as though there is an infinite amount. This
 	is the approach that was ultimately chosen and is implemented in the KLAIM
 	compiler. The objective is to simulate infinite processes with as few 
@@ -352,8 +359,77 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 		is, not affect them at all. (Again, difference in variable values is not 
 		considered).
 		
-		
+		\item Mimicking the \textbf{out} operation is a little more tricky than 
+		the other two. Clearly there is a difference between one process 
+		performing an \textbf{out} action and multiple processes performing the 
+		same action. If multiple processes perform the action then there will be 
+		multiple copies of the same tuple (or rather multiple tuples with the same 
+		value) at the tuplespace that the action was performed at (again, ignoring 
+		possible differences in variable values). So from the perspective of 
+		looking at the tuplespace there clearly is a difference. However, if we 
+		consider how this affects the overall system, the behaviour of other 
+		processes, then the difference is only apparent when other processes start 
+		removing those tuples from the tuplespace. If only one process outputs a 
+		tuple $t$ then the next process that tries to remove it will be successful 
+		but any subsequent process that tries to remove it will block. However if 
+		there were multiple copies of $t$ then no process trying to remove it 
+		would block. A possible way to mimic this would be to track each tuple 
+		that is output by a replicated process, and if that tuple is removed by 
+		another process then a new instance of the replicated process can be 
+		spawned which will output a new identical tuple $t$ at the tuplespace, 
+		allowing more processes to sucessfully perform an \textbf{in} action at 
+		that tuplespace.
+
 	\end{enumerate}
+	
+	The biggest flaw with this approach is the fact that it does not take 
+	variables into consideration. When one or more tuples match an \textbf{in} 
+	or \textbf{read} operation, a tuple is selected nondeterministically. That
+	means that two processes that perform the actions $ \mathbf{in}(!x)@Loc_1 . 
+	\mathbf{out}(x)@Loc_2 $ might not be outputting the same tuple at $Loc_2$ if
+	$x$ was bound to different values at $Loc_1$ during the \textbf{in} action. 
+	So this approach will always be an approximation, it will never conform 
+	exactly to the formal semantics of replication, although it will be close
+	enough for most cases. 
+	
+	To get even closer to the actual replication semantics the KLAIM compiler 
+	allows the user to specify how many instances of a replicated process are 
+	created initially, as in the third approach described above. The default is 
+	to create just one process initially and spawn others as needed when the 
+	process removes tuples, or tuples that it generated are removed, but this 
+	can be overridden to set the initial number to any positive number $n$. This 
+	allows for creating for instance five initial instances of the replicated 
+	process, and then spawning new instances as the initial five instances 
+	progress on their path. The goal is that at every stage in the replicated 
+	process there should always (or as often as possible) be at least one 
+	instance of the process. Combining the limited number of instances with
+	spawning new instances as needed does not overflow the system, and gives
+	the user the ability to choose how many instances are needed to accurately
+	model the system he is creating.
+	
+	Implementing this was done by having the replication process be one class 
+	and the inner process, containing the actions, be another class. The 
+	replication class $R$ when invoked just creates new instances of the inner 
+	class, $Q$. It passes a reference to itself to $Q$ and when $Q$ performs an 
+	\textbf{in} action then it notifies $R$ which can then spawn a new 
+	instance of $Q$. When $Q$ performs an \textbf{out} action then it attaches 
+	its reference	to $R$ to the tuple being output. When another process $P$
+	eventually removes that tuple from a tuplespace, it will then check whether
+	the tuple has a reference to a replication process, and if so $P$ will notify
+	$R$ that a tuple generated by $Q$ was removed and $R$ can then once again 
+	spawn a new instance of $Q$. To summarize:
+	
+	\begin{itemize}
+		\item A replicated process initially creates 1-n instances of itself, 
+		according to user preference.
+		
+		\item When the process removes a tuple from a tuple space, a new instance
+		of it is created.
+		
+		\item When the process has created a tuple with an \textbf{out} operation, 
+		and that tuple is removed by another process, then a new instance of the 
+		replicated process is created.
+	\end{itemize}
 
 \subsection{Tuple spaces}
 
@@ -542,7 +618,11 @@ UnaryMinusTerm =
 
 	\end{lstlisting}
 	\end{figure}
-	
+
+
+\section{Example of a  KLAIM system}
+  ...	
+
 \section{Summary}
 
 	The KLAIM compiler was mainly meant as a proof-of-concept that the PLR could 
