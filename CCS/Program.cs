@@ -19,7 +19,6 @@ using PLR.AST.Processes;
 using System.Reflection;
 using System.Security.Cryptography;
 using PLR.AST.Formatters;
-using PLR.Analysis;
 using PLR.AST;
 
 namespace CCS {
@@ -37,7 +36,46 @@ Usage: CCS [options] <filename>
             List<string> listArgs = new List<string>(args);
             CompileOptions.AddOptionWithArgument("p", "print", ""); //Allow printouts
             CompileOptions options = CompileOptions.Parse(listArgs);
-            
+
+            if (options.Help) {
+                Console.Error.WriteLine(@"
+CCS Compiler
+Copyright (C) 2009 Einar Egilsson
+
+Usage: CCS [options] <filename>
+
+Available options:
+
+    /reference:<filenames>   The assemblies that this program requires. It is 
+    /r:<filenames>           not neccessary to specify the PLR assembly. 
+                             Other assemblies should be specified in a comma
+                             seperated list, e.g. /reference:Foo.dll,Bar.dll.
+    
+    /optimize                If specified then the generated assembly will be
+    /op                      optimized, dead code eliminated and expressions
+                             pre-evaluated where possible. Do not combine this
+                             with the /debug switch.
+    
+    /debug                   Emit debugging symbols in the generated file,
+    /d                       this allows it to be debugged in Visual Studio, or
+                             in the free graphical debugger that comes with the
+                             .NET Framework SDK.
+
+    /out:<filename>          Specify the name of the compiled executable. If 
+    /o:<filename>            this is not specified then the name of the input
+                             file is used, with .ccs replaced by .exe.
+
+    /print:<format>          Prints a version of the program source in the
+    /p:<format>              specified format. Allowed formats are ccs, html 
+                             and latex. The generated file will have the same
+                             name as the input file, except with the format
+                             as extension.
+
+");
+
+                return 1;
+            }
+
             DieIf(options.Arguments.Count == 0, "ERROR: Missing input file name");
             DieIf(options.Arguments.Count > 1, "ERROR: Only one input file is expected");
             string filename = options.Arguments[0];

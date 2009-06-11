@@ -21,6 +21,7 @@ namespace PLR.Compilation {
             AddOption("d", "debug");
             AddOption("e", "embedPLR");
             AddOption("op", "optimize");
+            AddOption("h", "help");
             AddOptionWithArgument("r", "reference", "");
             AddOptionWithArgument("o", "out", "");
         }
@@ -43,6 +44,11 @@ namespace PLR.Compilation {
         public bool Debug { 
             get { return this.Contains("debug"); }
             set { this["debug"] = ""; }
+        }
+
+        public bool Help {
+            get { return this.Contains("help"); }
+            set { this["help"] = ""; }
         }
 
         public bool Optimize {
@@ -117,6 +123,13 @@ namespace PLR.Compilation {
                 } else {
                     bool processed = false;
                     foreach (Option opt in _options) {
+                        //Shortcut
+                        if (Regex.IsMatch(args[i], @"(/|--?)\?")) {
+                            options.Help = true;
+                            processed = true;
+                            continue;
+                        }
+
                         if (!opt.TakesArgument && Regex.IsMatch(args[i].ToLower(), string.Format("^(-{0}|/{0}|--{1}|/{1})$", opt.ShortForm, opt.LongForm), RegexOptions.IgnoreCase)) {
                             options._definedOpts.Add(opt.LongForm, "");
                             processed = true;
