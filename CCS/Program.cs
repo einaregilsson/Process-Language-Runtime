@@ -56,6 +56,9 @@ Available options:
                              pre-evaluated where possible. Do not combine this
                              with the /debug switch.
     
+    /embedPLR                Embeds the PLR into the generated file, so it can
+    /e                       be distributed as a stand-alone file.
+  
     /debug                   Emit debugging symbols in the generated file,
     /d                       this allows it to be debugged in Visual Studio, or
                              in the free graphical debugger that comes with the

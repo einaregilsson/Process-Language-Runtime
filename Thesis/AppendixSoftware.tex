@@ -5,8 +5,8 @@
 	During the course of this project three distinct software packages were 
 	developed, a CCS compiler, a CCS integration package for Visual Studio and a 
 	KLAIM compiler. Here we look at the practical aspects of this software, 
-	where it can be downloaded, how it is licensed and how it can be configured 
-	and used.
+	where it can be downloaded, how it is licensed and how it can be built, 
+	configured and used.
 
 \section{Licensing and availability}
 
@@ -21,6 +21,51 @@
 	modified version is also made available under a GPL compatible license. For 
 	further information see http://www.gnu.org/licenses/gpl.html.
 
+
+\section{Source code}
+	
+	The source code is organized into two solutions and nine projects. They are 
+	as follows:
+	
+	\begin{itemize}
+		\item \textbf{MSC} is the solution for the compilers and runtimes.
+		\begin{itemize}
+			\item \textbf{PLR} is the project for the Process Language Runtime.
+			\item \textbf{CCS} is the project for the CCS compiler.
+			\item \textbf{CCS.External} is a project which contains utility 
+			functions written in C\# which can be called from CCS if the 
+			CCS.External.dll is referenced during compilation.
+			\item \textbf{KLAIM} is the project for the KLAIM compiler.
+			\item \textbf{KLAIM.Runtime} is the project for the KLAIM runtime 
+			library.
+		\end{itemize}
+		\item \textbf{CCS.Integration} is the solution for Visual Studio 
+		Integration.
+		\begin{itemize}
+			\item \textbf{CCS.BuildTasks} contains MSBuild build tasks for the CCS 
+			compiler.
+			\item \textbf{CCS.LanguageService} is the main integration project, it 
+			contains the Visual Studio language service for CCS.
+			\item \textbf{CCS.Projects} containst the Visual Studio package that 
+			allows CCS projects to be created in Visual Studio.
+			\item \textbf{CCS.Deployment} is a project that builds an installer for 
+			the entire integration package.
+		\end{itemize}
+	\end{itemize}
+	
+	The solutions and projects can be built using Visual Studio 2008, although 
+	that is not required. The C\# compiler and MSBuild build tool are included 
+	with the standard .NET framework distribution, they are enough to build the 
+	projects. To build the entire MSC solution, first add the location where
+	MSBuild is stored to the PATH environment variable, this can be done with 
+	\begin{verbatim}SET PATH=%PATH%;c:\Windows\Microsoft.NET\Framework\v3.5\end{verbatim} The solution 
+	can then be built with the command\begin{verbatim} 
+	msbuild MSC.sln /p:Configuration=Debug /p:Platform="Any CPU"
+	\end{verbatim}
+	The .NET framework v3.5 is required to build both solutions. To build the
+	CCS.Integration solution it is necessary to have the Visual Studio 2008 SDK 
+	installed.
+	
 \section{CCS Compiler}
 
   The CCS compiler is an executable file named \texttt{ccs.exe}. It has one
@@ -75,18 +120,73 @@ Available options:
   
 \section{CCS Visual Studio Integration Package}
 
+	The integration package for CCS can be downloaded as a MSI installer. To 
+	start using the integration package simply follow the instructions in the 
+	installer program, it will install the necessary files and register the 
+	language service with Visual Studio. 
+	
+	After installing the integration package the following features will be 
+	added to Visual Studio:
+	
+	\begin{itemize}
+		\item When creating a new project there is an option named \textit{CCS 
+		Project}. Choosing this option creates a new project with the file ending 
+		.ccsproj and includes references to the PLR and a CCS source code file 
+		with some example code.
+		
+		\item The CCS project can be built using Visual Studio's \textit{Build} 
+		command or by using the keyboard shortcut Ctrl+Shift+B.
+		
+		\item Any file that is edited in Visual Studio which has the file ending 
+		.ccs will be handled by the language service, which will syntax highlight 
+		it and warn about syntax errors.
+		
+		\item IntelliSense can be invoked in .ccs files by pressing Ctrl+Space.
+		
+		\item If the \textit{Debug} configuration is chosen then a CCS 
+		system can be debugged by pressing the ``play'' button, or by pressing F5.
 
+	\end{itemize}
+	
+	The integration package can be uninstalled in the standard Windows 
+	\textit{Add/Remove programs} dialog.
+\newpage
 \section{KLAIM Compiler}
 
   The KLAIM compiler is an executable file named \texttt{kc.exe}. It has two 
   dependencies, the KLAIM runtime (\texttt{KlaimRuntime.dll}) and the PLR 
-  itself (\texttt{PLR.dll}).
-  dependency which is the PLR itself, it is in a file named \texttt{PLR.dll}.
-  The compiler is a command line tool and is invoked as 
-  \begin{verbatim}ccs.exe [options] <filename>\end{verbatim} It accepts one 
+  itself (\texttt{PLR.dll}). The KLAIM compiler is very similar to the CCS
+  compiler, it is a command line tool that is invoked as
+  \begin{verbatim}kc.exe [options] <filename>\end{verbatim} It accepts one 
   input file (\texttt{<filename>}) and can accept a number of optional command 
-  line switches (\texttt{[options]}). By default the generated executable file 
+  line switches (\texttt{[options]}). The generated executable file 
   will have the same name as the input file, except ending with \texttt{.exe} 
-  instead of \texttt{.ccs}. To get a guide to the available command line 
-  options the compiler can be invoked as \texttt{ccs.exe /?} . The output of 
-  that command is shown below:
+  instead of \texttt{.klaim}. The command \texttt{kc.exe /?} will print out
+  the available options and then exit. The output of that command is shown 
+  below:
+
+	\begin{footnotesize}
+	\begin{verbatim}
+KLAIM Compiler
+Copyright (C) 2009 Einar Egilsson
+
+Usage: kc [options] <filename>
+
+Available options:
+
+    /optimize            If specified then the generated assembly will be
+    /op                  optimized, dead code eliminated and expressions
+                         pre-evaluated where possible. Do not combine this
+                         with the /debug switch.
+    
+    /debug               Emit debugging symbols in the generated file,
+    /d                   this allows it to be debugged in Visual Studio, or
+                         in the free graphical debugger that comes with the
+                         .NET Framework SDK.
+
+    /out:<filename>      Specify the name of the compiled executable. If 
+    /o:<filename>        this is not specified then the name of the input
+                         file is used, with .ccs replaced by .exe.
+
+	\end{verbatim}
+	\end{footnotesize}

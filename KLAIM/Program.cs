@@ -32,6 +32,33 @@ Usage: kc [options] <filename>
             List<string> listArgs = new List<string>(args);
             CompileOptions options = CompileOptions.Parse(listArgs);
 
+            if (options.Help) {
+                Console.Error.WriteLine(@"
+KLAIM Compiler
+Copyright (C) 2009 Einar Egilsson
+
+Usage: kc [options] <filename>
+
+Available options:
+
+    /optimize                If specified then the generated assembly will be
+    /op                      optimized, dead code eliminated and expressions
+                             pre-evaluated where possible. Do not combine this
+                             with the /debug switch.
+    
+    /debug                   Emit debugging symbols in the generated file,
+    /d                       this allows it to be debugged in Visual Studio, or
+                             in the free graphical debugger that comes with the
+                             .NET Framework SDK.
+
+    /out:<filename>          Specify the name of the compiled executable. If 
+    /o:<filename>            this is not specified then the name of the input
+                             file is used, with .ccs replaced by .exe.
+");
+
+                return 1;
+            }
+
             DieIf(options.Arguments.Count == 0, "ERROR: Missing input file name");
             DieIf(options.Arguments.Count > 1, "ERROR: Only one input file is expected");
             string filename = options.Arguments[0];
