@@ -1,3 +1,109 @@
-\chapter{Conclusion}
+\chapter{Final Considerations}
 
-\section{First Section}
+\section{Related work}\label{sec:related_work}
+	
+	There are quite a few other projects that have implemented process algebras, 
+	or languages inspired by process algebras, however most of these projects 
+	take a different approach than that taken by the PLR. Below is a short 
+	summary of some of the notable ones, especially those that focus on CCS or 
+	KLAIM.
+	
+	\textit{KLAVA} \cite{klava} is an implementation of KLAIM. It is a Java 
+	library which represents the KLAIM constructs as Java classes. KLAIM 
+	applications can then be written in Java using the KLAVA library. The main 
+	difference between KLAVA and the PLR implementation of KLAIM (hereafter 
+	referred to as PLR KLAIM) is that in KLAVA it is not possible to write the 
+	applications using the actual syntax of KLAIM. KLAVA is a much more feature 
+	rich implementation of KLAIM than PLR KLAIM, it supports nodes running on 
+	different machines, and additional constructs such as non blocking input 
+	operations.
+	
+	\textit{X-Klaim} \cite{xklaim} (which stands for eXtended KLAIM) is another 
+	implementation of KLAIM from the authors of KLAVA. It is at a higher level 
+	of abstraction than KLAVA and has its own syntax, which is a superset of
+	the original KLAIM syntax. X-Klaim code uses the KLAVA library as its 
+	runtime library, the X-Klaim compiler compiles X-Klaim code down to Java 
+	code that uses the KLAVA library. X-Klaim is similar to PLR KLAIM in that 
+	both have a KLAIM syntax and both use a runtime library, the difference is 
+	that PLR KLAIM directly emits bytecodes, whereas X-Klaim emits Java source 
+	code, which means that X-Klaim code cannot be debugged using the original
+	X-Klaim source files. X-Klaim is feature rich and supports many constructs
+	not in the original KLAIM.
+	
+	\textit{AspectK} is an aspect oriented version of KLAIM. Originally 
+	introduced in \cite{aspectk}, a full virtual machine for the language was 
+	subsequently developed in \cite{giordano}. The KLAIM subset used in AspectK 
+	is the same as that used in PLR KLAIM, AspectK then adds aspects on top of 
+	that. The difference (aside from the aspect orientation) is that AspectK has 
+	its own virtual machine, with bytecodes for common process algebra tasks 
+	whereas PLR KLAIM uses an existing virtual machine. An advantage of having a 
+	process algebra focused virtual machine is that generated code can be 
+	smaller, since each bytecode instruction can perform more work. The PLR does 
+	get a similar reduction in code size by generating bytecodes that call 
+	methods defined in the PLR runtime library.
+	
+	\textit{JACK} \cite{jack} is a process algebra implementation written in 
+	Java. It is similar to the PLR in that it aims to be a framework that can be
+	used for implementing different types of process algebra, although its main
+	focus is Communicating Sequential Processes (CSP). The difference is that 
+	JACK, like KLAVA, represents algebra constructs as Java classes, and the  
+	systems are written using Java code instead of the native syntax of the 
+	process algebra being implemented. That is to say, it is a framework, but 
+	not a compiler.
+	
+	CCS has at least two implementations, in \cite{build_ccs_interpreter} a 
+	method is presented for how to build a sound CCS interpreter by following 
+	the semantics of the language, and \cite{ccs_interpreter} shows how the 
+	functional programming language Haskell can be used to build a CCS 
+	interpreter with minimal amount of code. Both of these differ from the PLR 
+	in that they are interpreters rather than compilers.
+	
+	None of the above related work aims to do exactly what the PLR attempts, 
+	which is to build compilers for process algebras that operate on the 		
+	algebra's standard syntax and integrate tightly with an existing virtual 
+	machine. The PLR is also the only one of these that explores how existing 
+	infrastructure can be used to add features to process algebras, such as 
+	allowing CCS to call .NET methods written in another .NET language. A 
+	further look at that topic might prove interesting, specifically how it 
+	affects the original semantics of the algebra being implemented, what side 
+	effects it might produce and what sort of interesting things could be
+	modeled in this way.
+
+\section{Further work}
+
+	The PLR could be improved and built upon in several ways. Here we will look 
+	at some of ways in which that could be achieved.
+	
+	\subsection{Additional process algebra constructs}
+	
+	Perhaps the most obvious improvement to the PLR would be to add support for 
+	some of the constructs that are common in process algebras but are not 
+	included in the PLR currently. This would make it even simpler to use the 
+	PLR as the basis for implementing other process algebras. To get a sense of 
+	which constructs would be most beneficial to add, we look shortly at three 
+	of the most prominent process algebras, CSP, $\pi$-calculus and LOTOS, and 
+	what would be needed for them to run on the PLR.
+	
+	\textit{CSP} is very similar to CCS. It does contain a few extra constructs
+	
+	\textit{$\pi$-calculus} is ...
+	
+	\textit{LOTOS} is ...
+	
+	\subsection{Additional analysis}
+	
+	Another potential improvement would be to add additional analyses before 
+	compilation. This is where the benefit of having a shared syntax tree for 
+	multiple algebras becomes apparent, as many of the analyses could be re-used 
+	for multiple process algebras (although probably not all of them). This 
+	could include common compiler optimization techniques such as constant 
+	propagation and Very Busy Expressions analysis, or analyses more directly 
+	related to process algebra, such as finding channels that are never used
+	and identifying processes that will always block.
+	
+	One of the interesting things that could be added, for CCS and maybe others, 
+	would be an analysis to compare two processes and see if they are 
+	\textit{bi-similar}, or behaviorally equivalent. Two processes are 
+	bi-similar if they produce the same \textit{traces}.
+
+\section{Conclusions}
