@@ -70,17 +70,17 @@ public partial class Parser {
 	}
 
 	void Process(out Process p, string locality) {
-		p = null; bool replicated = false; int startAction = _actionNr;
+		p = null; bool replicated = false; int startAction = _actionNr; Token replTok = null; 
 		if (la.kind == 10) {
 			Get();
-			replicated = true; 
+			replicated = true; replTok = t;
 		}
 		NonDeterministicChoice(out p, locality);
-		if (replicated) {
+		if (replicated) { 
+		       if (!(p is ActionPrefix) || (p is ActionPrefix && !(((ActionPrefix)p).Action is InAction))) {
+		           errors.SemErr(replTok.line, replTok.col, "Replicated processes are required to start with an in action!");
+		        }
 		       p = new ReplicatedProcess(p); 
-		       for (int i = startAction; i < _actionNr; i++) {
-		           ((ReplicatedProcess)p).ActionNumbers.Add(i);
-		       }
 		  }
 	}
 

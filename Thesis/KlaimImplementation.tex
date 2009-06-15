@@ -334,11 +334,10 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	when all $n$ instances have finished.
 	
 	A fourth approach is to spawn new instances of the process only 
-	when needed so that it appears as though there is an infinite amount. This
-	is the approach that was ultimately chosen and is implemented in the KLAIM
-	compiler. The objective is to simulate infinite processes with as few 
-	processes as possible, in order to do that it is important to realize where
-	infinite processes give the same result as a single process:
+	when needed so that it appears as though there is an infinite amount. The 
+	objective is to simulate infinite processes with as few processes as 
+	possible, in order to do that it is important to realize where infinite 
+	processes give the same result as a single process:
 	
 	\begin{enumerate}
 		\item When a process $P$ is blocked doing an \textbf{in} action, it does 
@@ -348,23 +347,20 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 		$n$ instances blocked there are now $n-1$ instances blocked. This implies
 		that if there was just one instance blocked, and another instance was 
 		spawned as the first instance unblocked then that would give the same 
-		result as having infinite instances blocked. (This conveniently leaves
-		out the possibility that each instance might have different values in its 
-		bound variables, this will be discussed later).
+		result as having infinite instances blocked. 
 	
 		\item Since \textbf{read} actions do not change the state of tuple spaces
 		in any way, it can be assumed that having one instance of $P$ perform a
 		\textbf {read} action or having infinite instances of $P$ perform the 
 		action would have the same effect on the state of the tuple spaces, that 
-		is, not affect them at all. (Again, difference in variable values is not 
-		considered).
+		is, not affect them at all. 
 		
 		\item Mimicking the \textbf{out} operation is a little more tricky than 
 		the other two. Clearly there is a difference between one process 
 		performing an \textbf{out} action and multiple processes performing the 
 		same action. If multiple processes perform the action then there will be 
 		multiple copies of the same tuple (or rather multiple tuples with the same 
-		value) at the tuplespace that the action was performed at (again, ignoring 
+		value) at the tuplespace that the action was performed at (ignoring 
 		possible differences in variable values). So from the perspective of 
 		looking at the tuplespace there clearly is a difference. However, if we 
 		consider how this affects the overall system, the behaviour of other 
@@ -379,58 +375,132 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 		spawned which will output a new identical tuple $t$ at the tuplespace, 
 		allowing more processes to sucessfully perform an \textbf{in} action at 
 		that tuplespace.
-
+	\end{enumerate}
+		
+	The first attempt at replication tried to use the approach of simulating 
+	infinite processes by spawning new instances at certain points in the 
+	program. After quite a lot of time had been spent implementing that in a 
+	satisfactory way, a number of problems became obvious. These include:
+		
+	\begin{enumerate}
+		\item When the replicated process starts with a \textbf{read} action
+		which does not block, followed by an \textbf{out} action that uses 
+		variables bound by the previous action, then enough processes must be 
+		spawned to account for all possible variations that might have happened.
+		Consider the following net:
+			
+		\begin{verbatim}
+			   Loc::<A,1>
+			|| Loc::<A,2>
+			|| Loc::<A,3>			
+			|| Loc::* read(A, !nr)@Loc . out(B, nr)@OtherLoc
+		\end{verbatim}
+	
+	The selection of tuples when more than one match the template is 
+	non-deterministic, so the variable $nr$ might be bound to either 1, 2 or 3. 
+	Were this done with infinite processes then all of the possibilities would 
+	be bound and so the end result would be that \textsf{OtherLoc} ended up 
+	having at least one instance of each of the tuples $\langle B, 1 \rangle, 
+	\langle B, 2 \rangle$ and $\langle B, 3 \rangle$. To successfully mimic this 
+	behaviors would require the program to constantly generate all combinations 
+	of what might happen during \textbf{read} actions. This quickly gets 
+	complicated, especially when many \textbf{read} actions occur in a row.
+	
+	\item When there is a non deterministic choice between two or more 
+	processes, then it would be necessary to make at least one process take each 
+	of the paths, since if there were infinite processes making that choice then 
+	surely at least one of them would take each offered choice.
+	
+	\item Timing issues further complicate matters. Consider the following 
+	fragment of a net:
+	
+		\begin{verbatim}
+			Loc::* read(!x)@Loc . in(x, !y)@OtherLoc
+		\end{verbatim}
+	
+	In the solution suggested above a new process would be spawned when the 
+	\textbf{in} action would complete. That process would start by reading $x$ 
+	at the locality \textsf{Loc}. But if the previous \textbf{in} action was 
+	blocked for some amount of time then the contents of \textsf{Loc} might have 
+	been changed one or more times in that period. That implies that a process 
+	that was spawned after the \textbf{in} action was completed might read a 
+	different value of $x$ at \textsf{Loc} than it would have if the two 
+	processes were actually started in parallel.
+	
 	\end{enumerate}
 	
-	The biggest flaw with this approach is the fact that it does not take 
-	variables into consideration. When one or more tuples match an \textbf{in} 
-	or \textbf{read} operation, a tuple is selected nondeterministically. That
-	means that two processes that perform the actions $ \mathbf{in}(!x)@Loc_1 . 
-	\mathbf{out}(x)@Loc_2 $ might not be outputting the same tuple at $Loc_2$ if
-	$x$ was bound to different values at $Loc_1$ during the \textbf{in} action. 
-	So this approach will always be an approximation, it will never conform 
-	exactly to the formal semantics of replication, although it will be close
-	enough for most cases. 
+	After considering these problems as well as some other exceptions and corner 
+	cases it became apparent that	mimicking replication in a general way was not 
+	feasible. Instead it was implemented in a restricted way, by requiring that 
+	every replicated process starts with an \textbf{in} action. The replicated 
+	process itself can then only be an action prefix process, it cannot be a 
+	parallel composition or non deterministic choice between processes. It can 
+	however start by performing an \textbf{in} action and then turn into a 
+	parallel composition or non deterministic choice. The initial \textbf{in} 
+	action serves as a guard that blocks until a tuple is available, and as soon 
+	as it is unblocked it spawns a new instance of the replicated process. It is 
+	intuitively clear that this does in fact preserve the congruence of 
+	replication, if there were infinite processes then how many of them would 
+	start running would depend on the number of tuples that matched the initial 
+	\textbf{in} action, by spawning a new process whenever the first \textbf{in} 
+	action has completed the same behavior occurs. 
 	
-	To get even closer to the actual replication semantics the KLAIM compiler 
-	allows the user to specify how many instances of a replicated process are 
-	created initially, as in the third approach described above. The default is 
-	to create just one process initially and spawn others as needed when the 
-	process removes tuples, or tuples that it generated are removed, but this 
-	can be overridden to set the initial number to any positive number $n$. This 
-	allows for creating for instance five initial instances of the replicated 
-	process, and then spawning new instances as the initial five instances 
-	progress on their path. The goal is that at every stage in the replicated 
-	process there should always (or as often as possible) be at least one 
-	instance of the process. Combining the limited number of instances with
-	spawning new instances as needed does not overflow the system, and gives
-	the user the ability to choose how many instances are needed to accurately
-	model the system he is creating.
+	The semantics of this restricted form of replication are then
+	\begin{center}
+	$*a . P \infarrow{a} P \mid (*a . P)\ \ \ \mathrm{where}\ a\ \mathrm{is\ an} \ \mathbf{in}\ \mathrm{action}$
+	\end{center}
 	
-	Implementing this was done by having the replication process be one class 
-	and the inner process, containing the actions, be another class. The 
-	replication class $R$ when invoked just creates new instances of the inner 
-	class, $Q$. It passes a reference to itself to $Q$ and when $Q$ performs an 
-	\textbf{in} action then it notifies $R$ which can then spawn a new 
-	instance of $Q$. When $Q$ performs an \textbf{out} action then it attaches 
-	its reference	to $R$ to the tuple being output. When another process $P$
-	eventually removes that tuple from a tuplespace, it will then check whether
-	the tuple has a reference to a replication process, and if so $P$ will notify
-	$R$ that a tuple generated by $Q$ was removed and $R$ can then once again 
-	spawn a new instance of $Q$. To summarize:
+	which means that as soon as $a$ has been performed a new $*a . P$ is started.
+	A replicated process can be thought of like a server process, it waits until 
+	a tuple matching a particular template is available, and then removes it, 
+	starts the following process and keeps waiting for a new tuple that matches 
+	the template. This is much like how a server works, for instance a webserver 
+	that waits for incoming connections, when one is made it starts a worker 
+	thread to handle it and keeps listening for further connections.
 	
-	\begin{itemize}
-		\item A replicated process initially creates 1-n instances of itself, 
-		according to user preference.
+	Other patterns can be simulated within this restricted form, by having a 
+	locality whose sole purpose is to contain tuples that start a particular 
+	replicated process. Repetition, where one instance of a process finishes 
+	before the next instance is started could for example be modelled as
+	
+		\begin{verbatim}
+     StartProc::<1>
+     || Loc::* in(!start)@StartProc . out(X)@Y ... (other actions) 
+     ... . out(1)@StartProc
+		\end{verbatim}
 		
-		\item When the process removes a tuple from a tuple space, a new instance
-		of it is created.
-		
-		\item When the process has created a tuple with an \textbf{out} operation, 
-		and that tuple is removed by another process, then a new instance of the 
-		replicated process is created.
-	\end{itemize}
+  and starting a fixed number $n$ of processes could be done by having $n$ 
+  tuples in the initial net that match the initial action, for example
 
+		\begin{verbatim}
+     StartProc::<1> || StartProc::<2> || StartProc<3>
+     || Loc::* in(!start)@StartProc ....
+		\end{verbatim}
+	
+	would immediately start three instance of the process since three matching 
+	tuples are available at \textsf{StartLoc}.
+
+	Implementing this was done by creating a new syntax node, 
+	\textsf{ReplicatedProcess}. That becomes one class, $R$, in the compiled 
+	file, and the inner process, $P$, starting with the \textbf{in} action, 
+	becomes another class. What $R$ does at runtime is to create a new instance 
+	of $P$, give it a reference to itself and call its \textsf{RunProcess} method
+	which runs it on a new thread. It then goes into an infinite loop, which has 
+	two steps:
+	
+	\begin{enumerate}
+		\item Suspend the thread that it ($R$) is running on
+		\item Once it wakes up, create and start a new instance of $P$ and go to 
+		the top of the infinite loop.
+	\end{enumerate}
+	
+	What $P$ does is perform its initial \textbf{in} action, which might block 
+	for a while but once the action is finished it checks whether it has a 
+	reference to a replicated process, and if it does then it re-activates the 
+	thread that the replicated process is running on (which causes the 
+	replicated process to continue in its infinite loop). $P$ then continues as 
+	normal and is not required to do anything else related to the replication.
+	
 \subsection{Tuple spaces}
 
 	The tuple spaces of KLAIM are implemented in the KLAIM runtime library. The 

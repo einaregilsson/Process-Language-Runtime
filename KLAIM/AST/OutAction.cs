@@ -75,18 +75,6 @@ namespace KLAIM.AST {
             il.Emit(OpCodes.Newobj, typeof(Tuple).GetConstructor(new Type[] { typeof(object[]) }));
             il.Emit(OpCodes.Stloc, tuple);
 
-            //Set the action nr on the tuple
-            il.Emit(OpCodes.Ldloc, tuple);
-            il.Emit(OpCodes.Ldc_I4, this.Nr);
-            il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("set_GeneratingActionNr"));
-
-            //Set the subscriber on the tuple
-            il.Emit(OpCodes.Ldloc, tuple);
-            il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
-            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
-            il.Emit(OpCodes.Castclass, typeof(IActionSubscriber));
-            il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("set_Subscriber"));
-
             il.Emit(OpCodes.Ldloc, loc);
             il.Emit(OpCodes.Ldloc, tuple);
             il.Emit(OpCodes.Call, typeof(Locality).GetMethod("Out"));

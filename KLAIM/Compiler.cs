@@ -27,6 +27,7 @@ namespace KLAIM {
             this.tuples = tuples;
             this.processes.MainMethodStart += new CompileEventHandler(CompileTupleSpaces);
             PLRString.DisplayWithoutQuotes = true; //To make localities look right...
+
             processes.Compile(options);
         }
 
@@ -64,6 +65,7 @@ namespace KLAIM {
                 }
                 il.Emit(OpCodes.Ldloc, loc);
                 il.Emit(OpCodes.Ldloc, arr);
+                il.Emit(OpCodes.Newobj, typeof(Tuple).GetConstructors()[0]);
                 il.Emit(OpCodes.Call, typeof(Locality).GetMethod("Out"));
             }
         }

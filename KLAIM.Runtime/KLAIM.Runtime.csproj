@@ -38,7 +38,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IActionSubscriber.cs" />
     <Compile Include="KLAIMAction.cs" />
     <Compile Include="KlaimException.cs" />
     <Compile Include="Locality.cs" />

@@ -30,9 +30,7 @@ namespace KLAIM.AST {
 
     public class ReplicatedProcess : Process{
 
-        public List<int> ActionNumbers { get; set; }
         public ReplicatedProcess(Process p) {
-            this.ActionNumbers = new List<int>();
             _children.Add(p);
         }
 
@@ -46,43 +44,51 @@ namespace KLAIM.AST {
 
         public override void Compile(CompileContext context) {
             string innerTypeName = "Repl_" + context.Type.Name;
-            
-            context.Type.Builder.AddInterfaceImplementation(typeof(IActionSubscriber));
-            context.Type.MustLiveOn = true; //We cannot die because we need to spawn more processes...
+            ILGenerator il = context.ILGenerator;
             TypeInfo newType = null;
             newType = Process.CompileNewProcessStart(context, innerTypeName);
             Process.Compile(context);
             Process.CompileNewProcessEnd(context);
+            Label startLoop = il.DefineLabel();
+            il.MarkLabel(startLoop);
+            LocalBuilder replCount = il.DeclareLocal(typeof(int));
 
-            EmitRunProcess(context, newType, false, Process.LexicalInfo, true);
+            //Give the replicated process the variables as they are at this point...
+            foreach (string paramName in newType.ConstructorParameters) {
+                il.Emit(OpCodes.Ldloc, context.Type.GetLocal(paramName));
+            }
 
-            DefineNotifyMethod(context, newType);
-        }
+            LocalBuilder loc = il.DeclareLocal(newType.Builder);
+            il.Emit(OpCodes.Newobj, newType.Constructor);
+            il.Emit(OpCodes.Stloc, loc);
+            il.Emit(OpCodes.Ldloc, loc);
 
-        private void DefineNotifyMethod(CompileContext context, TypeInfo replProc) {
-            MethodBuilder notify = context.Type.Builder.DefineMethod("NotifyAction", MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.Standard, typeof(void), new Type[] { typeof(int) });
-            context.Type.Builder.DefineMethodOverride(notify, typeof(IActionSubscriber).GetMethod("NotifyAction"));
-            ILGenerator il = notify.GetILGenerator();
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Call, typeof(Console).GetMethod("WriteLine", BindingFlags.Static | BindingFlags.Public, null, new Type[]{typeof(int)}, null));
-            il.EmitWriteLine("Starting new instance of " + replProc.Name);
-            context.PushIL(il);
-            EmitRunProcess(context, replProc, false, Process.LexicalInfo, true);
-            context.PopIL();
-
-            //Notify this procs parent if there is one
-            Label afterNotify = il.DefineLabel();
+            //Set this process as the parent of the new proc, that allows it to activate this thread
+            //again once it is past its first input action.
             il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
-            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
-            il.Emit(OpCodes.Brfalse, afterNotify);
-            il.Emit(OpCodes.Ldarg_0); //load the "this" pointer
-            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "get_Parent"));
-            il.Emit(OpCodes.Castclass, typeof(IActionSubscriber));
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Callvirt, MethodResolver.GetMethod(typeof(IActionSubscriber), "NotifyAction"));
-            il.MarkLabel(afterNotify);
+            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "set_Parent"));
 
-            il.Emit(OpCodes.Ret);
+            //start the new instance of the replicated process
+            il.Emit(OpCodes.Ldloc, loc);
+            il.Emit(OpCodes.Call, MethodResolver.GetMethod(typeof(ProcessBase), "Run"));
+
+            //Count how many we've emitted
+            il.Emit(OpCodes.Ldloc, replCount);
+            il.Emit(OpCodes.Ldc_I4_1);
+            il.Emit(OpCodes.Add);
+            il.Emit(OpCodes.Stloc, replCount);
+
+            //Print that information.
+            il.Emit(OpCodes.Ldstr, "Number of " + innerTypeName + " started: ");
+            il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("Write", new Type[] {typeof(string)}));
+            il.Emit(OpCodes.Ldloc, replCount);
+            il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("WriteLine", new Type[] {typeof(int)}));
+
+            //Suspend ourselves, we will be woken up by the replicated process once it gets
+            //past its first action...
+            il.Emit(OpCodes.Call, typeof(Thread).GetMethod("get_CurrentThread"));
+            il.Emit(OpCodes.Call, typeof(Thread).GetMethod("Suspend"));
+            il.Emit(OpCodes.Br, startLoop);
         }
     }
 }

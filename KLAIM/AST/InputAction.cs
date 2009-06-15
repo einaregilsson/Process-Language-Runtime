@@ -17,6 +17,7 @@ using PLR.AST;
 using PLR.Compilation;
 using KLAIM.Runtime;
 using PLR.Runtime;
+using System.Threading;
 
 namespace KLAIM.AST {
 
@@ -96,7 +97,7 @@ namespace KLAIM.AST {
             il.Emit(OpCodes.Stloc, tuple);
             //Now lets bind our variables... if they are used in the process
             for (int i = 1; i < this.ChildNodes.Count; i++) {
-                if (_children[i] is VariableBinding ) {
+                if (_children[i] is VariableBinding) {
                     VariableBinding var = (VariableBinding)_children[i];
                     if (context.Options.Optimize && !var.IsUsed) {
                         continue;
@@ -119,25 +120,27 @@ namespace KLAIM.AST {
                     il.Emit(OpCodes.Stloc, bindLoc);
                 }
             }
-            //Now lets notify our parent that this actions was just executed...
-            base.NotifyParents(context);
 
-            //..and lets notify the process that generated this tuple that it has been removed
-            //from a tuple space...
-            if (this is InAction) {
-                Label afterNotify = il.DefineLabel();
-                il.Emit(OpCodes.Ldloc, tuple);
-                il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("get_Subscriber"));
-                il.Emit(OpCodes.Brfalse, afterNotify); //if subscriber != null
-                {
-                    il.Emit(OpCodes.Ldloc, tuple);
-                    il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("get_Subscriber"));
-                    il.Emit(OpCodes.Ldloc, tuple);
-                    il.Emit(OpCodes.Call, typeof(Tuple).GetMethod("get_GeneratingActionNr"));
-                    il.Emit(OpCodes.Callvirt, typeof(IActionSubscriber).GetMethod("NotifyAction"));
-                }
-                il.MarkLabel(afterNotify);
+            //Ok, we got past the input action. If our parent is not null then we are a replicated
+            //process and should notify our parent that we have really started.
+            Label noParent = il.DefineLabel();
+            il.Emit(OpCodes.Ldarg_0); //Load the "this" pointer
+            il.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("get_Parent"));
+            il.Emit(OpCodes.Brfalse, noParent);
+            {
+                il.Emit(OpCodes.Ldarg_0); //Load the "this" pointer
+                il.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("get_Parent"));
+                il.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("get_Thread")); //find our parent thread
+                il.Emit(OpCodes.Call, typeof(Thread).GetMethod("Resume"));
+
+                //Now we've woken up our parent. Set the Parent property to null, so it doesn't get passed
+                //on to the rest of this process, KLAIM has no need for the Parent and passing it on might 
+                //lead to later in actions spawning extra instances of the replicated process.
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldnull);
+                il.Emit(OpCodes.Call, typeof(ProcessBase).GetMethod("set_Parent"));
             }
+            il.MarkLabel(noParent);
 
             //Now lets print out the net for fun...
 
@@ -145,7 +148,6 @@ namespace KLAIM.AST {
             il.Emit(OpCodes.Call, typeof(Net).GetMethod("Display"));
             il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("WriteLine", new Type[] { typeof(string) }));
             //TODO: Notify possible replicated process
-
         }
     }
 }
