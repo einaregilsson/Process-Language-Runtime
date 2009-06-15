@@ -90,6 +90,20 @@
 	
 	\textit{LOTOS} is ...
 	
+	\subsection{More datatypes and expressions}
+	The initial version of the PLR supports two types of variables, integers and 
+	strings. For expressions it supports constants for integers, booleans and 
+	strings, as well as simple arithmetic and relational operators for integers 
+	and logical operators for booleans. One way to extend the PLR would be to 
+	add more support for using other data types from .NET. An example would be 
+	to allow passing of .NET objects through channels and calling instance 
+	methods on those objects in the receiving process. This would require some 
+	additional syntax nodes for the PLR tree, an expression node for 
+	constructing a new object and a node for a method call on an object (as 
+	opposed to a static method call which is already supported). Other useful 
+	features to add might include support for floating point numbers, string 
+	formatting and basic string expressions using the + operator.
+	
 	\subsection{Additional analysis}
 	
 	Another potential improvement would be to add additional analyses before 
@@ -101,9 +115,59 @@
 	related to process algebra, such as finding channels that are never used
 	and identifying processes that will always block.
 	
+	\subsection{Bi-similarity of processes}
 	One of the interesting things that could be added, for CCS and maybe others, 
 	would be an analysis to compare two processes and see if they are 
-	\textit{bi-similar}, or behaviorally equivalent. Two processes are 
-	bi-similar if they produce the same \textit{traces}.
+	\textit{behaviorally equivalent}, also known as \textit{bi-similar}. 
+	B-similarity is a congruence, if processes $P$ and $Q$ are bi-similar then 
+	it means that if $P$ is a component in a system then it can be replaced with 
+	$Q$ and the system will continue to work in the same way, since $P$ and $Q$ 
+	exhibit the same behavior. This can for instance be used to write a 
+	specification as a simple process expression and then write an 
+	implementation for that specification. If the specification and 
+	implementation are bi-similar then the implementation is a correct 
+	implementation of the specification. An example could be the specification
+  \begin{align*}
+			\mathrm{CoffeeMachine} \defeq & coin  \ccsdot \out{coffee} \ccsdot CoffeeMachine \\
+	\end{align*} and the implementation
+  \begin{align*}
+			\mathrm{CoffeeMachineImpl} \defeq & ( \mathrm{CoinReceiver} \mid \mathrm{CoffeePourer} ) \backslash \{pour\} \\
+			\mathrm{CoinReceiver} \defeq & coin \ccsdot \out{pour} \ccsdot \mathrm{CoinReceiver} \\
+			\mathrm{CoffeePourer} \defeq & pour \ccsdot \out{coffee} \ccsdot \mathrm{CoffeePourer}
+	\end{align*}	
 
+	Here we see that according to the specification of \textsf{CoffeeMachine} 
+	the observable events are an endless stream of $coin$ and $coffee$. This 
+	however tells us nothing about how this machine is implemented. The second 
+	process \textsf{CoffeeMachineImpl} is the implementation of this coffee 
+	machine, it is composed of two components, a receiver for the coins and a 
+	component that pours the coffee. They communicate between themselves on the 
+	$pour$ channel. Since that channel is hidden (or restricted) it is not 
+	observable from the outside, what is observable from the outside is again an 
+	endless stream of $coin$ and $coffeee$. In this trivial case it is obvious 
+	that \textsf{CoffeeMachineImpl} is a valid implementation of 
+	\textsf{CoffeeMachine}.
+	
+	Bi-similarity can be analyzed by converting a CCS process expression into a 
+	\textit{labelled transition system}, which is a state machine where the 
+	transitions between states are the actions performed in the process. Weak 
+	bi-simulation, or observational equivalence, is perhaps the most interesting 
+	bi-simulation to verify. In general terms it states that if $P$ and $Q$ are 
+	weakly bi-similar then they will behave exactly the same when observed from 
+	the outside, they will offer the same synchronizations or events. However 
+	before and after these public events they can perform any number of internal 
+	actions or $\tau$ actions which do not have to match between the two 
+	processes since they do not affect their behavior as seen from the outside. 
+	
+	The PLR syntax tree is a rich data structure and would be well suited for 
+	this type of analysis. This might not be the type of feature that belongs in 
+	a process algebra compiler, instead it might be incorporated into some kind 
+	of analysis tool for CCS (or other process algebras) that could make use of 
+	the syntax tree of the compiler and the parser and scanner of the CCS 
+	compiler. 
+	
+	This section has only briefly touched on the possibilities of verifying 
+	process behavior using bi-simulation, for a more comprehensive explanation 
+	see \cite{reactive}.
+	
 \section{Conclusions}

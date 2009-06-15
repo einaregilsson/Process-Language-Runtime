@@ -691,7 +691,38 @@ UnaryMinusTerm =
 
 
 \section{Example of a  KLAIM system}
-  ...	
+  
+  
+  \begin{verbatim}
+  
+   Inbox :: <Incoming, Paper, OfficeSupplies, 200, John>
+|| Inbox :: <Incoming, Printer, OfficeSupplies, 500, John>  
+|| Inbox :: <Incoming, Textbooks, BookShack, 100, Alice>  
+
+|| Ledger :: <Paid, Cake, 50, AlfredosBakery, Alice>
+
+|| Budget :: <John, 2000>
+|| Budget :: <Alice, 5000>
+  
+|| Secretary :: * in(Incoming, !item, !vendor, !amount,  !person)@Inbox 
+                . out(Received, item, vendor, amount)@person
+
+|| Secretary :: * in(Invoice, !item, !vendor, !amount, !person, Incoming)@Inbox 
+                . out(Invoice, item, vendor, amount, Received)@person
+
+|| John :: * in(Received, !item, !amount, Received)@self
+           . 
+           (
+           out(Confirmed, item, amount, Confirmed)@Finance
+           +
+           out(Invoice, item, amount, Denied)@Secretary
+           )
+
+|| Finance :: * in(Invoice, !item, !amount, !person, Confirmed)@self
+           . in(person, !budget)@Budget . out(person, budget-amount)@Budget
+           . out(Invoice, item, amount, person, Paid)@Ledger
+           
+  \end{verbatim}	
 
 \section{Summary}
 
