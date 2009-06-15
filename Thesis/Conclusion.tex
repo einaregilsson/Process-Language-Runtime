@@ -84,9 +84,24 @@
 	of the most prominent process algebras, CSP, $\pi$-calculus and LOTOS, and 
 	what would be needed for them to run on the PLR.
 	
+	\textit{$\pi$-calculus} was introduced in \cite{Milner89acalculus} and is 
+	described by its author as an extension of CCS. There are many variants of 
+	$\pi$-calculus with additional features but the core calculus has two 
+	noteworthy additions to CCS:
+	
+	\begin{enumerate}
+		\item The \textit{match} construct $[a = b] P$ which compares the values 
+		of $a$ and $b$ and behaves as $P$ if they are equal but otherwise turns 
+		into the nil process. This is simply a more restricted version of the 
+		\texttt{if-else} constructs which is implemented in the PLR, the boolean 
+		condition is restricted to equality comparison and the \texttt{else} branch
+		is simply the nil process. 
+		
+		\item The generalization of channel and variable names.
+	\end{enumerate}
+	
 	\textit{CSP} is very similar to CCS. It does contain a few extra constructs
 	
-	\textit{$\pi$-calculus} is ...
 	
 	\textit{LOTOS} is ...
 	
