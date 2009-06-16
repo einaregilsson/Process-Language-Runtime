@@ -587,7 +587,7 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	
 	\item \textsf{Scanner} is the lexer class whose responsibility it is to 
 	tokenize a KLAIM source code file into valid KLAIM terminals. 
-	Listing~\ref{lst:klaimterminals} shows the more complicated terminals of 
+	Figure~\ref{fig:klaimterminals} shows the more complicated terminals of 
 	KLAIM defined by regular expressions. The simpler terminals, who are just 
 	string constants, are given directly in quotes in the parser definition. 
 	
@@ -598,7 +598,7 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
   \textsf{Scanner} class are generated with help from the Coco/R \cite{cocor} 
   parser generator. The Extended Backus-Naur Form (EBNF) description of the 
   full syntax, which is used as input to Coco/R, is shown in 
-  Listing~\ref{lst:klaim_ebnf}.
+  Figure~\ref{fig:klaim_ebnf}.
 	
 	\item \textsf{InAction, OutAction} and \textsf{ReadAction} are syntax tree 
 	nodes for the \textbf{in}, \textbf{out} and \textbf{read} operations 
@@ -612,8 +612,10 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	\end{itemize}
 	
 \begin{figure}
+\label{fig:klaimterminals}
+\caption{Terminals of KLAIM scanner}
 \lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[caption=Terminals of KLAIM scanner,label=lst:klaimterminals,frame=trbl,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
+\begin{lstlisting}[frame=trbl,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
   LOCALITY   = [A-Z][A-Za-z0-9]*
   VARIABLE   = [a-z][A-Za-z0-9]*
   VARBINDING = ![a-z][A-Za-z0-9]*
@@ -622,8 +624,10 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	\end{figure}
 	
 	\begin{figure}
+	\label{fig:klaim_ebnf}
+	\caption{EBNF Productions of KLAIM}
 \lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[caption=EBNF Productions of KLAIM,frame=trbl,label=lst:klaim_ebnf,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
+\begin{lstlisting}[frame=trbl,label=lst:klaim_ebnf,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
 
 KLAIM = 
   LocatedItem { "||" LocatedItem }                
@@ -690,10 +694,12 @@ UnaryMinusTerm =
 	\end{figure}
 
 
-\section{Example of a  KLAIM system}
-  
-  
-  \begin{verbatim}
+\section{KLAIM invoice system example}
+\begin{figure}
+\label{fig:invoice_system}
+\caption{Invoice system example in KLAIM}
+\lstset{showtabs=false,showspaces=false,showstringspaces=false}
+\begin{lstlisting}[frame=trbl,language=klaim,basicstyle=\footnotesize\ttfamily,showtabs=false,showspaces=false]
   
    Inbox :: <Incoming, Paper, OfficeSupplies, 200, John>
 || Inbox :: <Incoming, Printer, OfficeSupplies, 500, John>  
@@ -704,25 +710,104 @@ UnaryMinusTerm =
 || Budget :: <John, 2000>
 || Budget :: <Alice, 5000>
   
-|| Secretary :: * in(Incoming, !item, !vendor, !amount,  !person)@Inbox 
+|| Secretary :: * in(Incoming, !item, !vendor, !amount,  
+                     !person)@Inbox 
                 . out(Received, item, vendor, amount)@person
 
-|| Secretary :: * in(Invoice, !item, !vendor, !amount, !person, Incoming)@Inbox 
-                . out(Invoice, item, vendor, amount, Received)@person
+|| Secretary :: * in(Denied, !item, !vendor, !amount, !person)@self 
+                . out(Denied, item, vendor, amount)@vendor
 
-|| John :: * in(Received, !item, !amount, Received)@self
+|| John :: * in(Received, !item, !vendor, !amount)@self
            . 
            (
-           out(Confirmed, item, amount, Confirmed)@Finance
+           out(Confirmed, item, vendor, amount, John)@Finance
            +
-           out(Invoice, item, amount, Denied)@Secretary
+           out(Denied, item, vendor, amount, John)@Secretary
            )
 
-|| Finance :: * in(Invoice, !item, !amount, !person, Confirmed)@self
-           . in(person, !budget)@Budget . out(person, budget-amount)@Budget
-           . out(Invoice, item, amount, person, Paid)@Ledger
-           
-  \end{verbatim}	
+|| Alice :: * in(Received, !item, !vendor, !amount)@self
+           . 
+           (
+           out(Confirmed, item, vendor, amount, Alice)@Finance
+           +
+           out(Denied, item, vendor, amount, Alice)@Secretary
+           )
+
+|| Finance :: * in(Confirmed, !item, !vendor, !amount, !person)@self
+              . in(person, !budget)@Budget 
+              . out(person, budget - amount)@Budget
+              . out(Paid, item, vendor, amount, John)@Ledger
+	\end{lstlisting}           
+  \end{figure}
+
+	The preceding sections in this chapter have only presented small snippets of 
+	KLAIM code. To get a clearer view of what an actual system modeled in KLAIM 
+	might look like, an invoice system example is shown in 
+	Figure~\ref{fig:invoice_system}, and explained further below.
+	We begin by looking at the localities in the system:
+	
+	\begin{itemize}
+		
+		\item \textsf{Inbox} is a locality which contains invoices that have just 
+		arrived at the company which the net represents. The \textsf{Inbox} 
+		contains no processes, it is just a database for invoices. The invoices 
+		themselves are tuples which contain five elements: a status tag, the item 
+		being ordered, the vendor name, the price, and the name of the person who 
+		ordered the item. For example the tuple $\langle Incoming, Printer, 
+		OfficeSupplies, 500, John\rangle$ is an invoice that has the status 
+		\textsf{Incoming}, is for a printer that was ordered by John from 
+		OfficeSupplies and cost 500.
+		
+		\item \textsf{Ledger} represents the general ledger of the company. 
+		Invoices end up there after they have been confirmed and paid. Every 
+		invoice in the ledger should have its status as \textsf{Paid}.
+		
+		\item The \textsf{Secretary} locality represents the company secretary who 
+		removes invoices from the \textsf{Inbox} and then sends them on to the 
+		person who ordered the item in question, with a status tag of 
+		\textsf{Received}. Note here that the process is replicated and starts 
+		with an \textbf{in} action, whenever a invoice (tuple) is available at 
+		\textsf{Inbox} whose first element is the constant \textsf{Incoming} a new 
+		instance of the \textsf{Secretary} process will be spawned. Also note how 
+		the \textbf{in} action binds the variable $person$ and then uses that as 
+		the locality in the following action \textbf{out}(...)@person. 
+		\textsf{Secretary} also contains another process running in parallel, this 
+		process reads in invoices with the status \textsf{Denied} and then sends 
+		them back to the vendor that issued the invoice.
+		
+		\item The localities \textsf{John} and \textsf{Alice} are both employees 
+		of the company and have the same process for receiving invoices. They are 
+		replicated like the \textsf{Secretary} process so they start whenever a 
+		matching tuple lands in their tuple space. They read in the invoice and 
+		then have a choice where they can either send it back to the secretary 
+		with the status \textsf{Denied} or send it on to the finance department 
+		with the status \textsf{Confirmed}.
+		
+		\item \textsf{Budget} is a database of how much money each employee may 
+		spend on outside purchases. It has entries for \textsf{John} and 
+		\textsf{Alice} and their current budgets.
+		
+		\item Finally, \textsf{Finance} is the finance department of the company. 
+		It inputs \textsf{Confirmed} invoices from its tuplespace, then subtracts 
+		the amount spent from the budget of the person who ordered the item. It 
+		does this by first removing the appropriate tuple from \textsf{Budget} by 
+		matching on the name on the invoice. It then outputs a new tuple with the 
+		current budget which is a result of an evaluated expression, $budget - 
+		amount$. The process then ends by adding the invoice to the \textsf{Ledger}
+		with a status of \textsf{Paid}.
+		
+	\end{itemize}
+	
+	This example system shows how KLAIM can be used to model real world systems. 
+	Its high level of abstraction makes it useful for modeling for example 
+	workflows without thinking about concrete implementations and technical 
+	issues. Localities can be used as simply databases, such as the 
+	\textsf{Budget}, as actors, such as \textsf{Secretary}, or as both. This is 
+	for example the case with \textsf{John} and \textsf{Alice}, they have 
+	processes that they follow, and those processes operate on data in the 
+	\textsf{self} tuple space which implies that they own the data. 
+	At runtime \textsf{self} simply resolves to the name of the locality where 
+	the process is running.
 
 \section{Summary}
 

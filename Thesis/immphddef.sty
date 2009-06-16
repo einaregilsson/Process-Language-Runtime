@@ -65,6 +65,16 @@
    else,  long,  static,   
    enum,  namespace,  string}
 }	
+\lstdefinelanguage{klaim}
+{
+ morecomment = [l]{//}, 
+ morecomment = [l]{///},
+ morecomment = [s]{/*}{*/},
+ morestring=[b]", 
+ sensitive = true,
+ morekeywords = {in, out, read}
+}	
+
 \lstset{frame=trbl}
 \lstset{linewidth=\textwidth}
 \lstset{language=CSharp, basicstyle=\small, commentstyle=\textit}
