@@ -80,8 +80,8 @@
 	some of the constructs that are common in process algebras but are not 
 	included in the PLR currently. This would make it even simpler to use the 
 	PLR as the basis for implementing other process algebras. To get a sense of 
-	which constructs would be most beneficial to add, we look shortly at three 
-	of the most prominent process algebras, CSP, $\pi$-calculus and LOTOS, and 
+	which constructs would be most beneficial to add, we look shortly at two
+	of the most prominent process algebras, CSP and $\pi$-calculus, and 
 	what would be needed for them to run on the PLR.
 	
 	\textit{$\pi$-calculus} was introduced in \cite{Milner89acalculus} and is 
@@ -93,17 +93,43 @@
 		\item The \textit{match} construct $[a = b] P$ which compares the values 
 		of $a$ and $b$ and behaves as $P$ if they are equal but otherwise turns 
 		into the nil process. This is simply a more restricted version of the 
-		\texttt{if-else} constructs which is implemented in the PLR, the boolean 
-		condition is restricted to equality comparison and the \texttt{else} branch
-		is simply the nil process. 
+		\texttt{if-else} construct which is already implemented in the PLR, the 
+		boolean condition is restricted to equality comparison and the 
+		\texttt{else} branch is simply the nil process. 
 		
-		\item The generalization of channel and variable names.
+		\item The generalization of channel and variable names. In $\pi$-calculus 
+		both variable and channel names are seen simply as \textit{names}, and can 
+		be passed along channels as data. For example a process $P$ could send the 
+		channel name $y$ to process $Q$, which could then send or receive on that 
+		channel.
+		
+	  \begin{align*}
+			\mathrm{P} \defeq & \overline{x}y . y(j) . 0\\
+			\mathrm{Q} \defeq & x(z) . \overline{z}3 . 0\\
+		\end{align*} 
+		
+		Here we see that $P$ first outputs the name $y$ on channel $x$. Process 
+		$Q$ receives the channel name on channel $x$, after which it substitutes
+		$z$ with $y$ and becomes $\overline{y}3 \ccsdot 0$. It then sends the value
+		3 on the received channel and $P$ accepts it and binds it to the name $j$.
+		
+		This could fairly easily be added to the PLR. At compilation time each 
+		channel name being used could be checked to see whether it was defined as 
+		a variable or not. If it had previously been defined as a variable then 
+		the synchronization would happen on the channel whose name was stored in 
+		the variable, if no variable with that name exists then the name of the 
+		channel would be considered a constant. For example in the term $x(z) . 
+		\overline{z}3$ we see that $z$ is bound in the first action, and so when 
+		we process the $\overline{z}3$ action we know that we should use the name
+		stored in $z$ as opposed to the literal name $z$. However in the term 
+		$x(z) . \overline{y}3$ we see that $y$ has never been bound as a variable 
+		and so when the $\overline{y}3$ action is processed the literal name $y$ 
+		is used for the channel.
+		
 	\end{enumerate}
 	
 	\textit{CSP} is very similar to CCS. It does contain a few extra constructs
 	
-	
-	\textit{LOTOS} is ...
 	
 	\subsection{More datatypes and expressions}
 	The initial version of the PLR supports two types of variables, integers and 
