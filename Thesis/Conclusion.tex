@@ -1,5 +1,7 @@
 \chapter{Final Considerations}
 
+\section{Analysis of the results}
+
 \section{Related work}\label{sec:related_work}
 	
 	There are quite a few other projects that have implemented process algebras, 
@@ -72,7 +74,7 @@
 \section{Further work}
 
 	The PLR could be improved and built upon in several ways. Here we will look 
-	at some of ways in which that could be achieved.
+	at some of the ways in which this could be achieved.
 	
 	\subsection{Additional process algebra constructs}
 	
@@ -93,8 +95,8 @@
 		\item The \textit{match} construct $[a = b] P$ which compares the values 
 		of $a$ and $b$ and behaves as $P$ if they are equal but otherwise turns 
 		into the nil process. This is simply a more restricted version of the 
-		\texttt{if-else} construct which is already implemented in the PLR, the 
-		boolean condition is restricted to equality comparison and the 
+		\texttt{if-then-else} construct which is already implemented in the PLR, 
+		the 	boolean condition is restricted to equality comparison and the 
 		\texttt{else} branch is simply the nil process. 
 		
 		\item The generalization of channel and variable names. In $\pi$-calculus 
@@ -128,10 +130,81 @@
 		
 	\end{enumerate}
 	
-	\textit{CSP} is very similar to CCS. It does contain a few extra constructs
+	\textit{CSP} is very similar to CCS. It can synchronize on channels, with or 
+	without message passing, it uses action prefixing, restriction, choice and 
+	parallel composition. Its definitions of choice and parallel composition are 
+	a little bit more complex than those of CCS. It also distinguishes between 
+	an inactive process, which is called $STOP$ and is equivalent to the nil 
+	process in CCS, and a $SKIP$ process which signals that a process has 
+	completed successfully. Finally, as its name \textit{Communicating 
+	Sequential Processes} suggests, it offers sequential composition of 
+	processes. We now look at how these differences might be implemented in the 
+	PLR.
 	
+	\begin{enumerate}
+		\item Implementing the $SKIP$ process is trivial since it does nothing. 
+		The main issue is distinguishing it from the $STOP$ process, this can be 
+		done by letting them output different text when they are invoked.
+		
+		\item In CSP a distinction is made between internal non deterministic 
+		choice (written $P \sqcap Q$) and external non deterministic choice 
+		(written $P\ \square\ Q$). External choice will synchronize with the first 
+		event offered by  the environment, so in $a . STOP\ \square\ b . STOP$ it 
+		depends on which of $a$ and $b$ is offered first. Internal non 
+		deterministic choice however can refuse to participate in an event even 
+		though no alternative is offered. The current implementation in the PLR is 
+		equivalent to CSP's external choice, if an event (or channel 
+		synchronization) is offered on one of the paths then it will be taken. If 
+		two or more candidates are offered then the selection between them is made 
+		randomly. To enable a simulation of internal choice it could be possible 
+		to add some randomness to whether or not an offered channel 
+		synchronization is accepted. When the scheduler is finding out which 
+		synchronizations are possible it calls a \textsf{CanSyncWith} method on 
+		each candidate action. It could be possible to make that call randomly 
+		return true or false, which would make sure that a path in an internal 
+		choice was not forced to be taken, even if it was the only candidate for 
+		synchronization.
+		
+		\item CSP also handles parallel composition in a slightly different way 
+		from CSS. It defines two versions of parallel composition. The first one, 
+		which is sometimes called \textit{interleaving} is written as $P 
+		\mid\mid\mid Q$. Here $P$ and $Q$ run in parallel and are independent of 
+		each other. They can interact but are not forced to. This is equivalent to 
+		the PLR's parallel composition construct. 
+		
+		The other type of parallel composition available in CSP is written as $P 
+		\mid\mid_A Q$ or sometimes as $P\ |[\{A\}]|\ Q$. $P$ and $Q$ are said 
+		to be \textit{interface parallel}. Here $A$ is a set of channel names that 
+		$P$ and $Q$ must synchronize on, e.g. in $P\ |[\{a,b\}]|\ Q$ the 
+		processes $P$ and $Q$ must synchronize with each others on channels $a$ 
+		and $b$. If one of them has arrived at an $a$ or $b$ action it cannot 
+		continue until the other one is ready to synchronize with it. This is 
+		similar to parallel composition with restriction in CCS, e.g. $(P \mid Q) 
+		\backslash\{a,b\}$. In that expression $P$ and $Q$ have to synchronize on 
+		$a$ and $b$ because they are invisible from the outside and so for either 
+		process the other process is the only candidate to synchronize with. It is 
+		slightly different though because in CSP's version the events $a$ and $b$ 
+		are not unobservable from the outside. This could still be implemented 
+		much like the CCS expression shown above, the channels $a$ and $b$ would 
+		be locally scoped to the $P\ |[\{a,b\}]|\ Q$ process so that no 
+		external processes could participate in the synchronization, and the 
+		channels would be shown as part of the trace of the system, which would 
+		not normally be done in an expression like $(P \mid Q) \backslash\{a,b\}$
 	
-	\subsection{More datatypes and expressions}
+		\item Sequential composition is written as $P;Q$, it is a process that 
+		behaves like $P$ until $P$ terminates and then behaves like $Q$.	This 
+		would be easy to implement in the PLR, any finite process will end up as 
+		the nil process (or the $STOP$ or $SKIP$ process in CSP), once the nil 
+		process has been reached in $P$ a new instance of $Q$ could be 
+		instantiated and started. 
+	
+	\end{enumerate}
+	
+	In addition to these features, variants of CSP sometimes contain additional 
+	features such as interrupts and timeouts which we shall not go into here. 
+	
+	\subsection{Richer datatypes and expressions}
+	
 	The initial version of the PLR supports two types of variables, integers and 
 	strings. For expressions it supports constants for integers, booleans and 
 	strings, as well as simple arithmetic and relational operators for integers 
