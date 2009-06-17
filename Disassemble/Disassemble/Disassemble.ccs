@@ -1,0 +1,20 @@
+use PLR.Runtime.BuiltIns
+
+StartProc = ActionPrefix | NonDeterministicChoice 
+
+ActionPrefix = a .  0
+
+ValuePassSend(x) = _a_(x+3 /:Rand(2)) . 0
+ValuePassReceive = a(y) . 0
+
+NonDeterministicChoice = _a_ . 0 + NDC2
+NDC2 = b . 0
+ 
+ParallelComposition = a . 0 | PC2 | 0 
+PC2 = b . 0
+
+MethodCall = :Print("Hello") . 0
+
+Restrict = ( a . (d . 0)\ d ) \{a}
+
+Relabel = ( a . (d . 0)[dnew/d] )[anew/a]
