@@ -20,6 +20,10 @@ namespace PLR.Runtime {
             Console.WriteLine(s);
         }
 
+        private static Random _rand = new Random();
+        public static int Rand(int max) {
+            return _rand.Next(max);
+        }
         public static int GetFive() { return 5; }
 
         public static void Println(string s, int a) {
