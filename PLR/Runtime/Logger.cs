@@ -17,29 +17,37 @@ namespace PLR.Runtime {
         public static bool SchedulerDebugOn {get; set;}
         public static bool ProcessDebugOn {get; set;}
         public static bool TraceDebugOn {get; set;}
+        public static bool TraceDebugIncludeTau { get; set; }
+        public static bool TraceDebugIncludeMethodCalls { get; set; }
 
         static Logger() {
             //Defaults
             SchedulerDebugOn = false;
             ProcessDebugOn = false;
             TraceDebugOn = true;
+            TraceDebugIncludeTau = true;
+            TraceDebugIncludeMethodCalls = true;
             //Now lets see if they are overwritten
             string[] args = System.Environment.GetCommandLineArgs();
             foreach (string arg in args) {
                 string larg = arg.ToLower();
                 if (larg.StartsWith("/log:")) {
-                    TraceDebugOn = SchedulerDebugOn = ProcessDebugOn = false; //Set all to false and use what's passed in
+                    TraceDebugOn = SchedulerDebugOn = ProcessDebugOn = TraceDebugIncludeTau = TraceDebugIncludeMethodCalls = false; //Set all to false and use what's passed in
                     if (larg.Length == 5) {
                         Console.Error.WriteLine("ERROR: Invalid /log: argument");
                         System.Environment.Exit(1);
                     } else {
                         string[] opts = larg.Substring(5).Split(',');
                         foreach (string opt in opts) {
-                            if (opt == "trace" || opt == "t") {
+                            if (opt == "trace") {
                                 TraceDebugOn = true;
-                            } else if (opt == "scheduler" || opt == "s") {
+                            } else if (opt == "tau") {
+                                TraceDebugIncludeTau = true;
+                            } else if (opt == "methods") {
+                                TraceDebugIncludeMethodCalls = true;
+                            } else if (opt == "scheduler") {
                                 SchedulerDebugOn = true;
-                            } else if (opt == "process" || opt == "p") {
+                            } else if (opt == "process") {
                                 ProcessDebugOn = true;
                             } else {
                                 Console.Error.WriteLine("ERROR: Invalid /log option: '{0}'", opt);
@@ -102,8 +110,12 @@ namespace PLR.Runtime {
             }
         }
 
-        public static void TraceDebug(object msg) {
-            if (TraceDebugOn) {
+        public static void TraceDebug(object msg, TraceType type) {
+            if ((type == TraceType.Sync || type == TraceType.Deadlock) && TraceDebugOn) {
+                Output("TRACE: " + msg);
+            } else if (TraceDebugIncludeMethodCalls  && type == TraceType.MethodCall) {
+                Output("TRACE: " + msg);
+            } else if (TraceDebugIncludeTau  && type == TraceType.Tau) {
                 Output("TRACE: " + msg);
             }
         }

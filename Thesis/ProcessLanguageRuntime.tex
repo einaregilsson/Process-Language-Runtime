@@ -125,19 +125,20 @@
  	\textbf{ActionRestrictions} represents a function that restricts actions 
  	within a process from synchronizing with other actions outside the process. 
  	This is an implementation of the \textit{restriction} process language 
- 	construct described in Section~\ref{common_constructs}. It currently has two 
- 	concrete descendants. One is \textsf{ChannelRestrictions} which restricts 
- 	channels by name, provided that the names of channels to restrict are known 
- 	at compile time. The other is \textsf{CustomRestrictions}, that calls a .NET 
- 	method at runtime for every action and returns \textbf{true} it it should be 
- 	restricted. The method can be written in any language available for the .NET 
- 	framework, the only requirements are that it takes an \textsf{Action} object 
- 	from the PLR runtime library as a parameter and returns a boolean value.
+ 	construct described in Section~\ref{sec:common_constructs}. It currently has 
+ 	two concrete descendants. One is \textsf{ChannelRestrictions} which 
+ 	restricts channels by name, provided that the names of channels to restrict 
+ 	are known at compile time. The other is \textsf{CustomRestrictions}, that 
+ 	calls a .NET method at runtime for every action and returns \textbf{true} it 
+ 	it should be restricted. The method can be written in any language available 
+ 	for the .NET framework, the only requirements are that it takes an 
+ 	\textsf{Action} object from the PLR runtime library as a parameter and 
+ 	returns a boolean value.
 	 
  	\textbf{PreProcessActions} represents a function that is called for every 
  	action that is performed in a process and returns another action. This is 
  	used to implement the \textit{re-labelling} process language construct 
- 	described in Section~\ref{common_constructs}. Simple re-labelling of 
+ 	described in Section~\ref{sec:common_constructs}. Simple re-labelling of 
  	channels with names known at compile time is done with a 
  	\textsf{RelabelActions} class. It has the names to re-label as child nodes 
  	and compiles down to a method that takes in an \textsf{Action} runtime class 
@@ -530,7 +531,7 @@ class ExpressionFolder : AbstractVisitor{
 	successfully. Figure~\ref{fig:runtime_library} shows a class diagram of the 
 	runtime library. Below is an overview of each of the nine classes.
 
-	\begin{figure}[h!]
+	\begin{figure}[ht!]
 		\centering
 		\includegraphics[scale=0.5]{RuntimeLibrary.png}
 		\caption{PLR runtime library classes}

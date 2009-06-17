@@ -124,9 +124,13 @@ namespace PLR.Compilation {
                 foreach (string clazz in this.ImportedClasses) {
                     Type type = assembly.GetType(clazz);
                     if (type != null) {
-                        if (paramTypes == null) {
+                        try {
+                            //Simplest case, if there is only one then lets use that!
                             method = type.GetMethod(methodName);
-                        } else {
+                            if (method != null) {
+                                return method;
+                            }
+                        } catch (Exception) {
                             method = type.GetMethod(methodName, paramTypes);
                         }
 

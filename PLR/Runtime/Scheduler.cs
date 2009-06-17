@@ -15,6 +15,13 @@ using PLR.AST.Actions;
 
 namespace PLR.Runtime {
 
+    public enum TraceType {
+        Sync,
+        Tau,
+        MethodCall,
+        Deadlock
+    }
+
     public class Scheduler {
 
         private Scheduler() {
@@ -24,7 +31,7 @@ namespace PLR.Runtime {
                 }
             }
         }
-        private List<IAction> _trace = new List<IAction>();
+        private List<string> _trace = new List<string>();
         private static Scheduler _instance = new Scheduler();
 
         public static Scheduler Instance {
@@ -50,6 +57,7 @@ namespace PLR.Runtime {
 
         private class Match {
             public IAction a1, a2;
+            public bool IsTau { get; set; }
             public Match(IAction a1, IAction a2) { this.a1 = a1; this.a2 = a2; }
         }
 
@@ -96,7 +104,8 @@ namespace PLR.Runtime {
                     candidates.Add(new Match(actions[i], null));
                 } else {
                     for (int j = i + 1; j < actions.Count; j++) {
-                        int p1id = actions[i].ProcessID, p2id = actions[j].ProcessID;
+                        int p1id = actions[i].ProcessID, 
+                            p2id = actions[j].ProcessID;
                         Guid p1setID = ProcessIdToSetId(p1id), p2setID = ProcessIdToSetId(p2id);
                         if (actions[i].CanSyncWith(actions[j])
                             && (p1setID != p2setID || p1setID == Guid.Empty)) {
@@ -128,6 +137,11 @@ namespace PLR.Runtime {
                 }
             }
 
+            foreach (Match restrictedMatch in matches) {
+                restrictedMatch.IsTau = true; //Everything we have looked at so far has been restricted
+                                //Only the actions from the global scope are outside observable
+            }
+            
             Debug("Global scope contains " + GlobalScope.Actions.Count + " candidate actions: " + Util.Join(", ", GlobalScope.Actions));
             matches.AddRange(FindMatches(GlobalScope.Actions));
 
@@ -150,7 +164,7 @@ namespace PLR.Runtime {
                 }
 
                 Debug("System is deadlocked");
-                Logger.TraceDebug("<DEADLOCKED>");
+                Logger.TraceDebug("<DEADLOCKED>", TraceType.Deadlock);
                 Console.ReadKey();
                 Environment.Exit(1);
             }
@@ -161,8 +175,13 @@ namespace PLR.Runtime {
             } else {
                 m = matches[new Random().Next(matches.Count)];
             }
+
             Debug("Chose match");
-            _trace.Add(m.a1);
+            if (m.IsTau) {
+                _trace.Add("t - (" + m.a1.ToString().Replace("_","") + ")");
+            } else {
+                _trace.Add(m.a1.ToString().Replace("_", ""));
+            }
 
             //Now let them sync with each other
             if (m.a2 != null && !m.a1.IsAsynchronous && !m.a2.IsAsynchronous) {
@@ -190,12 +209,16 @@ namespace PLR.Runtime {
                 Debug("Chose match " + m.a1.ToString().Replace("_", "") + ", procs " + wakeUp[0] + " and " + wakeUp[1]);
             }
 
-            string[] tmp = new String[_trace.Count];
-            for (int i = 0; i < _trace.Count; i++) {
-                tmp[i] = _trace[i].ToString().Replace("_", "");
+            if (m.a2 == null) {
+                Logger.TraceDebug(_trace[_trace.Count - 1], TraceType.MethodCall);
+            } else if (m.IsTau) {
+                Logger.TraceDebug(_trace[_trace.Count - 1], TraceType.Tau);
+            } else {
+                Logger.TraceDebug(_trace[_trace.Count - 1], TraceType.Sync);
             }
-            Debug("TRACE: " + "\n     " + String.Join("\n     ", tmp));
-            Logger.TraceDebug(tmp[tmp.Length - 1]);
+
+
+            Debug("TRACE: " + "\n     " + String.Join("\n     ", _trace.ToArray()));
             foreach (ProcessBase p in _activeProcs) {
                 if (!wakeUp.Contains(p) && wakeUpGuids.Contains(p.SetID)) {
                     p.ChosenAction = null;

@@ -89,7 +89,6 @@ Available options:
                     options.OutputFile = options.OutputFile.Substring(0, options.OutputFile.Length - 4);
                 }
             }
-
             if (!options.OutputFile.ToLower().EndsWith(".exe")) {
                 options.OutputFile += ".exe";
             }

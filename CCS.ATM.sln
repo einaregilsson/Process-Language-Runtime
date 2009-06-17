@@ -1,0 +1,26 @@
+
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{D39941DE-05FC-4BB4-B97F-0896FEB88C5A}") = "ATM", "CCS.ATM\ATM.ccsproj", "{A7E583F7-CF71-4C13-8CE2-566210712ECC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bank", "CCS.ATM\Bank.csproj", "{CA45968A-49FB-452C-A2E7-981E6C270ED6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A7E583F7-CF71-4C13-8CE2-566210712ECC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7E583F7-CF71-4C13-8CE2-566210712ECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7E583F7-CF71-4C13-8CE2-566210712ECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7E583F7-CF71-4C13-8CE2-566210712ECC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA45968A-49FB-452C-A2E7-981E6C270ED6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA45968A-49FB-452C-A2E7-981E6C270ED6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA45968A-49FB-452C-A2E7-981E6C270ED6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA45968A-49FB-452C-A2E7-981E6C270ED6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

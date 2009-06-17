@@ -17,7 +17,7 @@
 	processes. This is typically done using only a handful of constructs, many 
 	of which are shared between different process languages, albeit 
 	with different concrete syntax. These common constructs are explained 
-	further in Section~\ref{common_constructs}. Some of the more prominent 
+	further in Section~\ref{sec:common_constructs}. Some of the more prominent 
 	process languages today include Calculus of Communicating Systems (CCS), 
 	Communicating Sequential Processes (CSP), $\pi$-calculus and Kernel Language 
 	for Agents Interaction and Mobility (KLAIM).
@@ -344,6 +344,9 @@
 	explanation of that process is outside the scope of this paper, but detailed
 	information can be found in \TODO{NEEDREF}.
 	
+\begin{figure}
+\label{fig:cil}
+\caption{C\# Hello World along with its CIL representation}
 \lstset{language=CSharp}
 \lstset{commentstyle=\textit}
 \begin{lstlisting}[frame=trbl]
@@ -371,4 +374,4 @@ namespace CodeGenDemo {
     IL_0013:  ret
   } // end of method Program::Main
 \end{lstlisting}
-  
+\end{figure}
