@@ -204,19 +204,21 @@
 	modifying those structures. A visitor interface contains one \textsf{Visit} 
 	method for each of the classes in the object structure, each class in the 
 	object structure then contains an \textsf{Accept} method that takes the 
-	visitor interface as a parameter and does nothing 
-	except call the visitor's \textsf{Visit} method with itself as a parameter. 
-  This technique, calling the objects \textsf{Visit} methods that immediately
-  calls the visitors \textsf{Accept} methods is known as \textit{double 
-  dispatch}. This essentially mimics virtual method overloading, but the added
-  benefit is that the methods can be defined outside the object structure, 
-  making it easy to plug in different implementations of the visitor as needed.
-  The visitor class can then contain different implementations of traversing
-  the object structure while calling the \textsf{Accept} method on each of its 
-  nodes. A more detailed explanation of the \textit{Visitor} pattern and its 
-	benefits can be found in \cite{design_patterns, visitor}.
-
-	\begin{lstlisting}[caption=Examples of Visit and Accept methods]
+	visitor interface as a parameter and does nothing except call the visitor's 
+	\textsf{Visit} method with itself as a parameter. An example of this is 
+	shown in Figure~\ref{fig:visitor_example}. This technique, calling the 
+	objects \textsf{Visit} methods that immediately calls the visitors 
+	\textsf{Accept} methods is known as \textit{double dispatch}. This 
+	essentially mimics virtual method overloading, but the added benefit is that 
+	the methods can be defined outside the object structure, making it easy to 
+	plug in different implementations of the visitor as needed. The visitor 
+	class can then contain different implementations of traversing the object 
+	structure while calling the \textsf{Accept} method on each of its nodes. A 
+	more detailed explanation of the \textit{Visitor} pattern and its benefits 
+	can be found in \cite{design_patterns, visitor}.
+	
+	\begin{figure}
+	\begin{csharp}
   
 //Each node in the tree contains this method
 public override void Accept(AbstractVisitor visitor) {
@@ -228,7 +230,10 @@ public override void Accept(AbstractVisitor visitor) {
 public override void Visit(ActionPrefix node) {
   //...process the ActionPrefix node here
 }
-\end{lstlisting}
+\end{csharp}
+\caption{Examples of Visit and Accept methods}
+\label{fig:visitor_example}
+	\end{figure}
   
   The PLR contains an \textsf{AbstractVisitor} class which is the base class
   of all visitor implementations. This was implemented as an abstract class
@@ -278,7 +283,7 @@ public override void Visit(ActionPrefix node) {
   itself, all code for a particular format is kept in one place and formatter
   classes do not need to implement tree traversal algorithms themselves.
 
-	Listing~\ref{lst:expression_folder} shows another example of how the 
+	Figure~\ref{fig:expression_folder} shows another example of how the 
 	\textit{Visitor} pattern can be useful. It is a class that takes binary 
 	expressions that contain constants on both the left and right hand side, 
 	calculates their results and replaces the \textsf{ArithmeticBinOpExpression} 
@@ -303,7 +308,8 @@ public override void Visit(ActionPrefix node) {
 	be used to implement classes that alter the syntax tree with a minimal 
 	amount of code).
 	
-	\begin{lstlisting}[caption=Expression folder implemented using Visitor pattern, label=lst:expression_folder]
+	\begin{figure}[h!]
+	\begin{csharp}
 class ExpressionFolder : AbstractVisitor{
 
   public override void Visit(ArithmeticBinOpExpression exp) {
@@ -326,7 +332,9 @@ class ExpressionFolder : AbstractVisitor{
     }
   }
 }
-\end{lstlisting}
+\end{csharp}
+\caption{Expression folder implemented using Visitor pattern} \label{fig:expression_folder}
+\end{figure}
 
 \subsection{Extensibility}
 	
@@ -475,7 +483,7 @@ class ExpressionFolder : AbstractVisitor{
 		\textsf{MarkSequencePoint} method on an \textsf{ILGenerator} object, the 
 		methods parameters are an instance of \textsf{ISymbolDocumentWriter} and 
 		four integers, startLine, startColumn, endLine and endColumn. 
-		Listing~\ref{lst:sequence_points} shows a few lines of CIL bytecode 
+		Figure~\ref{fig:sequence_points} shows a few lines of CIL bytecode 
 		interspersed with sequence points. (Note: the CIL file format does not 
 		store sequence points in exactly this manner, the figure is simply meant 
 		to clarify the concept). It is worth noting that the CIL has no notion of 
@@ -500,7 +508,7 @@ class ExpressionFolder : AbstractVisitor{
  	emit a sequence point before every \textit{action} taken by a process.
 
 	\begin{figure}
-	\begin{lstlisting}[caption=CIL bytecode with sequence points, label=lst:sequence_points] 
+	\begin{cil} 
 .method private hidebysig static void  Main() cil managed
 {
   .entrypoint
@@ -520,7 +528,9 @@ class ExpressionFolder : AbstractVisitor{
   IL_0014:  nop
   IL_0015:  ret
 } // end of method Program::Main
-  \end{lstlisting}
+  \end{cil}
+  \caption{CIL bytecode with sequence points}
+  \label{fig:sequence_points}
 	\end{figure}
 	
 \section{Runtime Library}
@@ -632,12 +642,13 @@ class ExpressionFolder : AbstractVisitor{
 	choice who were not chosen. Once the scheduler has finished one such round 
 	it again waits until all the processes it woke up are again suspended and 
 	then chooses the next action to execute, and so on. 
-	Listing~\ref{lst:scheduler} shows the workings of the scheduler in 
+	Figure~\ref{fig:scheduler} shows the workings of the scheduler in 
 	pseudocode. Other responsibilities of the scheduler are thread locking and 
 	synchronization, and keeping track of the \textit{trace}, that is the list 
 	of actions executed during the duration of the program.
 	 
-	\begin{lstlisting}[caption=The scheduler algorithm, label=lst:scheduler]
+	\begin{figure}
+	\begin{code}
 // active_procs contains all the running processes
 
 do forever:
@@ -674,7 +685,10 @@ do forever:
       kill processes that were not selected 
         in non deterministic choice
 	
-	\end{lstlisting}
+	\end{code}
+	\caption{The scheduler algorithm}
+	\label{fig:scheduler}
+	\end{figure}
 	
 
 \section{CIL Structure of a Process Language Application}\label{cil_structure}

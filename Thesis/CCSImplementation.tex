@@ -95,8 +95,6 @@
 
 
 \begin{figure}[t!]
-\label{fig:ccs_sos}
-\caption{CCS structural operational semantics}
 \begin{ARRAY}{c}
 %%Out
 	\mathrm{ACT}\ \ \ \Inference{                              }
@@ -117,6 +115,7 @@
 	                             {K \infarrow{\alpha} P'}\ \ \mathrm{where}\ K \defeq P
 
 \end{ARRAY}
+\caption{CCS structural operational semantics}\label{fig:ccs_sos}
 \end{figure}
 
 \section{Value passing CCS}\label{ccs_value_syntax}
@@ -182,9 +181,7 @@
 	The structural operational semantics for these additions to the language are given in Figure~\ref{fig:ccs_value_pass_sos}.	
 
 \begin{figure}[t]
-	\label{fig:ccs_value_pass_sos}
-	\caption{Value-passing CCS structural operational semantics}
-
+	
 	\begin{ARRAY}{c}
 		\mathrm{INP}\ \ \ \Inference{                              }
 	                            {a(x).P \infarrow{a(n)} P[n/x]} \vspace{10pt}\\
@@ -199,6 +196,7 @@
 	 {\mathrm{A}(e_1,...,e_n)\infarrow{\alpha}P'}\ \mathrm{A}(x_1,...,x_n) \defeq P\ \mathrm{and\ each}\ e_i\ \mathrm{has\ value}\ v_i\vspace{10pt}\\
 	                            
 	\end{ARRAY}
+	\caption{Value-passing CCS structural operational semantics}\label{fig:ccs_value_pass_sos}	
 \end{figure}
 
 
@@ -245,11 +243,8 @@
 	\end{itemize}
 	
 	\begin{figure}
-	\label{fig:ccs_terminals}
-	\caption{Terminals of CCS scanner}
 	
-\lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[frame=trbl,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
+\begin{code}
   PROCNAME   = [A-Z][A-Za-z0-9]*
   LCASEIDENT = [a-z][A-Za-z0-9]*
   CLASSNAME  = [A-Z][A-Za-z0-9]*(\\.[A-Z][A-Za-z0-9]*)*
@@ -257,14 +252,13 @@
   METHOD     = :[a-zA-Z][A-Za-z0-9]*
   NUMBER     = [0-9]+
   STRING     = "[^"]*"'
-  \end{lstlisting}
+  \end{code}
+  \caption{Terminals of CCS scanner}
+  \label{fig:ccs_terminals}  
 	\end{figure}
 	
 	\begin{figure}
-	\label{fig:ccs_ebnf}
-	\caption{EBNF Productions of CCS parser}
-\lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[frame=trbl,,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
+\begin{code}
 CCS = { ClassImport } ProcessDefinition { ProcessDefinition } 
 
 ClassImport = "use" CLASSNAME 
@@ -336,7 +330,8 @@ UnaryMinusTerm =
     | "false"
     | LCASEIDENT
   )
-	\end{lstlisting}
+	\end{code}
+	\caption{EBNF Productions of CCS parser}\label{fig:ccs_ebnf}
 	\end{figure}
 	
 \subsection{Extensions to CCS syntax}
@@ -398,7 +393,7 @@ UnaryMinusTerm =
 
   To get a better understanding of what CCS can be used for and how all the 
   parts discussed previously fit together we now look at a larger example. 
-  Figures~\ref{fig:atm_system1} and 5.6 show a model %Crap, numbering is fucked for some reason, must change if figures change!!!
+  Figures~\ref{fig:atm_system1} and \ref{fig:atm_system2} show a model 
   of an automatic teller machine, an ATM. The example is written in CCS source 
   code which is slightly different from the formal CCS syntax used in the 
   previous examples. The main differences is that output on channels is 
@@ -415,11 +410,7 @@ UnaryMinusTerm =
   
   
 \begin{figure}[b!]
-\label{fig:atm_system1}
-\caption{ATM system example in CCS, part 1}
-\lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[frame=trbl,basicstyle=\footnotesize\ttfamily,showtabs=false,showspaces=false]
-
+\begin{ccs}
 use PLR.Runtime.BuiltIns
 use Bank.Functions
 
@@ -450,15 +441,12 @@ Customer(cardnr, pinnr, amount) =
       wrongpin . card . :Print("Wrong pin number") . 0
    )
 
-\end{lstlisting}
+\end{ccs}
+\caption{ATM system example in CCS, part 1}\label{fig:atm_system1}
 \end{figure}	
 
 \begin{figure}[t!]
-\label{fig:atm_system2}
-\caption{ATM system example in CCS, part 2}
-\lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[frame=trbl,language=klaim,basicstyle=\footnotesize\ttfamily,showtabs=false,showspaces=false]
-
+\begin{ccs}
 UI = card(cardnr) . pin(pinnr) . _checkpin_(cardnr,pinnr) .
      (
         validpin . withdraw(amount) . _checkavailablecash_(amount) .
@@ -507,7 +495,9 @@ Accounts = accwithdraw(account, amount)
               _accnotenoughbalance_ . Accounts
               
               
-\end{lstlisting}
+\end{ccs}
+\caption{ATM system example in CCS, part 2}
+\label{fig:atm_system2}
 \end{figure}	
 
   \begin{itemize}

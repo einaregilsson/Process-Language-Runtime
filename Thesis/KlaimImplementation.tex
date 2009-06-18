@@ -612,23 +612,17 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	\end{itemize}
 	
 \begin{figure}
-\label{fig:klaimterminals}
-\caption{Terminals of KLAIM scanner}
-\lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[frame=trbl,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
+\begin{code}
   LOCALITY   = [A-Z][A-Za-z0-9]*
   VARIABLE   = [a-z][A-Za-z0-9]*
   VARBINDING = ![a-z][A-Za-z0-9]*
   NUMBER     = [0-9]+
-  \end{lstlisting}
+\end{code}
+	\caption{Terminals of KLAIM scanner}\label{fig:klaimterminals}
 	\end{figure}
 	
-	\begin{figure}
-	\label{fig:klaim_ebnf}
-	\caption{EBNF Productions of KLAIM}
-\lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[frame=trbl,label=lst:klaim_ebnf,basicstyle=\scriptsize\ttfamily,showtabs=false,showspaces=false]
-
+\begin{figure}
+\begin{code}
 KLAIM = 
   LocatedItem { "||" LocatedItem }                
 
@@ -690,17 +684,15 @@ UnaryMinusTerm =
     VARIABLE 
   )
 
-	\end{lstlisting}
+	\end{code}
+	\caption{EBNF Productions of KLAIM}
+	\label{fig:klaim_ebnf}
 	\end{figure}
 
 
 \section{KLAIM invoice system example}
 \begin{figure}
-\label{fig:invoice_system}
-\caption{Invoice system example in KLAIM}
-\lstset{showtabs=false,showspaces=false,showstringspaces=false}
-\begin{lstlisting}[frame=trbl,language=klaim,basicstyle=\footnotesize\ttfamily,showtabs=false,showspaces=false]
-  
+\begin{klaim}  
    Inbox :: <Incoming, Paper, OfficeSupplies, 200, John>
 || Inbox :: <Incoming, Printer, OfficeSupplies, 500, John>  
 || Inbox :: <Incoming, Textbooks, BookShack, 100, Alice>  
@@ -737,7 +729,8 @@ UnaryMinusTerm =
               . in(person, !budget)@Budget 
               . out(person, budget - amount)@Budget
               . out(Paid, item, vendor, amount, John)@Ledger
-	\end{lstlisting}           
+	\end{klaim}           
+	\caption{Invoice system example in KLAIM}\label{fig:invoice_system}
   \end{figure}
 
 	The preceding sections in this chapter have only presented small snippets of 

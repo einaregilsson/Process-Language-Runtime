@@ -155,7 +155,10 @@
 	channels has a corresponding process outputting on it that the choosing 
 	process can synchronize with. There is no guarantee that the probability 
 	between choices is fair, a recursive process might choose \channel{a} every
-	time, or might make each choice exactly 33\% of the time.
+	time, or might make each choice exactly 33\% of the time. An important thing 
+	to notice is that different paths in a process language are never joined 
+	again. That is to say that the control flow graph for process languages is 
+	always a tree.
 		
 	\begin{Exa}\label{ex:non_determinism}
 	\begin{align*}
@@ -196,6 +199,28 @@
 	\end{align*}	
 	\end{Exa}
 	
+	One final thing that is important about both re-labelling and restriction is 
+	that they keep applying to the process even as it invokes another process. 
+	In Example~\ref{ex:keeprestricts} we see a process $Proc$ that relabels the 
+	$a$ channel to $b$. It eventually turns into the $AnotherProc$ process. The 
+	re-labelling of $a$ to $b$ \textbf{still applies} to $AnotherProc$ and any 
+	processes it might subsequently turn into. A process turning into another 
+	process is essentially the same as substituting the process itself for the 
+	process constant name. Following that rule we see that the process $Proc$ in 
+	Example~\ref{ex:keeprestricts} could also be written as $\mathrm{Proc} 
+	\defeq (a \ccsdot (a \ccsdot 0))[b/a]$ and there it is obvious why the 
+	re-labelling applies to the invoked process.
+  
+	\begin{Exa}\label{ex:keeprestricts}
+	\begin{align*}
+			\mathrm{Proc} \defeq & (a \ccsdot AnotherProc)[b/a]  \\
+			\mathrm{AnotherProc} \defeq & (a \ccsdot 0)  \\
+	\end{align*}	
+	\end{Exa}
+	
+	These were the main process language constructs, there are others that are 
+	not as common which will not be explained here. Some of them are however 
+	considered in Section~\ref{sec:further} about further work.
 	
 \section{The .NET Framework}
 
@@ -312,8 +337,9 @@
 	The CLR executes programs that have been compiled to the Common Intermediate 
 	Language (CIL) format. It is a stack based virtual machine, which means it 
 	has an evaluation stack where the CIL bytecodes are evaluated. An 
-	illustrative snippet of C\# code and it's corresponding CIL is shown in 
-	Figure \ref{fig:cil}. The CIL bytecodes generally fall into four categories:
+	illustrative snippet of C\# code and its corresponding CIL is shown in 
+	Figures~\ref{fig:csharp_hello_world} and \ref{fig:helloworld_il}. The CIL 
+	bytecodes generally fall into four categories:
 		
 	\begin{enumerate}
 		\item \textbf{Load items onto the stack}. These include bytecodes to load
@@ -322,9 +348,9 @@
 		one argument each, the item to be loaded onto the stack.
 		
 		\item \textbf{Store stack items into variables/fields}. These bytecodes 
-		take the top item on the stack and store it in a local variable, global 
-		variable or class member variable. They take one argument, which is a 
-		reference to the variable to store in.
+		take the top item on the stack and store it in a local, global or class 
+		member variable. They take one argument, which is a reference to the 
+		variable to store in.
 		
 		\item \textbf{Call functions}. These take an argument, that is a reference 
 		to the function to call, and then call it with the parameters that are 
@@ -341,15 +367,11 @@
 	At the time of execution, the CLR generates native code for the particular 
 	machine architecture that it is running on from the CIL bytecodes, this is 
 	referred to as Just-in-time compiling, or JIT compiling. A more detailed 
-	explanation of that process is outside the scope of this paper, but detailed
-	information can be found in \TODO{NEEDREF}.
+	explanation of that process is outside the scope of this paper, but an 
+	overview can be found in \cite{jit}.
 	
-\begin{figure}
-\label{fig:cil}
-\caption{C\# Hello World along with its CIL representation}
-\lstset{language=CSharp}
-\lstset{commentstyle=\textit}
-\begin{lstlisting}[frame=trbl]
+\begin{figure}[ht!]
+\begin{csharp}
 using System;
 namespace CodeGenDemo {
     class Program {
@@ -358,8 +380,12 @@ namespace CodeGenDemo {
         }
     }
 }
+\end{csharp}
+\caption{C\# Hello World program}\label{fig:csharp_hello_world}
+\end{figure}
 
--------------------------------------------------
+\begin{figure}[ht!]
+\begin{cil}
 .class private auto ansi beforefieldinit CodeGenDemo.Program
        extends [mscorlib]System.Object
 {
@@ -370,8 +396,11 @@ namespace CodeGenDemo {
     .maxstack  8
     IL_0000:  nop
     IL_0001:  ldstr      "Hello world"
-    IL_0006:  call       void [mscorlib]System.Console::WriteLine(string)
+    IL_0006:  call       void [mscorlib]System.Console
+                         ::WriteLine(string)
     IL_0013:  ret
   } // end of method Program::Main
-\end{lstlisting}
+\end{cil}
+
+\caption{C\# Hello World program compiled to CIL}\label{fig:helloworld_il}
 \end{figure}

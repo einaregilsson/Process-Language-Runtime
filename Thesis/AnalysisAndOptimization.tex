@@ -153,18 +153,16 @@
   of the process types in the PLR syntax tree.
   
 	\begin{figure}[h!]
-	\label{fig:read_assigned}
-	\caption{Examples of the \textit{read} and \textit{assigned} functions}
 	\begin{ARRAY}{r l l}
   assigned(\mathrm{channel}(x,y)) & = & \{x,y\} \vspace{5pt}\\
   read(\overline{(\mathrm{channel}(z+1,a-b)}) & = & \{z,a,b\} \vspace{5pt}\\
   read(x+1/z) & = & \{x,z\} \\
 	\end{ARRAY}
+	\caption{Examples of the \textit{read} and \textit{assigned} functions}\label{fig:read_assigned}
 	\end{figure}
   
   \begin{figure}[ht!]
-  \label{fig:killgen_livevariables}
-  \caption{\textit{Kill} and \textit{Gen} functions for Live Variables}
+  
   \begin{ARRAY}{r l l}
   		
   		Kill(a.P) & = & assigned(a) \\
@@ -192,6 +190,7 @@
 
   
   \end{ARRAY} 
+\caption{\textit{Kill} and \textit{Gen} functions for Live Variables}\label{fig:killgen_livevariables}  
   \end{figure}
   
   The actual implementation of the \textit{assigned()} and \textit{read()} 
@@ -312,8 +311,6 @@
 	$a$ to the set. 
 	
   \begin{figure}[ht!]
-  \label{fig:killgen_reachingdefinitions}
-  \caption{\textit{Kill} and \textit{Gen} functions for Reaching Definitions}
   \begin{ARRAY}{r l l}
   		
   		Kill(a.P) & = & named(assigned(a)) \\
@@ -340,7 +337,8 @@
       Gen(K(exp_1,...,exp_n)) & = & \emptyset\\
 
   
-  \end{ARRAY} 
+  \end{ARRAY}
+  \caption{\textit{Kill} and \textit{Gen} functions for Reaching Definitions}\label{fig:killgen_reachingdefinitions}
   \end{figure}
 
 	The implementation of Reaching Definitions is similar to that of Live 
@@ -378,7 +376,7 @@
 	expressions can be computed at compile time, unless some constant 
 	propagation is also performed, but it is nevertheless useful to compute 
 	those simple ones that can. The implementation is simple (and was partially 
-	shown in Listing~\ref{lst:expression_folder}), simply subclass an 
+	shown in Figure~\ref{fig:expression_folder}), simply subclass an 
 	\textsf{AbstractVisitor} and override a \textsf{Visit} method for each of 
 	the binary expression nodes (arithmetic, relational and logical). Check if 
 	both the left and right childnodes are constants, if they are then 
