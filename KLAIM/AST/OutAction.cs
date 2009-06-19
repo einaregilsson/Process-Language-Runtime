@@ -9,6 +9,7 @@
  ﻿using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using System.Text.RegularExpressions;
 using PLR.AST.Actions;
 using PLR.AST.Expressions;
@@ -26,6 +27,33 @@ namespace KLAIM.AST {
             visitor.Visit(this);
         }
 
+        private void CompileOutAtScreen(CompileContext context) {
+            ILGenerator il = context.ILGenerator;
+            LocalBuilder builder = il.DeclareLocal(typeof(StringBuilder));
+            il.Emit(OpCodes.Newobj, typeof(StringBuilder).GetConstructor(new Type[] { }));
+            il.Emit(OpCodes.Stloc, builder);
+            
+            for (int i = 1; i < this.ChildNodes.Count;i++ ) {
+                Node node = this.ChildNodes[i];
+                il.Emit(OpCodes.Ldloc, builder);
+                node.Compile(context);
+                if (node is ArithmeticExpression) {
+                    il.Emit(OpCodes.Box, typeof(int));
+                }
+                il.Emit(OpCodes.Call, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(object) }));
+
+                if (i != ChildNodes.Count - 1) {
+                    il.Emit(OpCodes.Ldloc, builder);
+                    il.Emit(OpCodes.Ldstr, ", ");
+                    il.Emit(OpCodes.Call, typeof(StringBuilder).GetMethod("Append", new Type[] { typeof(string) }));
+                }
+            }
+
+            il.Emit(OpCodes.Ldloc, builder);
+            il.Emit(OpCodes.Call, typeof(StringBuilder).GetMethod("ToString", new Type[]{}));
+            il.Emit(OpCodes.Call, typeof(System.Console).GetMethod("WriteLine", new Type[] { typeof(string) }));
+        }
+
         public override void Compile(CompileContext context) {
             Type procType = typeof(ProcessBase);
             ILGenerator il = context.ILGenerator;
@@ -41,6 +69,11 @@ namespace KLAIM.AST {
 
             //..and here we actually do something...
             context.MarkSequencePoint(this.LexicalInfo);
+
+            if (this.At is PLRString && ((PLRString)this.At).Value == "Screen") {
+                CompileOutAtScreen(context);
+                return;
+            }
 
             LocalBuilder loc = il.DeclareLocal(typeof(Locality));
             LocalBuilder arr = il.DeclareLocal(typeof(object[]));
@@ -68,7 +101,7 @@ namespace KLAIM.AST {
                 }
                 il.Emit(OpCodes.Stelem_Ref);
             }
-
+            
             //Create the Tuple from the array
             LocalBuilder tuple = il.DeclareLocal(typeof(Tuple));
             il.Emit(OpCodes.Ldloc, arr);

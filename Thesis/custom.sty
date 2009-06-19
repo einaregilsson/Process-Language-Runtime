@@ -50,7 +50,21 @@
 
 \lstnewenvironment{cil}{ \lstset{basicstyle=\scriptsize\ttfamily} }{}
 \lstnewenvironment{csharp} { \lstset{language=CSharp} }{}
-\lstnewenvironment{code} { \lstset{basicstyle=\scriptsize\ttfamily} }{}
+\lstnewenvironment{codeblock} { \lstset{basicstyle=\scriptsize\ttfamily} }{}
 \lstnewenvironment{ccs} { \lstset{basicstyle=\footnotesize\ttfamily} }{}
 \lstnewenvironment{klaim} { \lstset{language=klaim,basicstyle=\footnotesize\ttfamily} }{}
 \lstnewenvironment{xml} {\lstset{language=xml,basicstyle=\footnotesize} }{}
+
+%Special words inside paragraphs
+
+%CCS commands
+\newcommand{\defeq}{\ \stackrel{\mathrm{def}}{=}\ }
+\newcommand{\out}[1]{\overline{#1}}
+\newcommand{\method}[1]{\textsf{#1}}
+\newcommand{\paral}{\ |\ }
+\newcommand{\ccsdot}{\ \textbf{.}\ }
+\newcommand{\proc}[1]{\textsf{#1}}
+\newcommand{\channel}[1]{\textsf{#1}}
+
+\newcommand{\code}[1]{\textsf{#1}}
+

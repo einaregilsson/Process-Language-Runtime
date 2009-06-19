@@ -15,7 +15,6 @@ namespace PLR.Runtime {
         public static bool RestrictAll(IAction action) {
             return true;
         }
-
         public static void Print(object s) {
             Console.WriteLine(s);
         }
@@ -24,7 +23,13 @@ namespace PLR.Runtime {
         public static int Rand(int max) {
             return _rand.Next(max);
         }
-        public static int GetFive() { return 5; }
+
+        public static bool Prob(int percent) {
+            if (percent < 1 || percent > 100) {
+                throw new ArgumentException("Must be between 1 and 99", "percent");
+            }
+            return _rand.Next(1, 101) <= percent;
+        }
 
         public static void Println(string s, int a) {
             Console.WriteLine(s + a);

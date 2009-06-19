@@ -65,6 +65,10 @@ namespace PLR.AST {
             AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(name, AssemblyBuilderAccess.Save, folder);
             ModuleBuilder module = assembly.DefineDynamicModule(options.OutputFile, filename, options.Debug);
             if (options.EmbedPLR) {
+                EmbedAssembly(Assembly.GetExecutingAssembly());
+            }
+            
+            if (_embeddedAssemblies.Count > 0) {
                 GenerateAssemblyLookup(module);
             }
 
@@ -159,9 +163,26 @@ namespace PLR.AST {
             }
         }
 
+        private List<Assembly> _embeddedAssemblies = new List<Assembly>();
+        public void EmbedAssembly(Assembly ass) {
+            if (!_embeddedAssemblies.Contains(ass)) {
+                _embeddedAssemblies.Add(ass);
+            }
+        }
+
         private void GenerateAssemblyLookup(ModuleBuilder module) {
-            File.Copy("plr.dll", "plr.dll.embed", true);
-            module.DefineManifestResource("PLR", new FileStream(@"plr.dll.embed", FileMode.Open), ResourceAttributes.Public);
+            if (_embeddedAssemblies.Count == 0) {
+                return;
+            }
+            foreach (Assembly ass in _embeddedAssemblies) {
+                string shortname = ass.FullName.Substring(0, ass.FullName.IndexOf(","));
+                string tempfile = Path.GetTempFileName();
+                File.Copy(new Uri(ass.EscapedCodeBase).LocalPath, tempfile, true);
+                MemoryStream ms = new MemoryStream(File.ReadAllBytes(tempfile));
+                ms.Seek(0, SeekOrigin.Begin);
+                module.DefineManifestResource(shortname, ms, ResourceAttributes.Public);
+                File.Delete(tempfile);
+            }
 
             MethodBuilder resolveAssemblyMethod = module.DefineGlobalMethod("ResolveAssembly", MethodAttributes.Public | MethodAttributes.Static, typeof(Assembly), new Type[] { typeof(object), typeof(System.ResolveEventArgs) });
             ILGenerator ilResolve = resolveAssemblyMethod.GetILGenerator();
@@ -169,9 +190,31 @@ namespace PLR.AST {
             resolvecontext.PushIL(ilResolve);
             LocalBuilder localStream = ilResolve.DeclareLocal(typeof(Stream));
             LocalBuilder localBuf = ilResolve.DeclareLocal(typeof(byte[]));
-            ilResolve.EmitWriteLine("PLR Not found, loading embedded PLR");
-            Assign(localStream, Call(Call(typeof(Assembly), "GetExecutingAssembly", false), "GetManifestResourceStream", false, "PLR"), resolvecontext);
+            LocalBuilder localName = ilResolve.DeclareLocal(typeof(string));
 
+            ilResolve.Emit(OpCodes.Ldarg_1);
+            ilResolve.Emit(OpCodes.Call, typeof(ResolveEventArgs).GetMethod("get_Name"));
+            ilResolve.Emit(OpCodes.Stloc, localName);
+
+            ilResolve.Emit(OpCodes.Ldloc, localName);
+            ilResolve.Emit(OpCodes.Ldc_I4_0);
+            ilResolve.Emit(OpCodes.Ldloc, localName);
+            ilResolve.Emit(OpCodes.Ldstr, ",");
+            ilResolve.Emit(OpCodes.Call, typeof(string).GetMethod("IndexOf", new Type[] { typeof(string) }));
+            ilResolve.Emit(OpCodes.Call, typeof(string).GetMethod("Substring", new Type[] { typeof(int), typeof(int) }));
+            ilResolve.Emit(OpCodes.Stloc, localName);
+
+            Assign(localStream, Call(Call(typeof(Assembly), "GetExecutingAssembly", false), "GetManifestResourceStream", false, localName), resolvecontext);
+
+            Label notNull = ilResolve.DefineLabel();
+            ilResolve.Emit(OpCodes.Ldloc, localStream);
+            ilResolve.Emit(OpCodes.Brtrue, notNull);
+            {
+                //Not found, just return null
+                ilResolve.Emit(OpCodes.Ldnull);
+                ilResolve.Emit(OpCodes.Ret);
+            }
+            ilResolve.MarkLabel(notNull);
             Call(localStream, "get_Length", false).Compile(resolvecontext);
             ilResolve.Emit(OpCodes.Conv_Ovf_I);
             ilResolve.Emit(OpCodes.Newarr, typeof(System.Byte));
@@ -184,10 +227,17 @@ namespace PLR.AST {
             ilResolve.Emit(OpCodes.Ldlen);
             ilResolve.Emit(OpCodes.Conv_I4);
             ilResolve.Emit(OpCodes.Callvirt, typeof(Stream).GetMethod("Read", new Type[] { typeof(byte[]), typeof(int), typeof(int) }));
+            ilResolve.Emit(OpCodes.Pop);
+
+            //Notify that we loaded this embedded...
+            ilResolve.Emit(OpCodes.Ldarg_1);
+            ilResolve.Emit(OpCodes.Call, typeof(ResolveEventArgs).GetMethod("get_Name"));
+            ilResolve.Emit(OpCodes.Ldstr, " was not found externally, loading embedded version...");
+            ilResolve.Emit(OpCodes.Call, typeof(string).GetMethod("Concat", new Type[] { typeof(string), typeof(string) }));
+            ilResolve.Emit(OpCodes.Call, typeof(System.Console).GetMethod("WriteLine", new Type[] { typeof(string) }));
 
             Call(typeof(Assembly), "Load", false, localBuf).Compile(resolvecontext);
             ilResolve.Emit(OpCodes.Ret);
-            ilResolve.Emit(OpCodes.Pop);
             resolvecontext.PopIL();
 
             MethodBuilder moduleInitializer = module.DefineGlobalMethod(".cctor", MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.RTSpecialName, null, new Type[] { });

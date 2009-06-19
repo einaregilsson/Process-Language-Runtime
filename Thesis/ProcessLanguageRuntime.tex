@@ -59,7 +59,7 @@
 
 	The PLR abstract syntax tree is the component that generates CIL 
 	bytecode to run a process language application. Once an abstract syntax tree 
-	has been constructed, a call to a \method{Compile} method on the tree's root 
+	has been constructed, a call to a \code{Compile} method on the tree's root 
 	node with the appropriate parameters will create an executable .NET 
 	assembly. 
 
@@ -70,69 +70,69 @@
 	that data. As such, each node in the abstract syntax tree knows how to 
 	compile itself, there is no compiler class, the whole syntax tree is the 
 	compiler. Every node in the syntax tree inherits from an abstract 
-	\textsf{Node} base class which has an abstract \textsf{Compile} 
-	method. Concrete node classes override the \method{Compile} method and in it 
+	\code{Node} base class which has an abstract \code{Compile} 
+	method. Concrete node classes override the \code{Compile} method and in it 
 	emit the appropriate byte codes for the language construct that the node 
 	represents. 
 	
-	The compilation itself is recursive, calling the \method{Compile} method 
-	on the root node of the tree will cause it to call the \method{Compile} 
-	method of its child nodes, who in turn call \method{Compile} on their child 
+	The compilation itself is recursive, calling the \code{Compile} method 
+	on the root node of the tree will cause it to call the \code{Compile} 
+	method of its child nodes, who in turn call \code{Compile} on their child 
 	nodes and thus the compilation propagates throughout the entire tree. The 
 	reason for choosing this architecture was to make the syntax tree easily 
 	extendable by language implementors, who can add new nodes to represent new 
 	constructs. 
 	
-	Concrete nodes typically do not inherit directly from the \textsf{Node} base 
+	Concrete nodes typically do not inherit directly from the \code{Node} base 
 	class, instead they inherit from one of five intermediate classes, 
-	\textsf{Action}, \textsf{Process}, \textsf{Expression}, 
-	\textsf{ActionRestrictions} or \textsf{PreProcessActions}. Below is a short 
+	\code{Action}, \code{Process}, \code{Expression}, 
+	\code{ActionRestrictions} or \code{PreProcessActions}. Below is a short 
 	overview of what each of these classes represents.
 	
-	\textbf{Action} represents an action taken by the 
+	\code{Action} represents an action taken by the 
 	process. This can for instance be sending on a channel, receiving on a 
 	channel or calling an arbitrary method. Concrete descendants of this class 
 	typically have either no child nodes of their own, or a list of 
-	\textsf{Expression} nodes, representing parameters to a method call or 
+	\code{Expression} nodes, representing parameters to a method call or 
 	values passed through a channel.
 
-	\textbf{Process} is the base class for processes. Its descendants include an 
-	\textsf{ActionPrefix} class, a \textsf{NonDeterministicChoice} class and a 
-	\textsf{ParallelComposition} class. Implementing a new language construct 
+	\code{Process} is the base class for processes. Its descendants include an 
+	\code{ActionPrefix} class, a \code{NonDeterministicChoice} class and a 
+	\code{ParallelComposition} class. Implementing a new language construct 
 	such as replication could be done be creating a new descendant of this 
-	class. Child nodes of \textsf{Process} classes vary, the 
-	\textsf{ActionPrefix} class for example has one \textsf{Action} child node 
-	representing the action about to be performed and one \textsf{Process} child 
+	class. Child nodes of \code{Process} classes vary, the 
+	\code{ActionPrefix} class for example has one \code{Action} child node 
+	representing the action about to be performed and one \code{Process} child 
 	node representing the process that the current process turns into after 
 	performing the action. Processes that are a composition of other processes 
-	such as \textsf{ParallelComposition} and \textsf{NonDeterministicChoice} 
-	have a list of other \textsf{Process} instances as childnodes.
+	such as \code{ParallelComposition} and \code{NonDeterministicChoice} 
+	have a list of other \code{Process} instances as childnodes.
 	
 	\textbf{Expression} represents an expression such as an arithmetic 
 	expression, numeric or string constant, a method call or the value of a 
 	variable.	Expressions compile in such a way that once they have been 
 	evaluated a single value, the result of the expression, is at the top of the 
 	evaluation stack. This means that a node that has an expression as a child 
-	node can simply call the \method{Compile} method on the expression and then 
+	node can simply call the \code{Compile} method on the expression and then 
 	emit bytecodes that operate on its result, without caring whether the 
 	expression is a huge expression tree or a single constant value. An example 
-	of this is the \textsf{ArithmeticExpression} node. In its \textsf{Compile} 
-	method it first calls the \method{Compile} method of its left child, then 
-	its right child and then emits an \textsf{Add},\textsf{Sub},\textsf{Mul} or 
-	\textsf{Div} bytecode. The child nodes of \textsf{Expression} nodes are 
-	invariably \textsf{Expression} nodes themselves.
+	of this is the \code{ArithmeticExpression} node. In its \code{Compile} 
+	method it first calls the \code{Compile} method of its left child, then 
+	its right child and then emits an \code{Add},\code{Sub},\code{Mul} or 
+	\code{Div} bytecode. The child nodes of \code{Expression} nodes are 
+	invariably \code{Expression} nodes themselves.
 
  	\textbf{ActionRestrictions} represents a function that restricts actions 
  	within a process from synchronizing with other actions outside the process. 
  	This is an implementation of the \textit{restriction} process language 
  	construct described in Section~\ref{sec:common_constructs}. It currently has 
- 	two concrete descendants. One is \textsf{ChannelRestrictions} which 
+ 	two concrete descendants. One is \code{ChannelRestrictions} which 
  	restricts channels by name, provided that the names of channels to restrict 
- 	are known at compile time. The other is \textsf{CustomRestrictions}, that 
- 	calls a .NET method at runtime for every action and returns \textbf{true} it 
+ 	are known at compile time. The other is \code{CustomRestrictions}, that 
+ 	calls a .NET method at runtime for every action and returns \texttt{true} it 
  	it should be restricted. The method can be written in any language available 
  	for the .NET framework, the only requirements are that it takes an 
- 	\textsf{Action} object from the PLR runtime library as a parameter and 
+ 	\code{Action} object from the PLR runtime library as a parameter and 
  	returns a boolean value.
 	 
  	\textbf{PreProcessActions} represents a function that is called for every 
@@ -140,25 +140,25 @@
  	used to implement the \textit{re-labelling} process language construct 
  	described in Section~\ref{sec:common_constructs}. Simple re-labelling of 
  	channels with names known at compile time is done with a 
- 	\textsf{RelabelActions} class. It has the names to re-label as child nodes 
- 	and compiles down to a method that takes in an \textsf{Action} runtime class 
+ 	\code{RelabelActions} class. It has the names to re-label as child nodes 
+ 	and compiles down to a method that takes in an \code{Action} runtime class 
  	and performs simple string substitution on its name. More complicated 
  	pre-processing of actions can be achieved with another descendant class, 
- 	\textsf{CustomPreprocess}. That class compiles down to a method call to a 
- 	.NET method that takes an \textsf{Action} as a parameter and returns an 
- 	\textsf{Action} as well. This method can be written in any language 
+ 	\code{CustomPreprocess}. That class compiles down to a method call to a 
+ 	.NET method that takes an \code{Action} as a parameter and returns an 
+ 	\code{Action} as well. This method can be written in any language 
  	available for .NET.
  	
  	Besides all the descendant classes of those five main classes, there are a 
- 	few classes that inherit directly from the \textsf{Node} class. 
- 	\textsf{ProcessSystem} is the root node of the entire syntax tree and has a 
- 	more complicated \textsf{Compile} method than most other nodes, since it 
+ 	few classes that inherit directly from the \code{Node} class. 
+ 	\code{ProcessSystem} is the root node of the entire syntax tree and has a 
+ 	more complicated \code{Compile} method than most other nodes, since it 
  	takes care of setting up the necessary context for the compilation and 
  	creating the actual compiled file, giving it a name and so forth. 
- 	\textsf{ProcessDefinition} is a simple class that just has a 
- 	\textsf{Process} child node and a name for the process. Finally, 
- 	\textsf{ExpressionList} is a convenience class to hold a list of 
- 	\textsf{Expression} instances.
+ 	\code{ProcessDefinition} is a simple class that just has a 
+ 	\code{Process} child node and a name for the process. Finally, 
+ 	\code{ExpressionList} is a convenience class to hold a list of 
+ 	\code{Expression} instances.
  	
 	We now look at a simple example of a coffee machine, CM. The coffee machine 
 	accepts a coin as input, then outputs coffee and then makes a non 
@@ -180,8 +180,8 @@
 	boldface are the names of the node classes, while the text in 
 	parentheses shows properties of the nodes. Note that although this 
 	particular tree is strictly binary it does not mean that all PLR trees
-	are binary trees. \textsf{ProcessSystem}, \textsf{ParallelComposition} and 
-	\textsf{NonDeterministicChoice} nodes can all have 1-n child nodes.
+	are binary trees. \code{ProcessSystem}, \code{ParallelComposition} and 
+	\code{NonDeterministicChoice} nodes can all have 1-n child nodes.
 	
 	
 	\begin{figure}[h!]
@@ -201,20 +201,20 @@
 	makes use of the \textit{Visitor} design pattern. The pattern is a way of 
 	separating an algorithm from an object structure upon which it operates. As 
 	a result, new operations can be added to existing object structures without 
-	modifying those structures. A visitor interface contains one \textsf{Visit} 
+	modifying those structures. A visitor interface contains one \code{Visit} 
 	method for each of the classes in the object structure, each class in the 
-	object structure then contains an \textsf{Accept} method that takes the 
+	object structure then contains an \code{Accept} method that takes the 
 	visitor interface as a parameter and does nothing except call the visitor's 
-	\textsf{Visit} method with itself as a parameter. An example of this is 
+	\code{Visit} method with itself as a parameter. An example of this is 
 	shown in Figure~\ref{fig:visitor_example}. This technique, calling the 
-	objects \textsf{Visit} methods that immediately calls the visitors 
-	\textsf{Accept} methods is known as \textit{double dispatch}. This 
+	objects \code{Visit} methods that immediately calls the visitors 
+	\code{Accept} methods is known as \textit{double dispatch}. This 
 	essentially mimics virtual method overloading, but the added benefit is that 
 	the methods can be defined outside the object structure, making it easy to 
 	plug in different implementations of the visitor as needed. The visitor 
 	class can then contain different implementations of traversing the object 
-	structure while calling the \textsf{Accept} method on each of its nodes. A 
-	more detailed explanation of the \textit{Visitor} pattern and its benefits 
+	structure while calling the \code{Accept} method on each of its nodes. A 
+	more detailed explanation of the visitor pattern and its benefits 
 	can be found in \cite{design_patterns, visitor}.
 	
 	\begin{figure}
@@ -235,20 +235,20 @@ public override void Visit(ActionPrefix node) {
 \label{fig:visitor_example}
 	\end{figure}
   
-  The PLR contains an \textsf{AbstractVisitor} class which is the base class
+  The PLR contains an \code{AbstractVisitor} class which is the base class
   of all visitor implementations. This was implemented as an abstract class
   rather than an interface for convenience reasons; the 
-  \textsf{AbstractVisitor} provides empty implementations of the \textsf{Visit}
+  \code{AbstractVisitor} provides empty implementations of the \code{Visit}
   method for each of the nodes in the abstract syntax tree, subclasses only
-  need to override the \textsf{Visit} methods for nodes which they
+  need to override the \code{Visit} methods for nodes which they
   are interested in processing. Depth first traversal is a very common method
   of working with tree structures, to account for that common case the 
-  \textsf{AbstractVisitor} contains a \textsf{VisitRecursive(Node node)} 
+  \code{AbstractVisitor} contains a \code{VisitRecursive(Node node)} 
   method which performs a depth first recursive traversal of the tree, calling 
-  each nodes \textsf{Accept} method along the way. A  boolean property on the 
-  \textsf{AbstractVisitor} named \textsf{ChildNodesFirst} controls whether the 
-  parent or child nodes \textsf{Accept} methods are called first during the 
-  traversal.  
+  each nodes \code{Accept} method along the way. A  boolean property on the 
+  \code{AbstractVisitor} named \code{VisitParentBeforeChildren} controls 
+  whether the parent or child nodes \code{Accept} methods are called first 
+  during the traversal.  
   
   Process algebras are the subject of many academic papers, and it is likely 
   that future users of the PLR might be in the process of writing research 
@@ -259,14 +259,14 @@ public override void Visit(ActionPrefix node) {
   text representations of the syntax tree in different formats. 
   
   \begin{itemize}
-  	\item \textsf{BaseFormatter} generates unformatted process algebra text, 
+  	\item \code{BaseFormatter} generates unformatted process algebra text, 
   	using the common symbols for constructs like non deterministic choice and 
   	parallel composition. 
   	
-  	\item \textsf{LaTeXFormatter} generates LaTeX source, suitable for copying 
+  	\item \code{LaTeXFormatter} generates LaTeX source, suitable for copying 
   	directly into a LaTeX document.
   	
-  	\item \textsf{HTMLFormatter} generates HTML formatted text, suitable for 
+  	\item \code{HTMLFormatter} generates HTML formatted text, suitable for 
   	displaying on the web.
   \end{itemize}
   
@@ -277,36 +277,35 @@ public override void Visit(ActionPrefix node) {
   three aforementioned classes and overriding the formatting methods only for 
   those constructs whose syntax differs from CCS syntax.
   
-  The formatter classes are all implemented using the \textsf{Visitor} 
-  pattern. The benefits of the pattern here are obvious, it is easy to add new 
-  formats at a later date without having to alter anything in the syntax tree
-  itself, all code for a particular format is kept in one place and formatter
-  classes do not need to implement tree traversal algorithms themselves.
+  The formatter classes are all implemented using the visitor pattern. The 
+  benefits of the pattern here are obvious, it is easy to add new formats at a 
+  later date without having to alter anything in the syntax tree itself, all 
+  code for a particular format is kept in one place and formatter classes do 
+  not need to implement tree traversal algorithms themselves.
 
 	Figure~\ref{fig:expression_folder} shows another example of how the 
-	\textit{Visitor} pattern can be useful. It is a class that takes binary 
+	visitor pattern can be useful. It is a class that takes binary 
 	expressions that contain constants on both the left and right hand side, 
-	calculates their results and replaces the \textsf{ArithmeticBinOpExpression} 
-	node (which contains two child nodes) with a single \textsf{Number} node 
+	calculates their results and replaces the \code{ArithmeticBinOpExpression} 
+	node (which contains two child nodes) with a single \code{Number} node 
 	containing the result of the expression. The code listing shows the entire 
-	\textsf{ExpressionFolder} class, all it needs to do is inherit from 
-	\textsf{AbstractVisitor} and override the \textsf{Visit} method that takes 
-	\textsf{ArithmeticBinOpExpression} as a parameter. The visitor is executed 
+	\code{ExpressionFolder} class, all it needs to do is inherit from 
+	\code{AbstractVisitor} and override the \code{Visit} method that takes 
+	\code{ArithmeticBinOpExpression} as a parameter. The visitor is executed 
 	by calling \texttt{folder.VisitRecursive(tree)} where \texttt{folder} is an 
-	instance of \textsf{ExpressionFolder} and \texttt{tree} is any \textsf{Node} 
-	in the syntax tree, usually the root. Note that the folding 
-	only happens if both the left and right node are \textsf{Number} nodes, 
-	however, the fact that the tree is traversed depth first and child nodes are 
-	visited before parent nodes ensures that even deeply nested expressions
-	are folded as much as possible. The leafs are visited first and folded if 
-	possible, by the time the upper level nodes in the expression tree are 
-	visited they will have \textsf{Number} nodes as children where previously 
-	were \textsf{ArithmeticBinOpExpression} nodes, and thus they can be replaced 
+	instance of \code{ExpressionFolder} and \texttt{tree} is any \code{Node} 
+	in the syntax tree, usually the root. Note that the folding only happens if 
+	both the left and right node are \code{Number} nodes, however, the fact 
+	that the tree is traversed depth first and child nodes are visited before 
+	parent nodes ensures that even deeply nested expressions are folded as much 
+	as possible. The leafs are visited first and folded if possible, by the time 
+	the upper level nodes in the expression tree are visited they will have 
+	\code{Number} nodes as children where previously were
+	\code{ArithmeticBinOpExpression} nodes, and thus they can be replaced 
 	as well. (Of course this example is fairly contrived, it is hard to think of
 	a legitimate reason for writing down a large expression where all elements
-	are constants. It does however show how the \textsf{Visitor} pattern can
-	be used to implement classes that alter the syntax tree with a minimal 
-	amount of code).
+	are constants. It does however show how the visitor pattern can be used to 
+	implement classes that alter the syntax tree with a minimal amount of code).
 	
 	\begin{figure}[h!]
 	\begin{csharp}
@@ -342,37 +341,37 @@ class ExpressionFolder : AbstractVisitor{
 	for language implementors to add features and constructs not included in
 	the PLR itself. There are three main methods of extending the PLR. Firstly,
 	language implementors can add new nodes to the abstract syntax tree. These
-	nodes just have to implement the \textsf{Compile} method and then they can
+	nodes just have to implement the \code{Compile} method and then they can
 	be seamlessly integrated with the built in PLR nodes. Of course it is also
 	possible to inherit from one of the existing nodes and thereby re-using some
 	of the compilation work they do, and simply adding extra code before or after
 	the base classes compilation step. 
 	
-	Secondly, the root node of the abstract	syntax tree, \textsf{ProcessSystem} 
+	Secondly, the root node of the abstract	syntax tree, \code{ProcessSystem} 
 	exposes the following four events. 
 	
 	\begin{enumerate}
-		\item \textsf{BeforeCompile} occurs before the PLR has performed any 
-		compilation. At this point only the \textsf{AssemblyBuilder} and 
-		\textsf{ModuleBuilder} have been defined, no types or methods exist yet.
+		\item \code{BeforeCompile} occurs before the PLR has performed any 
+		compilation. At this point only the \code{AssemblyBuilder} and 
+		\code{ModuleBuilder} have been defined, no types or methods exist yet.
 		
-		\item \textsf{AfterCompile} occurs after the PLR has finished all its
+		\item \code{AfterCompile} occurs after the PLR has finished all its
 		compilation but before it creates the executable file. At this point
 		subscribers to this event can access any types or methods created during
 		compilation.
 		
-		\item \textsf{MainMethodStart} occurs just after the main method of the
+		\item \code{MainMethodStart} occurs just after the main method of the
 		application has been defined but before any bytecodes have been emitted
 		into it. Subscribers of this event can then inject their own bytecodes at 
 		the beginning of the main method if they wish.
 		
-		\item \textsf{MainMethodEnd} occurs after all bytecodes of the main method
-		have been emitted, except for the final \textsf{Ret} instruction. Again, 
+		\item \code{MainMethodEnd} occurs after all bytecodes of the main method
+		have been emitted, except for the final \code{Ret} instruction. Again, 
 		subscribers of this event can inject their own bytecodes at this point.
 	\end{enumerate}
 	
 	All these events have the same signature, they require a 
-	\textsf{CompileEventHandler} delegate, which takes a \textsf{CompileContext} 
+	\code{CompileEventHandler} delegate, which takes a \code{CompileContext} 
 	as a parameter. The event subscribers then use the compile context to create 
 	types, methods and emit bytecodes at different points in the compilation 
 	process.
@@ -394,7 +393,7 @@ class ExpressionFolder : AbstractVisitor{
 	
 	To generate a valid .NET assembly the PLR uses a set of classes that are a 
 	part of the .NET framework Base Class Library. These classes are located in 
-	the \textit{System.Reflection.Emit} namespace. Before explaining more about 
+	the \code{System.Reflection.Emit} namespace. Before explaining more about 
 	these classes it is worth going over how a .NET assembly is structured. A 
 	.NET \textit{assembly} is an executable file (.exe) or a dynamic link 
 	library (.dll). The assembly contains one more \textit{modules}, typically 
@@ -410,28 +409,29 @@ class ExpressionFolder : AbstractVisitor{
 		\label{fig:assembly}
 	\end{figure}
 	
-	The classes in System.Reflection.Emit namespace match the structure of an 
-	assembly. There is an \textsf{AssemblyBuilder}, \textsf{ModuleBuilder}, 
-	\textsf{TypeBuilder}, \textsf{FieldBuilder}, \textsf{ConstructorBuilder} and 
-	a \textsf{MethodBuilder}. These are instantiated by giving them names and 
-	other properties as parameters. The \textsf{ConstructorBuilder} and 
-	\textsf{MethodBuilder} have a \textsf{GetILGenerator} method that returns an 
-	object of type \textsf{ILGenerator}. That object has direct access to the 
-	bytecode stream of the method being created, and contains various overloads 
-	of an \textsf{Emit} method that emits bytecodes and their associated 
-	arguments. An \textsf{OpCodes} class contains constants for all possible 
-	bytecodes that can be emitted by the \textsf{ILGenerator}.
+	The classes in the \code{System.Reflection.Emit} namespace match the 
+	structure of an assembly. There is an \code{AssemblyBuilder}, 
+	\code{ModuleBuilder}, \code{TypeBuilder}, \code{FieldBuilder}, 
+	\code{ConstructorBuilder} and a \code{MethodBuilder}. These are instantiated 
+	by giving them names and other properties as parameters. The 
+	\code{ConstructorBuilder} and \code{MethodBuilder} have a 
+	\code{GetILGenerator} method that returns an object of type 
+	\code{ILGenerator}. That object has direct access to the bytecode stream of 
+	the method being created, and contains various overloads of an \code{Emit} 
+	method that emits bytecodes and their associated arguments. An 
+	\code{OpCodes} class contains constants for all possible bytecodes that can 
+	be emitted by the \code{ILGenerator}.
 	
 	The nodes of the syntax tree gain access to these classes through a 
-	\textsf{CompileContext} class which is part of the PLR, and is a parameter 
-	to the \textsf{Compile} method implemented by all nodes. The 
-	\textsf{CompileContext} class has a number of useful properties that the 
-	nodes can access. It exposes the \textsf{TypeBuilder} object of the type 
-	currently being built, the \textsf{ILGenerator} object of the method or 
+	\code{CompileContext} class which is part of the PLR, and is a parameter 
+	to the \code{Compile} method implemented by all nodes. The 
+	\code{CompileContext} class has a number of useful properties that the 
+	nodes can access. It exposes the \code{TypeBuilder} object of the type 
+	currently being built, the \code{ILGenerator} object of the method or 
 	constructor being built and a symbol table for variables currently in scope. 
 	The node can then emit its bytecodes, create new variables or otherwise 
-	alter the \textsf{CompileContext} before passing it on to its child nodes 
-	\textsf{Compile} methods. Essentially this is a form of distributed 
+	alter the \code{CompileContext} before passing it on to its child nodes 
+	\code{Compile} methods. Essentially this is a form of distributed 
 	compiling, no one node has a complete picture of what is being compiled, 
 	each node only has enough information to add its own code to the correct 
 	type or method.
@@ -441,36 +441,36 @@ class ExpressionFolder : AbstractVisitor{
 	One of the benefits of targeting a common virtual machine such as the CLR is
 	is that both a free command line and graphical debugger exist that can be 
 	used for any programming language that compiles down to the Common 
-	Intermediate Language format. The \textit{System.Reflection.Emit} API offers 
+	Intermediate Language format. The \code{System.Reflection.Emit} API offers 
 	functionality to emit the necessary debugging symbols to be able to use 
 	these debuggers. Emitting debug symbols consists of the following five steps:
  	
  	\begin{enumerate}
- 		\item When the \textsf{ModuleBuilder} objects is defined with a call to 
- 		the \textsf{DefineDynamicModule} method on the \textsf{AssemblyBuilder} 
- 		object, a parameter named \textsf{emitSymbols} should be passed as 
- 		\textbf{true}.
+ 		\item When the \code{ModuleBuilder} objects is defined with a call to 
+ 		the \code{DefineDynamicModule} method on the \code{AssemblyBuilder} 
+ 		object, a parameter named \code{emitSymbols} should be passed as 
+ 		\texttt{true}.
  		
-		\item An item of the type \textsf{ISymbolDocumentWriter} needs to be 
-		defined. This is done with a call to a \textsf{DefineDocument} method on 
-		the \textsf{ModuleBuilder} object which returns a 
-		\textsf{ISymbolDocumentWriter} object. The parameters to this method call 
+		\item An item of the type \code{ISymbolDocumentWriter} needs to be 
+		defined. This is done with a call to a \code{DefineDocument} method on 
+		the \code{ModuleBuilder} object which returns a 
+		\code{ISymbolDocumentWriter} object. The parameters to this method call 
 		include the name of the source file that is being compiled, this is 
 		neccessary so that the debugger can prompt for the source file when 
-		debugging the compiled file. The \textsf{ISymbolDocumentWriter} object is 
-		passed with the \textsf{CompileContext} to all nodes during compilation.
+		debugging the compiled file. The \code{ISymbolDocumentWriter} object is 
+		passed with the \code{CompileContext} to all nodes during compilation.
 
-		\item Local variables in methods are created with a \textsf{LocalBuilder} 
+		\item Local variables in methods are created with a \code{LocalBuilder} 
 		object. In a non debug build these locals are not stored by name in the 
 		compiled file, but simply given a number and referred to by that number.
 		To be able to map variables in the compiled file to variable names in the
-		source file a method, \textsf{SetLocalSymInfo} is called on the 
-		\textsf{LocalBuilder} object. The method takes the name of the variable as
+		source file a method, \code{SetLocalSymInfo} is called on the 
+		\code{LocalBuilder} object. The method takes the name of the variable as
 		a parameter and stores that information for later use by the debugger.
 		
-		\item The method \textsf{SetUserEntryPoint} must be called on the 
-		\textsf{ModuleBuilder} object to enable the debugger to know what the entry
-		method of the assembly is. The method takes a \textsf{MethodBuilder} object
+		\item The method \code{SetUserEntryPoint} must be called on the 
+		\code{ModuleBuilder} object to enable the debugger to know what the entry
+		method of the assembly is. The method takes a \code{MethodBuilder} object
 		as a parameter.
 		
 		\item The most important part of emitting the debug symbols is marking 
@@ -480,8 +480,8 @@ class ExpressionFolder : AbstractVisitor{
 		To be able to do this the sequence point contains information about a 
 		start position and end position in the source file, given as line and 
 		column numbers. A sequence point is marked with a call to a 
-		\textsf{MarkSequencePoint} method on an \textsf{ILGenerator} object, the 
-		methods parameters are an instance of \textsf{ISymbolDocumentWriter} and 
+		\code{MarkSequencePoint} method on an \code{ILGenerator} object, the 
+		methods parameters are an instance of \code{ISymbolDocumentWriter} and 
 		four integers, startLine, startColumn, endLine and endColumn. 
 		Figure~\ref{fig:sequence_points} shows a few lines of CIL bytecode 
 		interspersed with sequence points. (Note: the CIL file format does not 
@@ -500,12 +500,14 @@ class ExpressionFolder : AbstractVisitor{
  	them directly. However, since the PLR does not handle parsing of source 
  	files it can not determine itself the line and column numbers needed for 
  	marking sequence points. For that purpose, every node in the PLR abstract 
- 	syntax tree has an instance of a class named \textsf{LexicalInfo}. This 
+ 	syntax tree has an instance of a class named \code{LexicalInfo}. This 
  	class is simply a wrapper around the four integers that a sequence point 
  	needs, startLine, startColumn, endLine and endColumn. This information is 
  	easily available during parsing and so the individual language parsers 
  	should store this information for each node. The PLR will then automatically 
- 	emit a sequence point before every \textit{action} taken by a process.
+ 	emit a sequence point before every \textit{action} taken by a process, as 
+ 	well as for expressions evaluated in \texttt{if-then-else} processes and for 
+ 	process invocations.
 
 	\begin{figure}
 	\begin{cil} 
@@ -536,7 +538,7 @@ class ExpressionFolder : AbstractVisitor{
 \section{Runtime Library}
 
 	The PLR has a small runtime library consisting of nine classes. These classes
-	reside in the \textsf{PLR.Runtime} namespace. Applications compiled using 
+	reside in the \code{PLR.Runtime} namespace. Applications compiled using 
 	the PLR must have access to this library at runtime in order to execute 
 	successfully. Figure~\ref{fig:runtime_library} shows a class diagram of the 
 	runtime library. Below is an overview of each of the nine classes.
@@ -549,28 +551,27 @@ class ExpressionFolder : AbstractVisitor{
 	\end{figure}
 
 	\textbf{ProcessBase} is an abstract base class for any compiled processes.
-	It contains methods used to interact with the \textsf{Scheduler},
+	It contains methods used to interact with the \code{Scheduler},
 	for instance method to synchronize on channels, methods for startup and
 	termination as well as methods to suspend and resume the process thread.
 	Since processes are built up into a tree-like structure at runtime (further 
-	explained in Section~\ref{cil_structure}) it also contains a field for its 
-	parent \textsf{ProcessBase} instance, as well as a list of 
-	\textsf{ProcessBase} instances which are its child nodes in the tree. 
-	Finally, it contains a list of \textsf{IAction} instances, this list will 
-	hold all actions that occur in the process instance or any of its 
-	subprocesses and are restricted by the instances restriction clause.
+	explained in Section~\ref{sec:cil_architecture}) it also contains a field 
+	for its parent \code{ProcessBase} instance. Finally, it contains a list of 
+	\code{IAction} instances, this list will hold all actions that occur in 
+	the process instance or any of its subprocesses and are restricted by the 
+	instances restriction clause.
 	
 	\textbf{BuiltIns} is a small static class that contains utility methods
 	that can be called by processes, such as to print to the console.
 	
 	\textbf{IAction} is an interface that all runtime actions must implement.
-	It contains four methods. \textsf{ProcessID} returns the id of the
-	process performing the action, \textsf{IsAsynchronous} returns true if
+	It contains four methods. \code{ProcessID} returns the id of the
+	process performing the action, \code{IsAsynchronous} returns true if
 	the action can be executed without synchronizing with another action, 
 	this applies for instance to arbitrary method calls to .NET methods.
-	\textsf{CanSyncWith(IAction other)} determines whether the action can be 
+	\code{CanSyncWith(IAction other)} determines whether the action can be 
 	synced with another action, in the case of asynchronous actions this
-	method always returns false. Finally, \textsf{Sync(IAction other)} is 
+	method always returns false. Finally, \code{Sync(IAction other)} is 
 	called on those actions that have been chosen for execution and is used
 	for example to pass values from one process to another through channels.
 
@@ -580,18 +581,18 @@ class ExpressionFolder : AbstractVisitor{
 	or receive on the channel. In the case of a send operation it can optionally
 	contain a list of values that are being sent, and in the case of a receive
 	operation it can contain a list of variables that should be bound to the 
-	values being sent from the other side. The \textsf{ChannelSyncAction}
-	implements the \textsf{IAction} interface as all runtime actions must, it is
-	a synchronous action and its \textsf{CanSyncWith} method will only return 
-	true for other \textsf{ChannelSyncAction} instance that have the same
+	values being sent from the other side. The \code{ChannelSyncAction}
+	implements the \code{IAction} interface as all runtime actions must, it is
+	a synchronous action and its \code{CanSyncWith} method will only return 
+	true for other \code{ChannelSyncAction} instance that have the same
 	channel name, are performing the opposing operation and have the same
 	number of values being passed through the channel. When two actions are
-	synchronized, the \textsf{Sync(IAction other)} method on both the actions
+	synchronized, the \code{Sync(IAction other)} method on both the actions
 	are called with the other actions as a parameter. In the case of channel 
 	synchronizations the action instance which represents the receiving end
 	of the operation will bind its variables to the values passed through
-	the channel in its \textsf{Sync} method, the sending action will do nothing
-	in its own \textsf{Sync} method.
+	the channel in its \code{Sync} method, the sending action will do nothing
+	in its own \code{Sync} method.
 	
 	\textbf{MethodCallAction} is a runtime action which can be used to call
 	an arbitrary .NET method, either a built-in method from the .NET base
@@ -599,9 +600,9 @@ class ExpressionFolder : AbstractVisitor{
 	action and as such does not need to synchronize with another process to be 
 	executed. Currently	the PLR provides support for calling static methods 
 	that have integers or	strings as parameters. This allows for instance most
-	of the methods from the \textsf{System.Math} class to be accessible. To
-	gain access to instance methods, for example the \textsf{NextInt} method
-	of the \textsf{System.Random} class, it is necessary to write static wrappers
+	of the methods from the \code{System.Math} class to be accessible. To
+	gain access to instance methods, for example the \code{NextInt} method
+	of the \code{System.Random} class, it is necessary to write static wrappers
 	around the methods.
 
 	\textbf{Logger} is a utility class for handling process output to the screen.
@@ -610,26 +611,26 @@ class ExpressionFolder : AbstractVisitor{
 
 	\textbf{GlobalScope} is a small class whose only purpose is to be a 
 	repository of possible actions that are not restricted by any process. As
-	explained in Section~\ref{cil_structure}, candidate actions are propagated 
-	up the process tree, and at each process it is checked whether the process 
-	restricts them, if so they are stored within that process so that they do
-	not synchronize with actions outside the process. In the case where no
-	process restricts the action and it can synchronize with any other action
-	that is not otherwise restricted then the action is stored in the global 
-	scope, while it waits to see whether it was chosen for execution.
+	explained in Section~\ref{sec:cil_architecture}, candidate actions are 
+	propagated up the process tree, and at each process it is checked whether 
+	the process restricts them, if so they are stored within that process so 
+	that they do not synchronize with actions outside the process. In the case 
+	where no process restricts the action and it can synchronize with any other 
+	action that is not otherwise restricted then the action is stored in the 
+	global scope, while it waits to see whether it was chosen for execution.
 	
 	\textbf{ProcessKilledException} is an exception class used when processes
 	are killed. As an example, when a process is a candidate in non deterministic
 	choice and is not chosen then it must be killed. To bypass all the subsequent
-	actions of the process, a \textsf{ProcessKilledException} is thrown and then
+	actions of the process, a \code{ProcessKilledException} is thrown and then
 	caught at the end of the processes code. There the process will unregister
-	itself from the \textsf{Scheduler}, print a message to the console and then
+	itself from the \code{Scheduler}, print a message to the console and then
 	terminate.
 	
 	\textbf{Scheduler} is the real execution engine of the PLR. It follows the
 	\textit{Singleton} \cite{design_patterns} design pattern so it is trivial 
 	for all	processes in the application to gain access to the same 
-	\textsf{Scheduler} instance. When processes are activated they register 
+	\code{Scheduler} instance. When processes are activated they register 
 	themselves with the scheduler, which keeps a list of active processes. The 
 	scheduler then monitors the processes and waits until all processes have 
 	generated all their candidate actions and are waiting for an action to be 
@@ -648,7 +649,7 @@ class ExpressionFolder : AbstractVisitor{
 	of actions executed during the duration of the program.
 	 
 	\begin{figure}
-	\begin{code}
+	\begin{codeblock}
 // active_procs contains all the running processes
 
 do forever:
@@ -685,7 +686,7 @@ do forever:
       kill processes that were not selected 
         in non deterministic choice
 	
-	\end{code}
+	\end{codeblock}
 	\caption{The scheduler algorithm}
 	\label{fig:scheduler}
 	\end{figure}
@@ -699,12 +700,13 @@ do forever:
 	virtual machine. We now look at how a process language system looks once it 
 	has been compiled to the Common Intermediate Language.
 	
+	\subsection{Architecture choices}\label{sec:cil_architecture}
 	One of the hardest decisions during the design of the PLR was whether or not 
 	to represent each process as a separate thread. Writing multi-threaded code 
 	is hard, and it is subject to subtle errors, race conditions and other 
 	problems that are easily avoided when using only a single thread. However, a 
 	single threaded implementation would be forced to represent the processes as 
-	data structures, rather than as independent programs in their own right. 
+	datastructures, rather than as independent programs in their own right. 
 	That approach, that the processes are datastructures and the program is a 
 	single thread operating on those datastructures is certainly worthwhile, and 
 	in fact an early prototype was implemented as an interpreter that did just 
@@ -717,35 +719,212 @@ do forever:
 	have been problematic. For these reasons the multi-threaded approach was 
 	taken.
 	
-	Each process in process algebra maps to a class in CIL. The top level 
-	processes, those that are defined as named process constants, are compiled
-	to classes named after the process constant. A top level class can have
-	multiple inner classes however, and each of those can itself have multiple
-	inner classes. This happens for instance when a process starts by performing
-	an action and then turns into a process that is a parallel composition of 
-	other processes. In that case each of those parallel processes is an inner
-	class of the original top level process. The same thing happens when a 
-	named process makes a non-deterministic choice; each of the choices is its
-	own inner class. The reason for making these inner classes was that in a
-	fairly large system the number of classes quickly becomes large,
-	and instead of polluting the top level namespace with dozens of generated 
-	class	names, they are confined within their owning process. It is also
-	easier to understand what each process represents, the class name
-	\textsf{Teacher+Parallel1} represents the first parallel process within
-	the \textsf{Teacher} process, which is a parallel composition process.
+	Another concern when deciding how to structure a process language 
+	application was the semantics of restriction and relabeling. When these are 
+	applied to a process they keep applying to any subsequent process that it 
+	may invoke. E.g. in $(a . P)[d/c]$ the relabeling of $c$ to $d$ has to be 
+	applied to everything that happens in the invoked process $P$. To handle 
+	this each process has a reference to the process that spawned it in a 
+	\code{Parent} property. At runtime $P$ would have $(a . P)[d/c]$ in its 
+	\code{Parent} property and whenever it performs an action it will first 
+	check whether it restricts or relabels it itself, if not it will pass the 
+	action up to its parent which can check again if the action is restricted at 
+	that level, and and so it propagates up the chain of parent processes. If an 
+	action is restricted at a particular level then it can only synchronize with 
+	other actions that are at the same level, those actions that are not 
+	restricted at all go on up to the global scope, where they become observable 
+	from the outside.
 	
-	Restrictions and re-labellings map to methods in CIL. The methods do not
+	The one problem with that approach is that a lot of processes do not 
+	restrict or relabel anything at all, and would then be kept alive for no 
+	reason, they would simply take up memory and make the process tree 
+	unnecessarily complicated. To avoid this, processes only set themselves as 
+	the parent of a spawned process if they actually have some restrictions or 
+	relabellings. If they do not then they set their own parent as the parent of 
+	their spawned processes. This is perhaps best explained by an example.
+	
+	\begin{verbatim}
+			                      A = a . b . B
+			                      B = (b . c . C) \{b,c}
+			                      C = c . d . A
+			                      D = 0
+	\end{verbatim}
+	
+	In the system above the initial process is $A$. It performs two actions and 
+	then turns into $B$. A is not restricted in any way so there is no reason 
+	for it to set itself as $B$'s parent. A then checks if itself has a parent, 
+	it does not and so it sets $B$'s parent to \code{null} before starting it.
+	$B$ on the other hand is restricted, so after it has performed its actions 
+	it starts $C$ and sets itself as $C$'s parent. When $C$ performs its $c$ 
+	action it is passed up to its parent and is restricted in the $B$ process. 
+	When $C$ eventually turns into $D$ it needs to decide what $D$'s parent will 
+	be. $C$ itself has no restrictions and so does not need to live on, so it 
+	sets $D$'s parent as its own parent, which was $B$. $C$ can now die and be 
+	removed from memory, $D$ has $B$ as its parent so the restrictions of $B$ 
+	will continue to be applied correctly.
+	
+	\subsection{Processes}
+	Each process in process algebra maps to a class in CIL. The process classes 
+	all inherit from a \code{ProcessBase} class in the PLR runtime library and 
+	override a \code{RunProcess} method. When a process has been instantiated, a 
+	\code{Run} method is called on it, and it will then run the 
+	\code{RunProcess} method on a new thread.
+
+	The top level processes, those that are defined as named process constants, 
+	are compiled to classes named after the process constant. A top level class 
+	can have multiple inner classes however, and each of those can itself have 
+	multiple inner classes. This happens for instance when a process starts by 
+	performing an action and then turns into a process that is a parallel 
+	composition of 	other processes, e.g. $a \ccsdot (b \ccsdot 0 \mid c \ccsdot 
+	0)$. In that case each of those parallel processes is an inner class of the 
+	original top level process. The same thing happens when a process makes a 
+	non-deterministic choice; each of the choices is its own inner class. The 
+	reason for making these inner classes was that in a fairly large system the 
+	number of classes quickly becomes large, and instead of polluting the top 
+	level namespace with dozens of generated class names, they are confined 
+	within their owning process. It is also easier to understand what each 
+	process represents, the class name \code{PC+Parallel1} represents the 
+	first parallel process within the \code{PC} process, which is a 
+	parallel composition process. Figure~\ref{fig:struct_parallelcomp} shows the 
+	assembly structure of a simple parallel composition process, $PC \defeq a 
+	\ccsdot (b \ccsdot 0 \mid c \ccsdot 0)$. (This is a screenshot from a tool 
+	called ILDASM from Microsoft, the large boxes with three pins represent 
+	classes, the triangles represent metadata about the classes and the small 
+	rectangles represent methods).
+	
+	\begin{figure}
+		\begin{center}\includegraphics[scale=0.7]{ex_pc.png}\end{center}
+		\caption{Assembly structure of process  $PC \defeq a \ccsdot (b \ccsdot 0 \mid c \ccsdot 0)$}
+		\label{fig:struct_parallelcomp}
+	\end{figure}
+	
+	The semantics of action prefixing ($a \ccsdot P$) state that action $a$ is 
+	performed and the process then behaves like $P$. Considering how parallel 
+	composition and non deterministic choice were implemented with inner classes 
+	it might then seem natural to perform $a$ and then invoke an inner class 
+	$P$. That is not the case however. The reason is that it is very common to 
+	have a list of actions performed, e.g. $a \ccsdot b \ccsdot c \ccsdot d 
+	\ccsdot P$, and creating a new class after every single action would result 
+	in a large number of classes for no purpose. So for a process such as this, 
+	all the actions are performed in the same class, in its \code{RunProcess} 
+	method. There are exceptions to this however, if a process performs some 
+	actions and then becomes another action prefixed process that is restricted 
+	or has relabellings then it will have an inner class at that point. For 
+	example the process $a \ccsdot b \ccsdot (c \ccsdot P) \backslash\{c\}$ will 
+	perform actions $a$ and $b$ in the main class, but have an inner class for 
+	$(c \ccsdot P) \backslash\{c\}$. The reason for this is that restrictions 
+	and relabellings always have process scope, and since the restriction on $c$ 
+	does not apply to the first actions $a$ and $b$ then a new process is needed 
+	after $a$ and $b$ have been performed. Figure~\ref{fig:struct_actionprefix} 
+	shows the assembly structure of the process $AP \defeq a \ccsdot b \ccsdot 
+	(c \ccsdot P) \backslash\{c\}$. Note that the class \code{AP+Inner} 
+	contains \code{get\_Restrict} and \code{RestrictByName} methods, while the 
+	outer class \code{AP} does not.
+
+	\begin{figure}
+		\begin{center}\includegraphics[scale=0.75]{ex_ap.png}\end{center}
+		\caption{Assembly structure of process  $AP \defeq a \ccsdot b \ccsdot (c 
+	\ccsdot P) \backslash\{c\}$}
+		\label{fig:struct_actionprefix}
+	\end{figure}
+	
+	Process invocations, that is when a process turns into a named process, is 
+	implemented simply by creating a new instance of the named process and 
+	starting it. The process $c \ccsdot Proc$ performs action $c$ and then 
+	creates a new instance of \code{Proc} and starts it, after that has been 
+	done $c \ccsdot Proc$ simply exits, \code{Proc} has been started in its 
+	place. The only complication here is if a restriction or relabeling is 
+	applied to \code{Proc} but not the rest of the process. If the process was 
+	written as $c \ccsdot (Proc \backslash\{a\})$ then an inner class would be 
+	needed, whose only purpose was to create a new instance of \code{Proc} and 
+	start it. This might seem a wasteful inner class, but keep in mind that this 
+	restriction lives on and applies to everything that happens in \code{Proc} 
+	and any other process that \code{Proc} might turn into. The instance of 
+	\code{Proc} that is started will have a reference to the process $(Proc 
+	)\backslash\{a\}$ in its \code{Parent} property, any action performed in 
+	\code{Proc} will be passed up along the parent chain to see if it is 
+	restricted or relabeled at some point.
+	
+	\subsection{Restrictions and relabellings}
+	Restrictions and relabellings map to methods in CIL. The methods do not
 	have to be member methods of a process class, there is an extra layer
 	of indirection to allow for calling methods in external assemblies. The
-	\textsf{ProcessBase} class has two methods, \textsf{GetPreProcess} and 
-	\textsf{GetRestrict}. These methods return delegates (otherwise known as
-	function pointers) to a preprocess function (such as a relabelling function)
-	and a restriction function, respectively. The base class version of
-	\textsf{GetPreProcess} and \textsf{GetRestrict} return function pointers to
-	methods that do not alter or restrict any actions. Concrete process classes
-	can override these methods and return function pointers to other methods,
-	either methods in the process class itself, or methods in some external
-	assembly.
+	\code{ProcessBase} class has two methods, \code{get\_PreProcess} and 
+	\code{get\_Restrict} \footnote{The odd naming stems from the fact that these 
+	are defined as \textit{properties} in the \code{ProcessBase} class, where 
+	they are named \code{Restrict} and \code{PreProcess}. Properties in C\# 
+	simply compile down to getter and setter methods with get\_ and set\_ 
+	prefixed to the property name)}. These methods return delegates (otherwise 
+	known as function pointers) to a preprocess function (such as a relabelling 
+	function) and a restriction function, respectively. The base class versions 
+	of \code{get\_PreProcess} and \code{get\_Restrict} return function pointers 
+	to methods that do not alter or restrict any actions. Concrete process 
+	classes can override these methods and return function pointers to other 
+	methods, either methods in the process class itself, or methods in some 
+	external assembly. 
+	
+	\begin{figure}
+		\begin{center}\includegraphics[scale=0.7]{ex_rr.png}\end{center}
+		\caption{Assembly structure of process  $RR \defeq (a \ccsdot b \ccsdot c \ccsdot 0)_{[x/a,y/b]} \backslash \{ c \}$}
+		\label{fig:struct_restrictrelabel}
+	\end{figure}
 
+	The PLR can compile simple restrictions and relabellings directly into the 
+	class where they are used. (Simple meaning that they only use constant 
+	channel names, like $[a/b]$ or $\backslash\{c,d\}$, and do not require any 
+	additional logic). Figure~\ref{fig:struct_restrictrelabel} shows the 
+	assembly structure of a simple restricted and relabeled process, $RR \defeq 
+	(a \ccsdot b \ccsdot c \ccsdot 0)_{[x/a,y/b]} \backslash \{ c \}$. The 
+	restriction method is named \code{RestrictByName} and the relabeling method 
+	is named \code{RelabelAction}. The base class methods 
+	\code{get\_Restrict} and \code{get\_PreProcess} have then been overriden to 
+	return function pointers to \code{RestrictByName} and \code{RelabelAction}, 
+	respectively.
 
-	\TODO{Show some examples of CCS code => resulting .NET assembly}
+	\subsection{Variables and scope}
+	
+	Variable scope becomes a bit tricky due to the possibly many inner classes
+	of a single process. A simple process like $in(x) \ccsdot (\overline{out}(x) 
+	\ccsdot 0)\backslash\{out\}$ is actually two classes and the $in$ and $out$ 
+	actions are performed in different methods. The variable $x$ still needs to 
+	be passed on so that the inner process has access to the value that was 
+	bound in the outer process. An additional complication is that the processes 
+	main logic has to be defined in an overridden method, \code{RunProcess}, so 
+	changing the parameters of that method is not an option. And finally, a 
+	variable may be bound and the process may then become two or more parallel 
+	processes, each of which must have access to the variable. Consider the 
+	process $in(x) . (\overline{left}(x) . 0 \mid \overline{right}(x).0)$. Both 
+	of the parallel processes use the variable $x$, but an important thing to 
+	note is that they each have their own instance of it. Changing it in one 
+	parallel process does not affect it in another. This may seem 
+	counterintuitive, but consider if changing the variable in one process did 
+	affect it in the other process, then we would have created a new method of 
+	communication between processes, shared variables!
+	
+	The PLR handles variables by passing them as parameters to the inner 
+	processes constructor. The inner process then assigns each of the 
+	constructor parameters to member variables. The PLR variables are either 
+	integers or strings, integers are passed by value and strings are immutable, 
+	so there is no danger of two processes changing the same value in memory. At 
+	the start of a process's \code{RunProcess} method, it defines local 
+	variables with the same names as its member variables and assigns the member 
+	variables to local variables. This was done for two reasons, it simplifies 
+	working with variables in the method since all variable lookups are done on 
+	local variables (keep in mind that new local variables might also be 
+	defined), and it helps during debugging, the debugger will display the value 
+	of local variables when the mouse cursor hovers over their names.
+	
+  A process may split into many processes and not all of them might need to 
+  use all variables. As an optimization, the PLR examines the syntax tree 
+  during compilation and only defines member variables and constructor 
+  parameters in processes where it is possible that the variable will be used 
+  in the process. For example, in the process
+  
+  \begin{center}$\mathrm{VAR} \defeq in(x) \ccsdot in(y)\ccsdot (\overline{out}(x) \ccsdot 0 \mid \overline{out}(y) \ccsdot 0)$\end{center}
+  
+	the main $VAR$ process will define two local variables, $x$ and $y$. The 
+	first parallel process, $\overline{out}(x) \ccsdot 0$, will have a 
+	constructor with only one parameter, $x$ and one member variable $x$, the 
+	second parallel process, $\overline{out}(y) \ccsdot 0$, will only have $y$ 
+	as a member variable and constructor parameter.
+  

@@ -30,6 +30,7 @@ Usage: kc [options] <filename>
                 return 1;
             }
             List<string> listArgs = new List<string>(args);
+            CompileOptions.AddOption("ek", "embedKLAIM");
             CompileOptions options = CompileOptions.Parse(listArgs);
 
             if (options.Help) {
@@ -50,6 +51,13 @@ Available options:
     /d                       this allows it to be debugged in Visual Studio, or
                              in the free graphical debugger that comes with the
                              .NET Framework SDK.
+
+    /embedKLAIM              Embeds the KLAIM runtime into the generated file, 
+    /ek                      so it does not need to be distributed with the 
+                             executable.
+
+    /embedPLR                Embeds the PLR into the generated file, so it does
+    /e                       not need to be distributed with the executable.
 
     /out:<filename>          Specify the name of the compiled executable. If 
     /o:<filename>            this is not specified then the name of the input
@@ -77,6 +85,9 @@ Available options:
             Parser parser = new Parser(new Scanner(new FileStream(filename, FileMode.Open)));
             parser.Parse();
             Compiler compiler = new Compiler();
+            if (options.Contains("embedKLAIM")) {
+                parser.Processes.EmbedAssembly(typeof(Locality).Assembly);
+            }
             parser.Processes.MeetTheParents();
             
             List<Warning> warnings = parser.Processes.Analyze(new ReachingDefinitions());

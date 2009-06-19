@@ -1,7 +1,48 @@
 \chapter{Final Considerations}
 
-\section{Analysis of the results}
-
+	The first and second chapters of the thesis presented the objectives and 
+	goals of the project. They also introduced the subject matter, process 
+	algebras, their purpose and structure and what they had in common. The .NET 
+	framework was introduced, its history, relation to other virtual 
+	machine environments and current status was discussed, as well as the 
+	benefits of using virtual machines in general.
+	
+	The third chapter then documented the design and implementation of the 
+	Process Language Runtime itself. The PLR self-compiling syntax tree was 
+	explained in detail and reasons given for why that was an optimal design for 
+	further extensibility. An overview of the PLR runtime classes was given, as 
+	well as an insight into how debugging support is enabled in compiled process 
+	language applications. The chapter ended by explaining in detail the 
+	structure of a .NET assembly compiled from the PLR syntax tree.
+	
+	Chapter 4 presented a number of static analyses that are part of the PLR, 
+	both classical data flow analyses and more specific analyses for process 
+	algebra. How these analyses could be re-used for more than one process 
+	algebra, even when they have different constructs, was also explained.
+	
+	Chapters 5 and 6 documented two separate implementations of process algebras 
+	using the PLR, the languages were CCS and KLAIM. The syntax and semantics of 
+	the languages was shown, as well as an overview of the most important 
+	classes in their implementation. The chapter on KLAIM then explored how 
+	additional features that are not included in the PLR could be added to new 
+	languages, by using custom syntax tree nodes, PLR compilation events and 
+	runtime libraries. Both chapters finished with sizable example systems to 
+	give an idea of what a real application of these languages might be.
+	
+	The seventh chapter was about how the CCS language was integrated into a 
+	professional development environment, Visual Studio 2008. Some alternative 
+	development environments were presented and reasons given for why Visual 
+	Studio was chosen. A number of useful features were implemented in the 
+	Visual Studio integration, including CCS project support, syntax 
+	highlighting, real-time syntax checking, IntelliSense, brace matching and 
+	full integration with the debugger and build tool.
+	
+	Finally, in this chapter related work is discussed, including some 
+	alternative implementations of CCS and KLAIM. We explore the potential 
+	future work that could be done with the PLR, and end with some concluding 
+	remarks.
+	
+	
 \section{Related work}\label{sec:related_work}
 	
 	There are quite a few other projects that have implemented process algebras, 
@@ -97,7 +138,7 @@
 		of $a$ and $b$ and behaves as $P$ if they are equal but otherwise turns 
 		into the nil process. This is simply a more restricted version of the 
 		\texttt{if-then-else} construct which is already implemented in the PLR, 
-		the 	boolean condition is restricted to equality comparison and the 
+		the boolean condition is restricted to equality comparison and the 
 		\texttt{else} branch is simply the nil process. 
 		
 		\item The generalization of channel and variable names. In $\pi$-calculus 
@@ -286,3 +327,44 @@
 	see \cite{reactive}.
 	
 \section{Conclusions}
+
+	The initial goal of this project was to explore how process algebras could 
+	fit in with the .NET framework and how the constructs these algebras had in 
+	common could be abstracted into common building blocks that could be re-used 
+	in many implementations. The implementations of two process algebras using 
+	those building blocks was necessary to prove their generality. Integrating a 
+	process algebra into Visual Studio was more of an afterthought, but once I 
+	started on it I saw how useful it was, and how much more enjoyable it was to 
+	write CCS in this integrated environment, and so I was inspired to explore 
+	exactly how well the language could be integrated and what services were 
+	available.
+	
+	After finishing this project I believe that the .NET framework is a
+	good platform for implementing process algebras. The main benefit is the 
+	ease of interacting with other .NET languages. It is easy to add additional 
+	features to a language by writing runtime libraries in languages like C\# 
+	and it is easy to make a process algebra call into any arbitrary .NET 
+	assembly. Another great benefit is being able to debug the compiled 
+	applications, and in general great tool support in programs like Visual 
+	Studio. 
+	
+	The are downsides to .NET as well. The only real support for concurrency is 
+	by using threads. I had thought beforehand that there might be some low 
+	level support for that in the actual bytecode, but that was not the case. 
+	Threading can only be done through the standard class library, using the 
+	\code{Thread} class, which shows that the class library is at least as 
+	important as the virtual machine itself. 
+
+	Building re-usable components for process algebras went very well. The PLR 
+	takes care of a lot of the basic work that anyone implementing a process 
+	algebra would otherwise have to do himself. Not just the basic process 
+	algebra constructs themselves, but also expression trees for arithmetic 
+	expressions, static analyses, emitting debugging symbols, and helper methods 
+	for calling into .NET code. An implementor can use this and focus his energy 
+	on what matters, implementing specific constructs and emitting the bytecodes 
+	for them.
+	
+	Overall I consider the project a success, as it has resulted in two working 
+	process algebra implementations (one of which is fully integrated into 
+	Visual Studio), as well as a library/compiler that can be used by future 
+	implementors of other process algebras.

@@ -481,10 +481,10 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	tuples are available at \textsf{StartLoc}.
 
 	Implementing this was done by creating a new syntax node, 
-	\textsf{ReplicatedProcess}. That becomes one class, $R$, in the compiled 
+	\code{ReplicatedProcess}. That becomes one class, $R$, in the compiled 
 	file, and the inner process, $P$, starting with the \textbf{in} action, 
 	becomes another class. What $R$ does at runtime is to create a new instance 
-	of $P$, give it a reference to itself and call its \textsf{RunProcess} method
+	of $P$, give it a reference to itself and call its \code{RunProcess} method
 	which runs it on a new thread. It then goes into an infinite loop, which has 
 	two steps:
 	
@@ -504,8 +504,8 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 \subsection{Tuple spaces}
 
 	The tuple spaces of KLAIM are implemented in the KLAIM runtime library. The 
-	library consists of just four classes, \textsf{Net}, \textsf{Locality}, 
-	\textsf{Tuple} and \textsf{KLAIMException}. Figure~\ref{fig:klaim_runtime} 
+	library consists of just four classes, \code{Net}, \code{Locality}, 
+	\code{Tuple} and \code{KLAIMException}. Figure~\ref{fig:klaim_runtime} 
 	shows a class diagram of the runtime library.
 
 	\begin{figure}[ht!]
@@ -517,44 +517,43 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	
 	\begin{itemize}
 	
-	\item The \textsf{Net} class represents the entire program, or net, being 
+	\item The \code{Net} class represents the entire program, or net, being 
 	executed. It does very little itself and only contains a collection of 
 	\textsf{Locality} instances as well as methods to add and delete them. 
 	
-	\item The \textsf{Locality} class has a name and a collection of tuples, 
-	which 
-	represents its tuple space. The \textbf{in}, \textbf{out} and \textbf{read} 
-	actions are implemented as member methods of this class, this seemed a 
-	natural fit since this class holds the tuples. It also contains some 
-	convenience methods not available to KLAIM itself, such as methods to check 
-	in a non-blocking way if a tuple exists and retrieve a random tuple from the 
-	tuple space.
+	\item The \code{Locality} class has a name and a collection of tuples, 
+	which represents its tuple space. The \textbf{in}, \textbf{out} and 
+	\textbf{read} actions are implemented as member methods of this class, this 
+	seemed a natural fit since this class holds the tuples. It also contains 
+	some convenience methods not available to KLAIM itself, such as methods to 
+	check in a non-blocking way if a tuple exists and retrieve a random tuple 
+	from the tuple space.
 
-	\item The \textsf{Tuple} class represents a tuple. As such it holds an 
+	\item The \code{Tuple} class represents a tuple. As such it holds an 
 	ordered collection of items (integers or strings). It also contains the 
-	\textsf{Matches} method, this method implements the template matching 
+	\code{Matches} method, this method implements the template matching 
 	against tuples described in Section~\ref{klaim_pattern_matching}.
 	
-	\item \textsf{KLAIMException} is a trivial class which just inherits from 
-	\textsf{System.Exception} and whose only purpose is to allow callers to 
+	\item \code{KLAIMException} is a trivial class which just inherits from 
+	\code{System.Exception} and whose only purpose is to allow callers to 
 	catch a KLAIM specific exception instead of a general one.
 	
 	\end{itemize}
 	
 	As seen in these class descriptions, the implementation of tuple spaces is 
-	handled by these four classes, \textsf{Net} holds \textsf{Locality} 
-	instances, they hold collections of \textsf{Tuple} instances and the methods 
-	to access them, and the \textsf{Tuple}'s implement the pattern matching.
+	handled by these four classes, \code{Net} holds \code{Locality} 
+	instances, they hold collections of \code{Tuple} instances and the methods 
+	to access them, and the \code{Tuple}'s implement the pattern matching.
 	
 	The tuples initially contained in each locality's tuple space need to 
 	somehow be put in their place before execution of the net starts. This is an 
 	activity that does not really fit into the abstract syntax tree in any 
 	particular place. To accomplish this the KLAIM compiler subscribes to the 
-	event \textsf{MainMethodStart} of the \textsf{ProcessSystem} object, which 
+	event \code{MainMethodStart} of the \code{ProcessSystem} object, which 
 	is the root node of the syntax tree. Then when the syntax tree is compiling 
 	itself and is starting to compile the entry method of the program, it raises 
-	this event and passes as an event argument the \textsf{CompileContext} 
-	class. It contains an initialized \textsf{ILGenerator} for the main method, 
+	this event and passes as an event argument the \code{CompileContext} 
+	class. It contains an initialized \code{ILGenerator} for the main method, 
 	so the KLAIM compiler can then inject its tuple space initialization code 
 	directly into the start of the main method, before any processes are 
 	activated.
@@ -562,67 +561,72 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	\subsection{In, Out and Read actions}
 	
 	As we saw in the previous section, the runtime methods for these actions are 
-	members of the \textsf{Locality} class in the runtime library. However, that 
+	members of the \code{Locality} class in the runtime library. However, that 
 	is only part of their implementation, before they can be used someone has to 
 	generate the bytecode to call these methods at the appropriate places. For 
-	that purpose there are three new syntax tree nodes, \textsf{InAction}, 
-	\textsf{OutAction} and \textsf{ReadAction}. These inherit from the 
-	\textsf{Action} node from the PLR, and so can be used as children of the 
-	PLR's \textsf{ActionPrefix} syntax tree node. These three nodes compile 
+	that purpose there are three new syntax tree nodes, \code{InAction}, 
+	\code{OutAction} and \code{ReadAction}. These inherit from the 
+	\code{Action} node from the PLR, and so can be used as children of the 
+	PLR's \code{ActionPrefix} syntax tree node. These three nodes compile 
 	themselves into bytecode that gets the correct locality from the net, and 
 	then calls the correct method on that locality. These new action have 
-	\textsf{Expression} nodes as children which represent the items in the 
-	tuple, one new expression node was added, \textsf{VariableBinding}, other 
+	\code{Expression} nodes as children which represent the items in the 
+	tuple, one new expression node was added, \code{VariableBinding}, other 
 	nodes needed were already a part of the PLR.
+	
+	There is one special case for the \textbf{out} action. That is if the 
+	locality being output at is named \code{Screen}. In that case the tuple is 
+	not stored anywhere, its values are just printed to the screen. For example 
+	the action \begin{center}\textsf{out(ResultOfExpression, 3+5)@Screen}\end{center} would produce the output \begin{center}\texttt{ResultOfExpression, 8} \end{center} on the users screen.
 	
 \subsection{Class overview}
 	
 	Here we quickly go over the main classes used in the KLAIM compiler itself. 	
 	\begin{itemize}
 	
-	\item \textsf{Program} is the main class which parses the command line, 
+	\item \code{Program} is the main class which parses the command line, 
 	validates the given parameters and instantiates the parser. It then gets the 
 	syntax tree back from the parser (given that no syntax errors occurred) and 
 	instructs the syntax tree to compile itself.
 	
-	\item \textsf{Scanner} is the lexer class whose responsibility it is to 
+	\item \code{Scanner} is the lexer class whose responsibility it is to 
 	tokenize a KLAIM source code file into valid KLAIM terminals. 
 	Figure~\ref{fig:klaimterminals} shows the more complicated terminals of 
 	KLAIM defined by regular expressions. The simpler terminals, who are just 
 	string constants, are given directly in quotes in the parser definition. 
 	
-  \item \textsf{Parser} is a recursive-descent parser for KLAIM. The parser 
+  \item \code{Parser} is a recursive-descent parser for KLAIM. The parser 
   constructs a PLR abstract syntax tree as it parses, using both the built in 
   PLR syntax tree nodes and the additional KLAIM syntax tree nodes described 
   below. As with the CCS parser and lexer, this class as well as the 
-  \textsf{Scanner} class are generated with help from the Coco/R \cite{cocor} 
+  \code{Scanner} class are generated with help from the Coco/R \cite{cocor} 
   parser generator. The Extended Backus-Naur Form (EBNF) description of the 
   full syntax, which is used as input to Coco/R, is shown in 
   Figure~\ref{fig:klaim_ebnf}.
 	
-	\item \textsf{InAction, OutAction} and \textsf{ReadAction} are syntax tree 
-	nodes for the \textbf{in}, \textbf{out} and \textbf{read} operations 
+	\item \code{InAction}, \code{OutAction} and \code{ReadAction} are syntax 
+	tree nodes for the \textbf{in}, \textbf{out} and \textbf{read} operations, 
 	respectively. They are stored in the compiler rather than the runtime 
 	library since they are only needed at compile time.
 	
-	\item \textsf{VariableBinding} is a syntax tree node which inherits from 
-	\textsf{Expression} and represents the binding of a value from a tuple to a 
+	\item \code{VariableBinding} is a syntax tree node which inherits from 
+	\code{Expression} and represents the binding of a value from a tuple to a 
 	variable.
 	
 	\end{itemize}
 	
 \begin{figure}
-\begin{code}
+\begin{codeblock}
   LOCALITY   = [A-Z][A-Za-z0-9]*
   VARIABLE   = [a-z][A-Za-z0-9]*
   VARBINDING = ![a-z][A-Za-z0-9]*
   NUMBER     = [0-9]+
-\end{code}
+\end{codeblock}
 	\caption{Terminals of KLAIM scanner}\label{fig:klaimterminals}
 	\end{figure}
 	
 \begin{figure}
-\begin{code}
+\begin{codeblock}
 KLAIM = 
   LocatedItem { "||" LocatedItem }                
 
@@ -684,7 +688,7 @@ UnaryMinusTerm =
     VARIABLE 
   )
 
-	\end{code}
+	\end{codeblock}
 	\caption{EBNF Productions of KLAIM}
 	\label{fig:klaim_ebnf}
 	\end{figure}

@@ -11,15 +11,15 @@
 \section{Licensing and availability}
 
 	All the software developed during this project can be downloaded from the 
-	url http://einaregilsson.com/plr. The source code for the entire project is 
-	available in a zip file. The binaries for each of the software packages can 
-	be downloaded seperately. 
+	url \url{http://einaregilsson.com/plr}. The source code for the entire 
+	project is available in a zip file. The binaries for each of the software 
+	packages can be downloaded seperately. 
 	
 	The source code for the project is licensed under the General Public License 
 	(GPL) v3.0. In brief, this allows anyone to download and modify the source or
 	use it as a basis for something else, as long as the source code for that 
 	modified version is also made available under a GPL compatible license. For 
-	further information see http://www.gnu.org/licenses/gpl.html.
+	further information see \url{http://www.gnu.org/licenses/gpl.html}.
 
 
 \section{Source code}
@@ -183,6 +183,13 @@ Available options:
     /d                   this allows it to be debugged in Visual Studio, or
                          in the free graphical debugger that comes with the
                          .NET Framework SDK.
+
+    /embedKLAIM          Embeds the KLAIM runtime into the generated file, 
+    /ek                  so it does not need to be distributed with the 
+                         executable.
+
+    /embedPLR            Embeds the PLR into the generated file, so it does
+    /e                   not need to be distributed with the executable.
 
     /out:<filename>      Specify the name of the compiled executable. If 
     /o:<filename>        this is not specified then the name of the input

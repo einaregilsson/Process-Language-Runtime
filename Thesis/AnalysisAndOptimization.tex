@@ -43,7 +43,7 @@
 	
 	To give a concrete example suppose we have an analysis which is determining 
 	for the code snippet in Example~\ref{ex:control_flow} which variables have 
-	been assigned at each point in the program. For the program point labelled 1 
+	been assigned at each point in the program. For the program point labeled 1 
 	(x := 1), its input set would be $\{y\}$ as $y$ is the only variable that 
 	has been assigned at that point. Since program point 1 assigns to the 
 	variable $x$ then its output set would be the union of its input set and 
@@ -59,10 +59,10 @@
 	
 	To get the final result of the analysis these calculations must be repeated 
 	for each point in the program until the input and output sets of each become 
-	stable. The result is an approximation, either overapproximation (something 
+	stable. The result is an approximation, either over approximation (something 
 	\textit{may} happen on the path to the program point) or an 
-	underapproximation (something \textit{must} have happened on the path to the 
-	program point).  To calculate the input and output sets of each program 
+	under approximation (something \textit{must} have happened on the path to 
+	the program point).  To calculate the input and output sets of each program 
 	points an iterative worklist algorithm is used. There are many variations of 
 	these algorithms, they keep track of which program points change and which 
 	other program points must then be re-calculated. There is a lot more to data 
@@ -106,7 +106,7 @@
 \section{Analyses}
 	
 	The analyses presented here generally follow the same pattern. They implement
-	an \textsf{IAnalysis} interface and inherit from \textsf{AbstractVisitor}. 
+	an \code{IAnalysis} interface and inherit from \code{AbstractVisitor}. 
 	They traverse the syntax tree to analyze it and issue warnings about any
 	anomalies found. In some cases they mark certain syntax nodes as not being
 	used, the compilation then uses that information for optimization, for 
@@ -114,7 +114,7 @@
 	executed. These optimizations can be turned on and off in the compile 
 	options that are passed to the PLR. The optimizations and debugging support 
 	are mutually exclusive, this is due to the fact that the sequence points in 
-	an optimized executuable may not match the actual source code file any 
+	an optimized executable may not match the actual source code file any 
 	longer, which could make the debugging rather confusing.
 	
 \subsection{Live Variables}\label{live_variables}
@@ -137,7 +137,7 @@
   In the analysis of the PLR syntax tree, a process is considered a program 
   point. Additionally, syntax nodes that represent a process constant being 
   defined are considered program points, as they may contain defining 
-  occurences of variables. For instance, in $ CS(x,y) \defeq a . 0$ we would 
+  occurrences of variables. For instance, in $ CS(x,y) \defeq a . 0$ we would 
   consider $CS(x,y)$ a program point, since it defines the variables $x$ and 
   $y$, and it can be beneficial at that point to know whether the initial 
   value of those variables was ever used in the process. We have two helper 
@@ -195,8 +195,8 @@
   
   The actual implementation of the \textit{assigned()} and \textit{read()} 
   functions is done with two properties that are present on all syntax nodes
-  that derive from either \textsf{Process} or \textsf{Action}. These properties
-  are \textsf{AssignedVariables} and \textsf{ReadVariables} and return the
+  that derive from either \code{Process} or \code{Action}. These properties
+  are \code{AssignedVariables} and \code{ReadVariables} and return the
   assigned and read variables of a process or action. Having these as 
   properties of the syntax nodes instead of as part of the implementation of 
   the analysis allows for greater extensibility. Languages implemented using 
@@ -208,42 +208,42 @@
   
   Constructing the flow graph is trivial, since there are no loops or joining
   branches. In fact, a special flow graph is not constructed, instead the PLR
-  syntax tree is used directly. To make it simpler, each \textsf{Process} node
-  is required to implement a \textsf{FlowsTo} property which is a list of all
+  syntax tree is used directly. To make it simpler, each \code{Process} node
+  is required to implement a \code{FlowsTo} property which is a list of all
   the processes it can flow to. For an \texttt{if-else} process these are the 
   if and else branches, for parallel composition these are the composed 
-  processes, etc. In addition each node in the syntax tree has a \textsf{Parent} 
-  property which references its parent and can be used as a reverse flow graph.
-  Again, having these properties directly on the syntax tree is useful so
-  that additional process types can be added without having to modify the
-  analysis code. The input and output sets are stored in a a \textsf{Tag} 
-  property which is also on each syntax node, this is a generic object 
-  reference which analyses may use to temporarily store data associated with 
-  each node.
+  processes, etc. In addition each node in the syntax tree has a 
+  \code{Parent} property which references its parent and can be used as a 
+  reverse flow graph. Again, having these properties directly on the syntax 
+  tree is useful so that additional process types can be added without having 
+  to modify the analysis code. The input and output sets are stored in a a 
+  \code{Tag} property which is also on each syntax node, this is a generic 
+  object reference which analyses may use to temporarily store data associated 
+  with each node.
   
   Instead of an iterative worklist algorithm the analysis itself uses the
   visitor pattern discussed in Section~\ref{sec:visitor}. It simply inherits
-  from \textsf{AbstractVisitor} and overrides the \texttt{Visit(Process p)} 
+  from \code{AbstractVisitor} and overrides the \code{Visit(Process p)} 
   method which ensures that it will be called for every node in the syntax 
-  tree that inherits from \textsf{Process}. The visitor does a depth-first 
-  recursive traversal of  the syntax tree, the \textsf{Visit} is called on 
+  tree that inherits from \code{Process}. The visitor does a depth-first 
+  recursive traversal of  the syntax tree, the \code{Visit} is called on 
   child nodes before parent nodes so whenever we are processing a process $p$ 
   we know that all its child nodes have already been processed. What is needed
   in the method itself is then:
   
   	\begin{enumerate}
   		\item Construct the input set of $p$ by joining the output sets of all 
-  		the processes in its \textsf{FlowsTo} property.
+  		the processes in its \code{FlowsTo} property.
 
-  		\item Check whether any variable $x$ in \textsf{p.AssignedVariables} is 
+  		\item Check whether any variable $x$ in \code{p.AssignedVariables} is 
   		not in $p$'s input set. If it is not, then the assignment at $p$ has no 
-  		effect and a warning is issued, and an \textsf{IsUsed} property on $x$ 
+  		effect and a warning is issued, and an \code{IsUsed} property on $x$ 
   		is set to \texttt{false}. This can be used later for optimization during 
   		compilation.
   		
   		\item Construct the output set of $p$ by taking the input set and 
-  		removing all variables that are in \textsf{p.AssignedVariables} and then 
-  		adding all variables that are in \textsf{p.ReadVariables}.
+  		removing all variables that are in \code{p.AssignedVariables} and then 
+  		adding all variables that are in \code{p.ReadVariables}.
   	
   	\end{enumerate}
   
@@ -257,7 +257,7 @@
   \textbf{notused} and then no warnings will be issued.
   
   During the compilation stage the PLR will look at every variable that is 
-  assigned and check whether its \textsf{IsUsed} property is set to 
+  assigned and check whether its \code{IsUsed} property is set to 
   \texttt{false}. If the assignment is never used then no bytecode is emitted
   to store a value in the variable and no variable is declared. If the 
   assignment is unused because another assignment is made before the variable 
@@ -287,7 +287,7 @@
 	So at line 3 we know that the value of $x$ is that which was assigned at 
 	line 2. With branching and re-joining branches there may be more than one 
 	definition of a particular variable that reach a certain point, for example 
-	when a variable is assigned in both branches of an \texttt{if-else} 
+	when a variable is assigned in both branches of an \texttt{if-then-else} 
 	statement. However since this is a forward analysis and the PLR does not 
 	have re-joining branches this cannot happen in the PLR's implementation of 
 	this analysis. 
@@ -342,23 +342,23 @@
   \end{figure}
 
 	The implementation of Reaching Definitions is similar to that of Live 
-	Variables. An analysis class inherits from \textsf{AbstractVisitor} and 
-	overrides its \texttt{Visit(Process p)} method. Since this is a forward 
-	analysis the traversal is a little different than in \textit{Live 
-	Variables}. Here, the property \textsf{VisitParentBeforeChildren} is set to 
-	\texttt{true} on the \textsf{AbstractVisitor}. This makes sure that the tree 
+	Variables. An analysis class inherits from \code{AbstractVisitor} and 
+	overrides its \code{Visit(Process p)} method. Since this is a forward 
+	analysis the traversal is a little different than in Live 
+	Variables. Here, the property \code{VisitParentBeforeChildren} is set to 
+	\texttt{true} on the \code{AbstractVisitor}. This makes sure that the tree 
 	can be processed in forward order instead of backward. Then, in the method 
 	the following steps are performed:
 	
   	\begin{enumerate}
   		\item Check the input set of $p$ against the property 
-  		\textsf{p.ReadVariables}. If there exists a variable in 
-  		\textsf{p.ReadVariables} that has no entry in $p$'s input set then it is 
+  		\code{p.ReadVariables}. If there exists a variable in 
+  		\code{p.ReadVariables} that has no entry in $p$'s input set then it is 
   		being used before assignment and a warning is issued.
   		
-  		\item Create the input set of each process $P_i$ in \textsf{p.FlowsTo} 
+  		\item Create the input set of each process $P_i$ in \code{p.FlowsTo} 
   		by taking the input set of $p$ and adding all variables from 
-  		\textsf{p.AssignedVariables}, replacing any previous entries for the 
+  		\code{p.AssignedVariables}, replacing any previous entries for the 
   		same variable.
   	
   	\end{enumerate}
@@ -377,21 +377,21 @@
 	propagation is also performed, but it is nevertheless useful to compute 
 	those simple ones that can. The implementation is simple (and was partially 
 	shown in Figure~\ref{fig:expression_folder}), simply subclass an 
-	\textsf{AbstractVisitor} and override a \textsf{Visit} method for each of 
+	\code{AbstractVisitor} and override a \code{Visit} method for each of 
 	the binary expression nodes (arithmetic, relational and logical). Check if 
 	both the left and right childnodes are constants, if they are then 
-	calculcate the result according to the operator stored in the binary node. 
+	calculate the result according to the operator stored in the binary node. 
 	Finally replace the binary node with a new constant node that carries the 
 	result of the computation. The same goes for the unary minus node.
 	
 	The one extra thing that this analysis does is that it also visits the
-	\textsf{BranchProcess} node, which is the implementation of the
-	\texttt{if-else} statement. If the boolean expression in the 
-	\textsf{BranchProcess} has been fully computed then the analysis will set 
-	the \textsf{IsUsed} flag to \texttt{false} on the branch that will never 
+	\code{BranchProcess} node, which is the implementation of the
+	\texttt{if-then-else} statement. If the boolean expression in the 
+	\code{BranchProcess} has been fully computed then the analysis will set 
+	the \code{IsUsed} flag to \code{false} on the branch that will never 
 	been chosen, according to the result of the boolean expression. During the 
 	compilation stage, if optimizations are turned on, the PLR will then replace 
-	the \textsf{BranchProcess} with the branch that is guaranteed to be taken 
+	the \code{BranchProcess} with the branch that is guaranteed to be taken 
 	and only compile that branch.
 
 \subsection{Nil Process Warnings}
@@ -401,10 +401,10 @@
 	includes nil processes that are part of parallel composition ($P \mid 0 
 	\equiv P$) and nil processes that are an option in non deterministic choice 
 	(in $P+0$ the nil process will never be selected). This is implemented as a 
-	visitor that visits all \textsf{NilProcess} nodes, checks whether their 
-	parent nodes are \textsf{ParallelComposition} or 
-	\textsf{NonDeterministicChoice}. If they are, then a warning is issued and 
-	the property \textsf{IsUsed} on the nil process nodes is set to 
+	visitor that visits all \code{NilProcess} nodes, checks whether their 
+	parent nodes are \code{ParallelComposition} or 
+	\code{NonDeterministicChoice}. If they are, then a warning is issued and 
+	the property \code{IsUsed} on the nil process nodes is set to 
 	\texttt{false}, which allows the compilation to skip those processes.
 	
 	The analysis also checks for process definitions that are defined as nothing 
@@ -417,39 +417,39 @@
 	anywhere in the application ever synchronizes on then that process will be 
 	blocked forever. That scenario is not hard to detect manually in a small 
 	system, however once the system grows it becomes increasingly harder, 
-	especially when we factor in that a channel can be relabelled multiple 
+	especially when we factor in that a channel can be relabeled multiple 
 	times. 
 	
 	To attempt to detect these synchronizations which will never complete, the 
-	PLR contains an analysis named \textit{Umatched Channels}. It begins by
-	collecting the channel names of all \textsf{InAction} and \textsf{OutAction}
+	PLR contains an analysis named \textit{Unmatched Channels}. It begins by
+	collecting the channel names of all \code{InAction} and \code{OutAction}
 	instances in the system. It then collects all the relabellings that can occur
-	(although it does not take into account relabelling that is done by custom
+	(although it does not take into account relabeling that is done by custom
 	.NET methods). Every variation of channel names that are possible are then
 	created using the relabellings, this is done on a global scale without 
-	consideration for whether the relabelling has a chance of actually being
+	consideration for whether the relabeling has a chance of actually being
 	applied to a particular channel. Once all the variations have been created
 	the input channels are compared to the output channels, and if there is
 	an input channel that has no corresponding output channel, or vice versa,
 	then a warning is issued that the process will block forever should it 
 	attempt to synchronize on that channel. 
 	
-	Actions can only be child nodes of \textit{ActionPrefix} nodes, if an 
-	action is guaranteed to block forever, its parent \textsf{ActionPrefix}
+	Actions can only be child nodes of \code{ActionPrefix} nodes, if an 
+	action is guaranteed to block forever, its parent \code{ActionPrefix}
 	node is gotten and the process that follows the action has its 
-	\textsf{IsUsed} property set to \texttt{false}. This allows the PLR to skip
+	\code{IsUsed} property set to \texttt{false}. This allows the PLR to skip
 	compiling the following process entirely, as it is guaranteed never to run.
 	 
 	Clearly this analysis is an imprecise approximation of the problem itself. 
 	There could be channels that block that the analysis does not detect, because
-	it has found a relabelling that causes it to believe that the channel can 
-	synchronize, even if the relabelling actually has no chance of being applied
+	it has found a relabeling that causes it to believe that the channel can 
+	synchronize, even if the relabeling actually has no chance of being applied
 	to that particular channel. Even so, the analysis does detect problems in
 	process algebra systems, and is useful for example when channel names or
 	relabellings have been mistyped.
 	
 	It would be interesting to further refine this analysis, for example by 
-	traversing through the tree and figuring out exactly which relabelling
+	traversing through the tree and figuring out exactly which relabeling
 	could potentially be applied to which channels. Another possible refinement
 	would be to detect cases such as $P = (ch.0+\overline{ch}.0)$. Here the
 	input and output channel both exist, however since they are part of the
@@ -465,8 +465,3 @@
 	is issued to that effect, and if optimizations are turned on the unused 
 	process is never compiled at the compilation stage, giving some space 
 	savings in the compiled executable.
-
-	
-
-
-	
