@@ -22,6 +22,24 @@ namespace PLR.Runtime {
         Deadlock
     }
 
+    #region Event infrastructure
+    public delegate void ProcessChangeEventHandler(object sender, ProcessEventArgs e);
+    public delegate void TraceEventHandler(object sender, TraceEventArgs e);
+    public class ProcessEventArgs {
+        public ProcessBase Process { get; set; }
+    }
+
+    public class TraceEventArgs {
+        public int ProcessID1 { get; set; }
+        public int ProcessID2 { get; set; }
+        public IAction Action1 { get; set; }
+        public IAction Action2 { get; set; }
+        public TraceType Type { get; set; }
+        public string ItemAsString { get; set; }
+    }
+    #endregion
+
+
     public class Scheduler {
 
         private Scheduler() {
@@ -31,8 +49,19 @@ namespace PLR.Runtime {
                 }
             }
         }
+
+        public event ProcessChangeEventHandler ProcessRegistered;
+        public event ProcessChangeEventHandler ProcessKilled;
+        public event TraceEventHandler TraceItemAdded;
+
         private List<string> _trace = new List<string>();
         private static Scheduler _instance = new Scheduler();
+        
+        //Instead of resetting all members, just create a new global
+        //instance.
+        public static void Reset() {
+            _instance = new Scheduler();
+        }
 
         public static Scheduler Instance {
             get { return _instance; }
@@ -46,6 +75,9 @@ namespace PLR.Runtime {
             lock (_activeProcs) {
                 _activeProcs.Add(p);
             }
+            if (ProcessRegistered != null) {
+                ProcessRegistered(this, new ProcessEventArgs() { Process = p });
+            }
         }
 
         public void KillProcess(ProcessBase p) {
@@ -53,6 +85,10 @@ namespace PLR.Runtime {
                 _activeProcs.Remove(p);
                 Debug("Killed " + p);
             }
+            if (ProcessKilled != null) {
+                ProcessKilled(this, new ProcessEventArgs() { Process = p });
+            }
+
         }
 
         private class Match {
@@ -69,6 +105,14 @@ namespace PLR.Runtime {
                 }
             }
             while (true) {
+
+                if (StepMode) {
+                    while (!MayDoNextStep) {
+                        Thread.Sleep(200);
+                    }
+                    MayDoNextStep = false;
+                }
+
                 Debug("Procs: " + _activeProcs.Count);
                 bool allWaiting = true;
                 lock (_activeProcs) {
@@ -78,11 +122,17 @@ namespace PLR.Runtime {
                     }
                 }
                 if (allWaiting) {
-                    FindMatches();
+                    bool stillActive = FindMatches();
+                    if (!stillActive) {
+                        return;
+                    }
                 }
                 System.Threading.Thread.Sleep(100);
             }
         }
+        
+        public bool MayDoNextStep { get; set; }
+        public bool StepMode { get; set; }
 
         private Guid ProcessIdToSetId(int processID) {
             foreach (ProcessBase p in _activeProcs) {
@@ -117,7 +167,12 @@ namespace PLR.Runtime {
             return candidates;
         }
 
-        public void FindMatches() {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>true if the Scheduler should continue, false if it is
+        /// deadlocked.</returns>
+        public bool FindMatches() {
             List<ProcessBase> finished = new List<ProcessBase>();
             List<Match> matches = new List<Match>();
 
@@ -158,15 +213,23 @@ namespace PLR.Runtime {
                     foreach (ProcessBase p in blockedProcs) {
                         if (p.State != ThreadState.WaitSleepJoin) {
                             Debug("A process came out of blocked state, all hope is not lost!");
-                            return;
+                            return true;
                         }
                     }
                 }
 
                 Debug("System is deadlocked");
                 Logger.TraceDebug("<DEADLOCKED>", TraceType.Deadlock);
-                Console.ReadKey();
-                Environment.Exit(1);
+                if (TraceItemAdded != null) {
+                    TraceItemAdded(this, new TraceEventArgs() { Type = TraceType.Deadlock, ItemAsString="<DEADLOCK>" });
+                }
+                try {
+                    Console.ReadKey();
+                } catch (Exception ex) {
+                    //Just swallow it, this fails when run from a windows application so we don't
+                    //want the exception to cause problems.
+                }
+                return false; //Not still active
             }
 
             Match m;
@@ -176,11 +239,27 @@ namespace PLR.Runtime {
                 m = matches[new Random().Next(matches.Count)];
             }
 
+            TraceEventArgs traceArgs = new TraceEventArgs();
+            traceArgs.ProcessID1 = m.a1.ProcessID;
+            traceArgs.Action1 = m.a1;
+            traceArgs.Action2 = m.a2;
+            traceArgs.Type = TraceType.Sync;
+
             Debug("Chose match");
             if (m.IsTau) {
                 _trace.Add("t - (" + m.a1.ToString().Replace("_","") + ")");
+                traceArgs.Type = TraceType.Tau;
             } else {
                 _trace.Add(m.a1.ToString().Replace("_", ""));
+            }
+
+            if (m.a1.IsAsynchronous) {
+                traceArgs.Type = TraceType.MethodCall;
+            }
+            traceArgs.ItemAsString = _trace[_trace.Count - 1];
+
+            if (TraceItemAdded != null) {
+                TraceItemAdded(this, traceArgs);
             }
 
             //Now let them sync with each other
@@ -231,6 +310,7 @@ namespace PLR.Runtime {
                 Debug("Waking up " + p);
                 p.Continue();
             }
+            return true;
         }
 
         private Match ChooseMatchInterActive(List<Match> matches) {

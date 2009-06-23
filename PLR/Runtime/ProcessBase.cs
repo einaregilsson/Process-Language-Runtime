@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using PLR.AST.Actions;
 
@@ -52,7 +53,6 @@ namespace PLR.Runtime {
         }
 
         #endregion
-
 
         public ProcessBase() {
             Scheduler.Instance.AddProcess(this);
@@ -128,7 +128,7 @@ namespace PLR.Runtime {
         }
 
         public override string ToString() {
-            return this.GetType().FullName + "_" + this.ID;
+            return Regex.Replace(this.GetType().FullName, @"_\d+", "") + "@" + this.ID;
         }
 
         public void Continue() {
