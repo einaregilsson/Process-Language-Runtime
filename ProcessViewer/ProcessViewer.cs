@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 using PLR.Runtime;
 
@@ -16,12 +18,33 @@ namespace ProcessViewer {
         delegate void ProcessChanged(ProcessBase p);
         delegate void TraceChanged(string item);
 
+        private CandidateAction _chosenAction = null;
+
+        private CandidateAction ChooseActionInterActive(List<CandidateAction> candidates) {
+            _chosenAction = null; 
+            lstCandidateActions.Invoke(new NewCandidateActionsDelegate(NewCandidateActions), candidates);
+            while (_chosenAction == null) {
+                Thread.Sleep(500); //Wait until user has selected something...
+            }
+            CandidateAction chosen = _chosenAction;
+            return chosen;
+        }
+
+        private delegate void NewCandidateActionsDelegate(List<CandidateAction> candidates);
+        private void NewCandidateActions(List<CandidateAction> candidates) {
+            lstCandidateActions.Items.Clear();
+            foreach (CandidateAction action in candidates) {
+                lstCandidateActions.Items.Add(action);
+            }
+        }
+
         public ProcessViewer() {
             InitializeComponent();
             Scheduler.Instance.TraceItemAdded += new TraceEventHandler(TraceItemAdded);
             Scheduler.Instance.ProcessRegistered += new ProcessChangeEventHandler(ProcessRegistered);
             Scheduler.Instance.ProcessKilled += new ProcessChangeEventHandler(ProcessKilled);
             Scheduler.Instance.StepMode = true;
+            Scheduler.Instance.SelectAction = new SelectActionToExecute(this.ChooseActionInterActive);
             processThreadWorker.DoWork += new DoWorkEventHandler(RunProcessApp);
             processThreadWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(ExecutionFinished);
         }
@@ -51,7 +74,7 @@ namespace ProcessViewer {
         }
 
         void TraceItemAdded(object sender, TraceEventArgs e) {
-            lstTrace.Invoke(new TraceChanged(AddToTrace), e.ItemAsString);
+            lstTrace.Invoke(new TraceChanged(AddToTrace), e.ExecutedAction.ToString());
         }
 
         void AddToTrace(string item) {
@@ -97,9 +120,13 @@ namespace ProcessViewer {
             }
         }
 
-        private void btnStep_Click(object sender, EventArgs e) {
+        private void btnExecuteRandom_Click(object sender, EventArgs e) {
             Scheduler.Instance.MayDoNextStep = true;
         }
 
+        private void btnPause_Click(object sender, EventArgs e) {
+            Scheduler.Instance.StepMode = true;
+            Scheduler.Instance.MayDoNextStep = false;
+        }
     }
 }

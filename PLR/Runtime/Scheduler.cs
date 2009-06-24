@@ -25,27 +25,76 @@ namespace PLR.Runtime {
     #region Event infrastructure
     public delegate void ProcessChangeEventHandler(object sender, ProcessEventArgs e);
     public delegate void TraceEventHandler(object sender, TraceEventArgs e);
+    public delegate CandidateAction SelectActionToExecute(List<CandidateAction> candidates);
     public class ProcessEventArgs {
         public ProcessBase Process { get; set; }
     }
 
     public class TraceEventArgs {
-        public int ProcessID1 { get; set; }
-        public int ProcessID2 { get; set; }
+        public CandidateAction ExecutedAction { get; set; }
+    }
+
+    public class CandidateActionsEventArgs {
+        public List<CandidateAction> CandidateActions { get; set; }
+    }
+
+    public class CandidateAction {
         public IAction Action1 { get; set; }
         public IAction Action2 { get; set; }
-        public TraceType Type { get; set; }
-        public string ItemAsString { get; set; }
+        public ProcessBase Process1 { get; set; }
+        public ProcessBase Process2 { get; set; }
+        public ProcessBase ScopeProcess { get; set; }
+        public static readonly CandidateAction DEADLOCK = new CandidateAction(null, null, null, null, null);
+
+        public bool IsDeadlock {
+            get {
+                return this == CandidateAction.DEADLOCK;
+            }
+        }
+
+        public bool IsTau {
+            get {
+                return ScopeProcess != null;
+            }
+        }
+
+        public bool IsAsync {
+            get {
+                return Action1.IsAsynchronous;
+            }
+        }
+
+        public bool IsSync {
+            get {
+                return Action1 != null && Action2 != null;
+            }
+        }
+
+        
+        public CandidateAction(IAction a1, IAction a2, ProcessBase p1, ProcessBase p2, ProcessBase scopeProcess) {
+            Action1 = a1;
+            Action2 = a2;
+            Process1 = p1;
+            Process2 = p2;
+            ScopeProcess = scopeProcess;
+        }
+
+        public override string ToString() {
+            return Action1.ToString();
+        }
     }
+
     #endregion
 
 
     public class Scheduler {
 
         private Scheduler() {
+            this.SelectAction = new SelectActionToExecute(this.ChooseActionInterActive);
             foreach (string arg in Environment.GetCommandLineArgs()) {
                 if (arg.ToLower() == "/i" || arg.ToLower() == "/interactive") {
                     this.Interactive = true;
+                    this.SelectAction = new SelectActionToExecute(this.ChooseActionInterActive);
                 }
             }
         }
@@ -55,12 +104,18 @@ namespace PLR.Runtime {
         public event TraceEventHandler TraceItemAdded;
 
         private List<string> _trace = new List<string>();
+        private Random _rng = new Random();
         private static Scheduler _instance = new Scheduler();
+        public SelectActionToExecute SelectAction { get; set; }
         
+
         //Instead of resetting all members, just create a new global
         //instance.
         public static void Reset() {
+            //Keep the selection method
+            SelectActionToExecute tmp = _instance.SelectAction;
             _instance = new Scheduler();
+            _instance.SelectAction = tmp;
         }
 
         public static Scheduler Instance {
@@ -91,12 +146,6 @@ namespace PLR.Runtime {
 
         }
 
-        private class Match {
-            public IAction a1, a2;
-            public bool IsTau { get; set; }
-            public Match(IAction a1, IAction a2) { this.a1 = a1; this.a2 = a2; }
-        }
-
         public void Run() {
             Debug("Running Scheduler");
             lock (_activeProcs) {
@@ -122,7 +171,7 @@ namespace PLR.Runtime {
                     }
                 }
                 if (allWaiting) {
-                    bool stillActive = FindMatches();
+                    bool stillActive = FindCandidateActions();
                     if (!stillActive) {
                         return;
                     }
@@ -147,11 +196,19 @@ namespace PLR.Runtime {
             Logger.SchedulerDebug("SCHED: " + msg);
         }
 
-        private List<Match> FindMatches(List<IAction> actions) {
-            List<Match> candidates = new List<Match>();
+        private ProcessBase GetProcessByID(int id) {
+            foreach (ProcessBase p in _activeProcs) {
+                if (p.ID == id) {
+                    return p;
+                }
+            }
+            return null;
+        }
+        private List<CandidateAction> FindCandidateActions(List<IAction> actions, ProcessBase scope) {
+            List<CandidateAction> candidates = new List<CandidateAction>();
             for (int i = 0; i < actions.Count; i++) {
                 if (actions[i].IsAsynchronous) {
-                    candidates.Add(new Match(actions[i], null));
+                    candidates.Add(new CandidateAction(actions[i], null, GetProcessByID(actions[i].ProcessID), null, scope));
                 } else {
                     for (int j = i + 1; j < actions.Count; j++) {
                         int p1id = actions[i].ProcessID, 
@@ -159,7 +216,7 @@ namespace PLR.Runtime {
                         Guid p1setID = ProcessIdToSetId(p1id), p2setID = ProcessIdToSetId(p2id);
                         if (actions[i].CanSyncWith(actions[j])
                             && (p1setID != p2setID || p1setID == Guid.Empty)) {
-                            candidates.Add(new Match(actions[i], actions[j]));
+                            candidates.Add(new CandidateAction(actions[i], actions[j], GetProcessByID(p1id), GetProcessByID(p2id), scope));
                         }
                     }
                 }
@@ -172,9 +229,9 @@ namespace PLR.Runtime {
         /// </summary>
         /// <returns>true if the Scheduler should continue, false if it is
         /// deadlocked.</returns>
-        public bool FindMatches() {
+        public bool FindCandidateActions() {
             List<ProcessBase> finished = new List<ProcessBase>();
-            List<Match> matches = new List<Match>();
+            List<CandidateAction> candidates = new List<CandidateAction>();
 
 
             lock (_activeProcs) {
@@ -183,24 +240,18 @@ namespace PLR.Runtime {
                     while (parent != null) {
                         if (!finished.Contains(parent)) {
                             Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions: " + Util.Join(", ", parent.LocalActions));
-                            matches.AddRange(FindMatches(parent.LocalActions));
+                            candidates.AddRange(FindCandidateActions(parent.LocalActions, parent));
                             finished.Add(parent);
                         }
                         parent = parent.Parent;
-
                     }
                 }
             }
 
-            foreach (Match restrictedMatch in matches) {
-                restrictedMatch.IsTau = true; //Everything we have looked at so far has been restricted
-                                //Only the actions from the global scope are outside observable
-            }
-            
             Debug("Global scope contains " + GlobalScope.Actions.Count + " candidate actions: " + Util.Join(", ", GlobalScope.Actions));
-            matches.AddRange(FindMatches(GlobalScope.Actions));
+            candidates.AddRange(FindCandidateActions(GlobalScope.Actions, null));
 
-            if (matches.Count == 0) {
+            if (candidates.Count == 0) {
                 //Give blocked processes a chance 
                 List<ProcessBase> blockedProcs = new List<ProcessBase>();
                 foreach (ProcessBase p in _activeProcs) {
@@ -221,7 +272,7 @@ namespace PLR.Runtime {
                 Debug("System is deadlocked");
                 Logger.TraceDebug("<DEADLOCKED>", TraceType.Deadlock);
                 if (TraceItemAdded != null) {
-                    TraceItemAdded(this, new TraceEventArgs() { Type = TraceType.Deadlock, ItemAsString="<DEADLOCK>" });
+                    TraceItemAdded(this, new TraceEventArgs() { ExecutedAction = null });
                 }
                 try {
                     Console.ReadKey();
@@ -232,68 +283,49 @@ namespace PLR.Runtime {
                 return false; //Not still active
             }
 
-            Match m;
-            if (Interactive) {
-                m = ChooseMatchInterActive(matches);
+            CandidateAction chosen;
+            chosen = SelectAction(candidates);
+
+            TraceEventArgs traceArgs = new TraceEventArgs() { ExecutedAction = chosen };
+
+            Debug("Chose action");
+            if (chosen.IsTau) {
+                _trace.Add("t - " + chosen);
             } else {
-                m = matches[new Random().Next(matches.Count)];
+                _trace.Add(chosen.ToString());
             }
-
-            TraceEventArgs traceArgs = new TraceEventArgs();
-            traceArgs.ProcessID1 = m.a1.ProcessID;
-            traceArgs.Action1 = m.a1;
-            traceArgs.Action2 = m.a2;
-            traceArgs.Type = TraceType.Sync;
-
-            Debug("Chose match");
-            if (m.IsTau) {
-                _trace.Add("t - (" + m.a1.ToString().Replace("_","") + ")");
-                traceArgs.Type = TraceType.Tau;
-            } else {
-                _trace.Add(m.a1.ToString().Replace("_", ""));
-            }
-
-            if (m.a1.IsAsynchronous) {
-                traceArgs.Type = TraceType.MethodCall;
-            }
-            traceArgs.ItemAsString = _trace[_trace.Count - 1];
 
             if (TraceItemAdded != null) {
                 TraceItemAdded(this, traceArgs);
             }
 
             //Now let them sync with each other
-            if (m.a2 != null && !m.a1.IsAsynchronous && !m.a2.IsAsynchronous) {
-                m.a1.Sync(m.a2);
-                m.a2.Sync(m.a1);
+            if (!chosen.IsAsync) {
+                chosen.Action1.Sync(chosen.Action2);
+                chosen.Action2.Sync(chosen.Action1);
             }
 
             List<ProcessBase> wakeUp = new List<ProcessBase>();
             List<Guid> wakeUpGuids = new List<Guid>();
-            foreach (ProcessBase p in _activeProcs) {
-                if (m.a1.ProcessID == p.ID) {
-                    p.ChosenAction = m.a1;
-                    wakeUp.Add(p);
-                    wakeUpGuids.Add(p.SetID);
-                } else if (m.a2 != null && m.a2.ProcessID == p.ID) {
-                    p.ChosenAction = m.a2;
-                    wakeUp.Add(p);
-                    wakeUpGuids.Add(p.SetID);
-                }
+            chosen.Process1.ChosenAction = chosen.Action1;
+            wakeUpGuids.Add(chosen.Process1.SetID);
+            if (!chosen.IsAsync) {
+                chosen.Process2.ChosenAction = chosen.Action2;
+                wakeUpGuids.Add(chosen.Process2.SetID);
             }
 
-            if (wakeUp.Count == 1) {
-                Debug("Chose async action " + m.a1.ToString() + ", proc " + wakeUp[0] + ".");
+            if (chosen.IsAsync) {
+                Debug("Chose async action " + chosen + ", proc " + chosen.Process1 + ".");
             } else {
-                Debug("Chose match " + m.a1.ToString().Replace("_", "") + ", procs " + wakeUp[0] + " and " + wakeUp[1]);
+                Debug("Chose action " + chosen + ", procs " + chosen.Process1 + " and " + chosen.Process2);
             }
 
-            if (m.a2 == null) {
-                Logger.TraceDebug(_trace[_trace.Count - 1], TraceType.MethodCall);
-            } else if (m.IsTau) {
-                Logger.TraceDebug(_trace[_trace.Count - 1], TraceType.Tau);
+            if (chosen.IsAsync) {
+                Logger.TraceDebug(chosen.ToString(), TraceType.MethodCall);
+            } else if (chosen.IsTau) {
+                Logger.TraceDebug(chosen.ToString(), TraceType.Tau);
             } else {
-                Logger.TraceDebug(_trace[_trace.Count - 1], TraceType.Sync);
+                Logger.TraceDebug(chosen.ToString(), TraceType.Sync);
             }
 
 
@@ -313,23 +345,26 @@ namespace PLR.Runtime {
             return true;
         }
 
-        private Match ChooseMatchInterActive(List<Match> matches) {
+        private CandidateAction ChooseActionRandom(List<CandidateAction> candidates) {
+            return candidates[_rng.Next(candidates.Count)];
+        }
+
+        private CandidateAction ChooseActionInterActive(List<CandidateAction> candidates) {
 
             int choice = -1;
             Console.WriteLine("\nInteractive mode: ");
-            for (int i = 0; i < matches.Count; i++) {
-                Match printm = matches[i];
-                Console.WriteLine((i + 1) + ". " + printm.a1.ToString().Replace("_", ""));
+            for (int i = 0; i < candidates.Count; i++) {
+                Console.WriteLine((i + 1) + ". " + candidates[i]);
             }
             Console.WriteLine();
-            while (choice < 1 || choice > matches.Count) {
+            while (choice < 1 || choice > candidates.Count) {
                 Console.Write("Type the number of the next action to perform: ");
                 string input = Console.ReadLine();
                 if (!int.TryParse(input, out choice)) {
                     choice = -1;
                 }
             }
-            return matches[choice - 1];
+            return candidates[choice - 1];
         }
     }
 }
