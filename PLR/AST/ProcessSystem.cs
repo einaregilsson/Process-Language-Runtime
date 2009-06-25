@@ -6,15 +6,15 @@
  * 
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
- ﻿using System.Collections.Generic;
-using System.Threading;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
+using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.IO;
-using System;
-using PLR.Compilation;
-using System.Diagnostics.SymbolStore;
+using System.Threading;
 using PLR.Analysis;
+using PLR.Compilation;
 
 namespace PLR.AST {
 

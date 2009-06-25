@@ -13,7 +13,7 @@
   <Class Name="PLR.Runtime.BuiltIns">
     <Position X="6" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAEAAA=</HashCode>
+      <HashCode>gAAAABAAAAAAAAAAAAAAAAAACEAAAAAAAAQAAAAEAAA=</HashCode>
       <FileName>Runtime\BuiltIns.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -41,7 +41,7 @@
       <Field Name="lockString" Hidden="true" />
     </Members>
     <TypeIdentifier>
-      <HashCode>AQCAAIAAAAAAACICAAAIAAAAIAABAAAAAAAAAAAEMAI=</HashCode>
+      <HashCode>AQCCAIAAAAAAACICAAAIAAAAIAABAAAAAAAgAAAEMAI=</HashCode>
       <FileName>Runtime\Logger.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -93,16 +93,16 @@
       <Field Name="_instance" Hidden="true" />
       <Field Name="_trace" Hidden="true" />
     </Members>
-    <NestedTypes>
-      <Class Name="PLR.Runtime.Scheduler.Match" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Runtime\Scheduler.cs</NewMemberFileName>
-        </TypeIdentifier>
-      </Class>
-    </NestedTypes>
     <TypeIdentifier>
-      <HashCode>AEAEAAAAIABCAIAEAAABAAAAAAAAAAAAQAAAABAAIAI=</HashCode>
+      <HashCode>AMAMAAAgIQBABIAEACABKABAQAAAAAACQQAAAABAIAI=</HashCode>
       <FileName>Runtime\Scheduler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PLR.Runtime.CandidateAction">
+    <Position X="7.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAgAEEBCQAABAAAgAAACAAAAAAIAAEAA=</HashCode>
+      <FileName>Runtime\CandidateAction.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="PLR.Runtime.IAction">

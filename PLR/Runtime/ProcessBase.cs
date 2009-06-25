@@ -26,14 +26,13 @@ namespace PLR.Runtime {
         public int ID { get { return _id; } }
 
         private Guid _setID = Guid.Empty;
-        public Guid SetID{ 
+        public Guid SetID {
             get { return _setID; }
             set { _setID = value; }
         }
 
         private List<ProcessBase> _subProcs = new List<ProcessBase>();
-        public List<ProcessBase> SubProcesses 
-        {
+        public List<ProcessBase> SubProcesses {
             get { return _subProcs; }
         }
 
@@ -94,10 +93,13 @@ namespace PLR.Runtime {
             get { return _localActions; }
         }
 
+
         protected void Sync(IAction action) {
             SyncAction(action);
             Debug("Synced actions, going to sleep");
+#pragma warning disable 0618
             this.Thread.Suspend();
+#pragma warning restore 0618
             Debug("Woke up");
             if (this.ChosenAction == null) {
                 Debug("I wasn't chosen...");
@@ -110,7 +112,6 @@ namespace PLR.Runtime {
 
         protected void SyncAction(IAction action) {
             //Relabellings etc...
-
             if (this.PreProcess == null) {
                 Console.WriteLine("WAHT IS HAPPENS?");
             }
@@ -132,14 +133,16 @@ namespace PLR.Runtime {
         }
 
         public void Continue() {
+#pragma warning disable 0618
             _procThread.Resume();
+#pragma warning restore 0618
         }
-        
+
         [System.Diagnostics.DebuggerStepThrough]
         private void StartProcess() {
             _procThread = Thread.CurrentThread;
             _id = _procThread.ManagedThreadId;
-            Logger.Register(this.GetType().FullName + "_" + _id +": ");
+            Logger.Register(this.GetType().FullName + "_" + _id + ": ");
             Debug("Started, my parent is " + this.Parent);
             RunProcess();
         }
@@ -156,13 +159,13 @@ namespace PLR.Runtime {
             for (ProcessBase parent = this; parent != null; parent = parent.Parent) {
                 lock (parent.LocalActions) {
                     parent.LocalActions.RemoveAll(delegate(IAction act) {
-                        return act.ProcessID == this.ID;
+                        return act == null || act.ProcessID == this.ID;
                     });
                 }
             }
             lock (GlobalScope.Actions) {
                 GlobalScope.Actions.RemoveAll(delegate(IAction act) {
-                    return act.ProcessID == this.ID;
+                    return act == null || act.ProcessID == this.ID;
                 });
             }
         }

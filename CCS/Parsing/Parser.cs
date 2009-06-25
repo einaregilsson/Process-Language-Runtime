@@ -35,6 +35,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 using System;
 using PLR.Analysis;
 using PLR.AST;
+using PLR;
 
 namespace CCS.Parsing {
 

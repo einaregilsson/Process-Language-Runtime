@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ProcessViewer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Hewlett-Packard")]
+[assembly: AssemblyCompany("Einar Egilsson")]
 [assembly: AssemblyProduct("ProcessViewer")]
 [assembly: AssemblyCopyright("Copyright © Einar Egilsson 2009")]
 [assembly: AssemblyTrademark("")]

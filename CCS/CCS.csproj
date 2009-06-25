@@ -45,6 +45,7 @@
     <Compile Include="Parsing\Parser.Generated.cs">
       <DependentUpon>Parser.cs</DependentUpon>
     </Compile>
+    <Compile Include="Parsing\ParserService.cs" />
     <Compile Include="Parsing\Scanner.cs" />
     <Compile Include="Parsing\Scanner.Generated.cs">
       <DependentUpon>Scanner.cs</DependentUpon>

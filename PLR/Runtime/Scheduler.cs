@@ -8,24 +8,15 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
-using PLR.AST.Actions;
-
 namespace PLR.Runtime {
-
-    public enum TraceType {
-        Sync,
-        Tau,
-        MethodCall,
-        Deadlock
-    }
 
     #region Event infrastructure
     public delegate void ProcessChangeEventHandler(object sender, ProcessEventArgs e);
     public delegate void TraceEventHandler(object sender, TraceEventArgs e);
     public delegate CandidateAction SelectActionToExecute(List<CandidateAction> candidates);
+
     public class ProcessEventArgs {
         public ProcessBase Process { get; set; }
     }
@@ -33,97 +24,53 @@ namespace PLR.Runtime {
     public class TraceEventArgs {
         public CandidateAction ExecutedAction { get; set; }
     }
-
-    public class CandidateActionsEventArgs {
-        public List<CandidateAction> CandidateActions { get; set; }
-    }
-
-    public class CandidateAction {
-        public IAction Action1 { get; set; }
-        public IAction Action2 { get; set; }
-        public ProcessBase Process1 { get; set; }
-        public ProcessBase Process2 { get; set; }
-        public ProcessBase ScopeProcess { get; set; }
-        public static readonly CandidateAction DEADLOCK = new CandidateAction(null, null, null, null, null);
-
-        public bool IsDeadlock {
-            get {
-                return this == CandidateAction.DEADLOCK;
-            }
-        }
-
-        public bool IsTau {
-            get {
-                return ScopeProcess != null;
-            }
-        }
-
-        public bool IsAsync {
-            get {
-                return Action1.IsAsynchronous;
-            }
-        }
-
-        public bool IsSync {
-            get {
-                return Action1 != null && Action2 != null;
-            }
-        }
-
-        
-        public CandidateAction(IAction a1, IAction a2, ProcessBase p1, ProcessBase p2, ProcessBase scopeProcess) {
-            Action1 = a1;
-            Action2 = a2;
-            Process1 = p1;
-            Process2 = p2;
-            ScopeProcess = scopeProcess;
-        }
-
-        public override string ToString() {
-            return Action1.ToString();
-        }
-    }
-
     #endregion
 
-
+    /// <summary>
+    /// The scheduler for process execution. It selects which actions to execute and
+    /// process must register and unregister with it as they enter and leave the 
+    /// system.
+    /// </summary>
     public class Scheduler {
 
+        #region Constructor
         private Scheduler() {
-            this.SelectAction = new SelectActionToExecute(this.ChooseActionInterActive);
+            this.SelectAction = new SelectActionToExecute(this.ChooseActionRandom);
             foreach (string arg in Environment.GetCommandLineArgs()) {
                 if (arg.ToLower() == "/i" || arg.ToLower() == "/interactive") {
-                    this.Interactive = true;
                     this.SelectAction = new SelectActionToExecute(this.ChooseActionInterActive);
                 }
             }
         }
+        #endregion
 
+        #region Events
         public event ProcessChangeEventHandler ProcessRegistered;
         public event ProcessChangeEventHandler ProcessKilled;
         public event TraceEventHandler TraceItemAdded;
+        #endregion
 
-        private List<string> _trace = new List<string>();
-        private Random _rng = new Random();
+        #region Static
         private static Scheduler _instance = new Scheduler();
-        public SelectActionToExecute SelectAction { get; set; }
-        
-
-        //Instead of resetting all members, just create a new global
-        //instance.
-        public static void Reset() {
-            //Keep the selection method
-            SelectActionToExecute tmp = _instance.SelectAction;
-            _instance = new Scheduler();
-            _instance.SelectAction = tmp;
-        }
 
         public static Scheduler Instance {
             get { return _instance; }
         }
-        //Active processes and their possible actions
+
+        #endregion
+
+        #region Fields
+        private List<string> _trace = new List<string>();
+        private Random _rng = new Random();
         private List<ProcessBase> _activeProcs = new List<ProcessBase>();
-        public bool Interactive { get; set; }
+        private bool _stop = false;
+        #endregion
+
+        #region Properties
+        public SelectActionToExecute SelectAction { get; set; }
+        #endregion
+
+        #region Public methods
 
         public void AddProcess(ProcessBase p) {
             Debug("Added " + p);
@@ -133,6 +80,13 @@ namespace PLR.Runtime {
             if (ProcessRegistered != null) {
                 ProcessRegistered(this, new ProcessEventArgs() { Process = p });
             }
+        }
+
+        //Instead of resetting all members, just create a new global
+        //instance.
+        public void Reset() {
+            _activeProcs.Clear();
+            _trace.Clear();
         }
 
         public void KillProcess(ProcessBase p) {
@@ -146,6 +100,10 @@ namespace PLR.Runtime {
 
         }
 
+        public void StopAllProcesses() {
+            _stop = true;
+        }
+
         public void Run() {
             Debug("Running Scheduler");
             lock (_activeProcs) {
@@ -154,14 +112,6 @@ namespace PLR.Runtime {
                 }
             }
             while (true) {
-
-                if (StepMode) {
-                    while (!MayDoNextStep) {
-                        Thread.Sleep(200);
-                    }
-                    MayDoNextStep = false;
-                }
-
                 Debug("Procs: " + _activeProcs.Count);
                 bool allWaiting = true;
                 lock (_activeProcs) {
@@ -170,19 +120,38 @@ namespace PLR.Runtime {
                         Debug(p + " is in state: " + p.State);
                     }
                 }
-                if (allWaiting) {
-                    bool stillActive = FindCandidateActions();
+                if (allWaiting && _stop) {
+                    _stop = false;
+                    SuspendOrAbortProcesses();
+                    GlobalScope.Actions.Clear();
+                    return;
+                } else if (allWaiting) {
+                    bool stillActive = SelectAndExecuteAction();
                     if (!stillActive) {
+                        SuspendOrAbortProcesses();
                         return;
                     }
                 }
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
         }
-        
-        public bool MayDoNextStep { get; set; }
-        public bool StepMode { get; set; }
 
+        #endregion
+
+        #region Private methods
+
+        private void SuspendOrAbortProcesses() {
+            lock (_activeProcs) {
+                foreach (ProcessBase p in _activeProcs) {
+                    if (p.Thread.ThreadState == ThreadState.Suspended) {
+                        p.ChosenAction = null;
+                        p.Continue();
+                    } else if (p.Thread.ThreadState == ThreadState.WaitSleepJoin) {
+                        p.Thread.Abort();
+                    }
+                }
+            }
+        }
         private Guid ProcessIdToSetId(int processID) {
             foreach (ProcessBase p in _activeProcs) {
                 if (p.ID == processID) {
@@ -204,6 +173,7 @@ namespace PLR.Runtime {
             }
             return null;
         }
+
         private List<CandidateAction> FindCandidateActions(List<IAction> actions, ProcessBase scope) {
             List<CandidateAction> candidates = new List<CandidateAction>();
             for (int i = 0; i < actions.Count; i++) {
@@ -225,62 +195,19 @@ namespace PLR.Runtime {
         }
 
         /// <summary>
-        /// 
+        /// Finds all candidate actions for execution, and selects one to
+        /// execute using the SelectionActionToExecute delegate.
         /// </summary>
-        /// <returns>true if the Scheduler should continue, false if it is
-        /// deadlocked.</returns>
-        public bool FindCandidateActions() {
-            List<ProcessBase> finished = new List<ProcessBase>();
-            List<CandidateAction> candidates = new List<CandidateAction>();
+        /// <returns>
+        /// true if the Scheduler should continue, false if it is
+        /// deadlocked.
+        /// </returns>
+        private bool SelectAndExecuteAction() {
 
-
-            lock (_activeProcs) {
-                foreach (ProcessBase proc in _activeProcs) {
-                    ProcessBase parent = proc;
-                    while (parent != null) {
-                        if (!finished.Contains(parent)) {
-                            Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions: " + Util.Join(", ", parent.LocalActions));
-                            candidates.AddRange(FindCandidateActions(parent.LocalActions, parent));
-                            finished.Add(parent);
-                        }
-                        parent = parent.Parent;
-                    }
-                }
-            }
-
-            Debug("Global scope contains " + GlobalScope.Actions.Count + " candidate actions: " + Util.Join(", ", GlobalScope.Actions));
-            candidates.AddRange(FindCandidateActions(GlobalScope.Actions, null));
+            List<CandidateAction> candidates = FindAllCandidateActions();
 
             if (candidates.Count == 0) {
-                //Give blocked processes a chance 
-                List<ProcessBase> blockedProcs = new List<ProcessBase>();
-                foreach (ProcessBase p in _activeProcs) {
-                    if (p.State == ThreadState.WaitSleepJoin) {
-                        blockedProcs.Add(p);
-                    }
-                }
-                if (blockedProcs.Count > 0) {
-                    Thread.Sleep(1000); //give them a second to see if latest developments allowed them to unblock...
-                    foreach (ProcessBase p in blockedProcs) {
-                        if (p.State != ThreadState.WaitSleepJoin) {
-                            Debug("A process came out of blocked state, all hope is not lost!");
-                            return true;
-                        }
-                    }
-                }
-
-                Debug("System is deadlocked");
-                Logger.TraceDebug("<DEADLOCKED>", TraceType.Deadlock);
-                if (TraceItemAdded != null) {
-                    TraceItemAdded(this, new TraceEventArgs() { ExecutedAction = null });
-                }
-                try {
-                    Console.ReadKey();
-                } catch (Exception ex) {
-                    //Just swallow it, this fails when run from a windows application so we don't
-                    //want the exception to cause problems.
-                }
-                return false; //Not still active
+                return HandleNoCandidateActions();
             }
 
             CandidateAction chosen;
@@ -289,28 +216,28 @@ namespace PLR.Runtime {
             TraceEventArgs traceArgs = new TraceEventArgs() { ExecutedAction = chosen };
 
             Debug("Chose action");
-            if (chosen.IsTau) {
-                _trace.Add("t - " + chosen);
-            } else {
-                _trace.Add(chosen.ToString());
-            }
+            _trace.Add(chosen.ToString());
 
             if (TraceItemAdded != null) {
                 TraceItemAdded(this, traceArgs);
             }
 
-            //Now let them sync with each other
-            if (!chosen.IsAsync) {
+            //Now let them sync with each other if this
+            //is a synchronous actino
+            if (chosen.IsSync) {
                 chosen.Action1.Sync(chosen.Action2);
                 chosen.Action2.Sync(chosen.Action1);
             }
 
             List<ProcessBase> wakeUp = new List<ProcessBase>();
             List<Guid> wakeUpGuids = new List<Guid>();
+            
             chosen.Process1.ChosenAction = chosen.Action1;
             wakeUpGuids.Add(chosen.Process1.SetID);
+            wakeUp.Add(chosen.Process1);
             if (!chosen.IsAsync) {
                 chosen.Process2.ChosenAction = chosen.Action2;
+                wakeUp.Add(chosen.Process2);
                 wakeUpGuids.Add(chosen.Process2.SetID);
             }
 
@@ -320,14 +247,7 @@ namespace PLR.Runtime {
                 Debug("Chose action " + chosen + ", procs " + chosen.Process1 + " and " + chosen.Process2);
             }
 
-            if (chosen.IsAsync) {
-                Logger.TraceDebug(chosen.ToString(), TraceType.MethodCall);
-            } else if (chosen.IsTau) {
-                Logger.TraceDebug(chosen.ToString(), TraceType.Tau);
-            } else {
-                Logger.TraceDebug(chosen.ToString(), TraceType.Sync);
-            }
-
+            Logger.TraceDebug(chosen);
 
             Debug("TRACE: " + "\n     " + String.Join("\n     ", _trace.ToArray()));
             foreach (ProcessBase p in _activeProcs) {
@@ -345,10 +265,92 @@ namespace PLR.Runtime {
             return true;
         }
 
+        /// <summary>
+        /// Finds all candidate actions, both those restricted to particular processes
+        /// and those that aren´t restricted at all and therefore have global scope.
+        /// </summary>
+        /// <returns></returns>
+        private List<CandidateAction> FindAllCandidateActions() {
+            List<ProcessBase> finished = new List<ProcessBase>();
+            List<CandidateAction> candidates = new List<CandidateAction>();
+
+            //Start by finding all actions that were restricted and therefore
+            //have process scope
+            lock (_activeProcs) {
+                foreach (ProcessBase proc in _activeProcs) {
+                    ProcessBase parent = proc;
+                    while (parent != null) {
+                        if (!finished.Contains(parent)) {
+                            Debug(parent + " contains " + parent.LocalActions.Count + " candidate actions: " + Util.Join(", ", parent.LocalActions));
+                            candidates.AddRange(FindCandidateActions(parent.LocalActions, parent));
+                            finished.Add(parent);
+                        }
+                        parent = parent.Parent;
+                    }
+                }
+            }
+
+            ///...then add the unrestricted actions
+            Debug("Global scope contains " + GlobalScope.Actions.Count + " candidate actions: " + Util.Join(", ", GlobalScope.Actions));
+            candidates.AddRange(FindCandidateActions(GlobalScope.Actions, null));
+            return candidates;
+        }
+
+        /// <summary>
+        /// Called when no candidate actions are found. Handles some circumstances that may
+        /// lead to the program continuing, or prints out a deadlock message and exits.
+        /// </summary>
+        /// <returns></returns>
+        private bool HandleNoCandidateActions() {
+            //Give blocked processes a chance. This was explicitly added for the KLAIM
+            //implementations, where threads may have had their actions chosen but are
+            //blocked performing an action
+            List<ProcessBase> blockedProcs = new List<ProcessBase>();
+            foreach (ProcessBase p in _activeProcs) {
+                if (p.State == ThreadState.WaitSleepJoin) {
+                    blockedProcs.Add(p);
+                }
+            }
+            if (blockedProcs.Count > 0) {
+                Thread.Sleep(1000); //give them a second to see if latest developments allowed them to unblock...
+                foreach (ProcessBase p in blockedProcs) {
+                    if (p.State != ThreadState.WaitSleepJoin) {
+                        Debug("A process came out of blocked state, all hope is not lost!");
+                        return true; //just means we run through the FindCandidateActions phase again
+                    }
+                }
+            }
+
+            Debug("System is deadlocked");
+            Logger.TraceDebug(CandidateAction.DEADLOCK);
+            if (TraceItemAdded != null) {
+                TraceItemAdded(this, new TraceEventArgs() { ExecutedAction = CandidateAction.DEADLOCK });
+            }
+
+            try {
+                Console.ReadKey(); //So processes started from the GUI don't exit without people seeing
+                //what happened
+            } catch (Exception) {
+                //Just swallow it, this fails when run from a windows application so we don't
+                //want the exception to cause problems.
+            }
+            return false; //Not still active
+        }
+
+        /// <summary>
+        /// Returns a random action from the list of candidate actions.
+        /// </summary>
+        /// <param name="candidates">List of candidate actions</param>
+        /// <returns>The randomly chosen action to execute</returns>
         private CandidateAction ChooseActionRandom(List<CandidateAction> candidates) {
             return candidates[_rng.Next(candidates.Count)];
         }
 
+        /// <summary>
+        /// Allows the user to choose the next action to execute from the console
+        /// </summary>
+        /// <param name="candidates">List of candidate actions</param>
+        /// <returns>The action chosen by the user</returns>
         private CandidateAction ChooseActionInterActive(List<CandidateAction> candidates) {
 
             int choice = -1;
@@ -366,5 +368,7 @@ namespace PLR.Runtime {
             }
             return candidates[choice - 1];
         }
+
+        #endregion
     }
 }

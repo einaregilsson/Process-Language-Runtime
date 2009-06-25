@@ -110,13 +110,15 @@ namespace PLR.Runtime {
             }
         }
 
-        public static void TraceDebug(object msg, TraceType type) {
-            if ((type == TraceType.Sync || type == TraceType.Deadlock) && TraceDebugOn) {
-                Output("TRACE: " + msg);
-            } else if (TraceDebugIncludeMethodCalls  && type == TraceType.MethodCall) {
-                Output("TRACE: " + msg);
-            } else if (TraceDebugIncludeTau  && type == TraceType.Tau) {
-                Output("TRACE: " + msg);
+        public static void TraceDebug(CandidateAction action) {
+            if (action.IsAsync && TraceDebugIncludeMethodCalls) {
+                Output("TRACE: " + action);
+            } else if (action.IsTau && TraceDebugIncludeTau) {
+                Output("TRACE: " + action);
+            } else if (action.IsDeadlocked) {
+                Output("TRACE: " + action);
+            } else if (!action.IsTau && action.IsSync && TraceDebugOn) {
+                Output("TRACE: " + action);
             }
         }
 

@@ -128,7 +128,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Compilation\TypeInfo.cs" />
+    <Compile Include="IParser.cs" />
     <Compile Include="Runtime\BuiltIns.cs" />
+    <Compile Include="Runtime\CandidateAction.cs" />
     <Compile Include="Runtime\ChannelSyncAction.cs" />
     <Compile Include="Compilation\CompileContext.cs" />
     <Compile Include="Compilation\CompileOptions.cs" />

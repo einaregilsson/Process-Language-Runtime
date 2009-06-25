@@ -17,7 +17,6 @@ namespace PLR.Compilation {
     public class TypeInfo {
         private List<FieldBuilder> _fields = new List<FieldBuilder>();
         private Dictionary<string, LocalBuilder> _locals = new Dictionary<string, LocalBuilder>();
-        private ConstructorBuilder _constructor;
         private List<string> _constructorParamNames = new List<string>();
 
         public bool IsRestricted { get; set;}

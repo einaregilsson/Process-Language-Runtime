@@ -16,9 +16,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("CCS")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Hewlett-Packard")]
+[assembly: AssemblyCompany("Einar Egilsson")]
 [assembly: AssemblyProduct("CCS")]
-[assembly: AssemblyCopyright("Copyright © Hewlett-Packard 2008")]
+[assembly: AssemblyCopyright("Copyright © Einar Egilsson 2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

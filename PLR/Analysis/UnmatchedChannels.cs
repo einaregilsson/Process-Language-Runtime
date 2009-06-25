@@ -1,4 +1,5 @@
-﻿/**
+﻿using System;
+/**
  * $Id$ 
  * 
  * This file is part of the Process Language Runtime (PLR) 
@@ -7,12 +8,11 @@
  * Author: Einar Egilsson (einar@einaregilsson.com) 
  */
 using System.Collections.Generic;
+using PLR.AST;
 using PLR.AST.ActionHandling;
 using PLR.AST.Actions;
 using PLR.AST.Expressions;
 using PLR.AST.Processes;
-using System;
-using PLR.AST;
 
 namespace PLR.Analysis {
 

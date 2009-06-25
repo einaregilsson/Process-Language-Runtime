@@ -181,7 +181,7 @@ namespace PLR.AST.Processes {
                 }
 
                 return context.Type;
-            } catch (Exception ex) {
+            } catch (Exception) {
                 return null;
             }
         }
