@@ -9,12 +9,14 @@
 using System;
 using System.IO;
 using PLR.AST;
+using PLR.AST.Formatters;
 
 namespace PLR {
 
     public interface IParser {
         string Language { get; }
         string FileExtensions { get; }
+        BaseFormatter Formatter { get; }
         ProcessSystem Parse(string inputFile);
         ProcessSystem Parse(Stream inputStream);
     }

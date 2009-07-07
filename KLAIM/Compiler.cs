@@ -50,7 +50,6 @@ namespace KLAIM {
                 il.Emit(OpCodes.Newarr, typeof(object));
                 il.Emit(OpCodes.Stloc, arr);
 
-
                 for (int i = 0; i < ti.Items.Count; i++) {
                     object elem = ti.Items[i];
                     il.Emit(OpCodes.Ldloc, arr);

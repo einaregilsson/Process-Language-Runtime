@@ -36,6 +36,8 @@ namespace ProcessViewer {
         RunStatus _status = RunStatus.Stopped;
         Dictionary<string, IParser> _parsers = new Dictionary<string, IParser>();
         ProcessSystem _loadedSystem;
+        ProcessStateVisualization _visual;
+        IParser _parser;
         #endregion
 
         #region Delegates
@@ -107,11 +109,14 @@ namespace ProcessViewer {
             foreach (ProcessBase p in lstProcesses.Items) {
                 procs.Add(p);
             }
-            var visual = new ProcessStateVisualization(procs, _loadedSystem);
+
             if (_status == RunStatus.Stepping) {
                 while (_chosenAction == null) {
                     Thread.Sleep(500); //Wait until user has selected something...
                 }
+                _visual = new ProcessStateVisualization(_loadedSystem, _parser.Formatter);
+                _visual.NewState(procs, _chosenAction);
+                txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
                 return _chosenAction;
             } else {
                 return candidates[_rng.Next(candidates.Count)];
@@ -211,6 +216,11 @@ namespace ProcessViewer {
             lstCandidateActions.Items.Clear();
         }
 
+        delegate void SetProcessStateDelegate(string state);
+        private void SetProcessState(string state) {
+            txtProcessState.Text = state;
+        }
+
         private void OpenAssembly(object sender, EventArgs e) {
             DialogResult result = openProcessExeDialog.ShowDialog();
             if (result == DialogResult.OK) {
@@ -239,9 +249,9 @@ namespace ProcessViewer {
                     if (!_parsers.ContainsKey(ext)) {
                         ErrorMsg("No suitable parser found", "No parser is loaded that parses files of type \"" + ext + "\"");
                     } else {
-                        IParser parser = _parsers[ext];
+                        _parser = _parsers[ext];
                         try {
-                            _loadedSystem = parser.Parse(_sourceFile);
+                            _loadedSystem = _parser.Parse(_sourceFile);
                         } catch (ParseException pex) {
                             ErrorMsg("Failed to parse source file", "Failed to parse source file " + _sourceFile + ", error: \n" + pex.Message);
                         }

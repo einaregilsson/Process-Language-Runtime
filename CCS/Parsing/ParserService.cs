@@ -9,6 +9,7 @@
 using System.IO;
 using PLR;
 using PLR.AST;
+using PLR.AST.Formatters;
 
 namespace CCS.Parsing {
     
@@ -16,8 +17,9 @@ namespace CCS.Parsing {
 
         public string Language { get { return "CCS"; } }
         public string FileExtensions { get { return "ccs"; } }
+        public BaseFormatter Formatter { get { return new BaseFormatter(); } }
 
-        public PLR.AST.ProcessSystem Parse(string inputFile) {
+        public ProcessSystem Parse(string inputFile) {
             Parser p = new Parser(new Scanner(inputFile));
             StringWriter errorWriter = new StringWriter();
             p.errors.errorStream = errorWriter;
