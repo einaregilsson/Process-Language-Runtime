@@ -464,4 +464,20 @@
 	processes are invoked at least once. If a process is never invoked a warning 
 	is issued to that effect, and if optimizations are turned on the unused 
 	process is never compiled at the compilation stage, giving some space 
-	savings in the compiled executable.
+	savings in the compiled executable. This is a simple optimization but can 
+	give significant space savings if large processes are unused. Of course if 
+	the compiled assembly is supposed to be used by another assembly then this 
+	optimization should not be used, as the analysis cannot detect whether 
+	outside callers intend to use a specific process.
+	
+\section{Summary}
+
+	The Process Language Runtime contains a number of analyzes and optimizations 
+	that are performed before and during compilation. These analyses are 
+	somewhat different from analyses of imperative programming languages since 
+	process algebra has a simpler control flow graph which is always a tree. The 
+	analyses find assignments to variables that are never used, constant 
+	expressions, nil processes that have no effect, synchronizations that can 
+	never happen and processes that are never used. The optimizations that can 
+	be performed as a result of these analyses are mainly focused on removing 
+	code that either has no effect or can never be executed. 

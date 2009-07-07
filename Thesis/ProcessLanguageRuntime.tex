@@ -927,4 +927,21 @@ do forever:
 	constructor with only one parameter, $x$ and one member variable $x$, the 
 	second parallel process, $\overline{out}(y) \ccsdot 0$, will only have $y$ 
 	as a member variable and constructor parameter.
+
+\section{Summary}
+
+	The Process Language Runtime is implemented as a .NET library, which 
+	contains both the abstract syntax tree used during compilation as well as 
+	runtime classes used during execution. The syntax tree is the most important 
+	part of the PLR, it is a rich datastructure where each node knows how to 
+	compile itself and emit the correct bytecodes. Debugging support is also 
+	provided by the PLR, although individual language parsers must provide the 
+	PLR with information about line and column numbers for the process 
+	constructs. Implementers of process algebras can extend the PLR by creating 
+	additional syntax tree nodes, subscribing to compilation events and writing 
+	their own runtime libraries. When a process language system is compiled then 
+	individual processes become classes in .NET, actions become method calls and 
+	restrictions and relabellings are implemented as methods, with function 
+	pointers used as an abstraction to allow for calling methods in external 
+	assemblies.
   
