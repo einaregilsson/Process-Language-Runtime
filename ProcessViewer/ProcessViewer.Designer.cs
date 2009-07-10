@@ -32,8 +32,6 @@
             this.btnStartStep = new System.Windows.Forms.ToolStripButton();
             this.btnPause = new System.Windows.Forms.ToolStripButton();
             this.btnStop = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnHelp = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.splitContainer = new System.Windows.Forms.SplitContainer();
@@ -73,9 +71,7 @@
             this.btnStart,
             this.btnStartStep,
             this.btnPause,
-            this.btnStop,
-            this.toolStripSeparator4,
-            this.btnHelp});
+            this.btnStop});
             this.tlbMain.Location = new System.Drawing.Point(0, 0);
             this.tlbMain.Name = "tlbMain";
             this.tlbMain.Size = new System.Drawing.Size(834, 25);
@@ -144,21 +140,6 @@
             this.btnStop.Text = "Stop";
             this.btnStop.ToolTipText = "Stop process application";
             this.btnStop.Click += new System.EventHandler(this.StopExecution);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
-            // btnHelp
-            // 
-            this.btnHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnHelp.Image = ((System.Drawing.Image)(resources.GetObject("btnHelp.Image")));
-            this.btnHelp.ImageTransparentColor = System.Drawing.Color.Red;
-            this.btnHelp.Name = "btnHelp";
-            this.btnHelp.Size = new System.Drawing.Size(23, 22);
-            this.btnHelp.Text = "btnHelp";
-            this.btnHelp.ToolTipText = "About Process Viewer...";
             // 
             // toolStripSeparator1
             // 
@@ -349,7 +330,6 @@
         private System.Windows.Forms.RichTextBox txtProcessState;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripButton btnHelp;
         private System.Windows.Forms.OpenFileDialog openProcessSourceDialog;
         private System.ComponentModel.BackgroundWorker processThreadWorker;
         private System.Windows.Forms.GroupBox grpCandidateActions;
@@ -361,7 +341,6 @@
         private System.Windows.Forms.ToolStripButton btnStartStep;
         private System.Windows.Forms.ToolStripButton btnOpen;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.RichTextBox txtCandidateDescription;
     }
 }

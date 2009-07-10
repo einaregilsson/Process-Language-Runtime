@@ -2,11 +2,11 @@
 
 \chapter{Software}
 
-	During the course of this project three distinct software packages were 
-	developed, a CCS compiler, a CCS integration package for Visual Studio and a 
-	KLAIM compiler. Here we look at the practical aspects of this software, 
-	where it can be downloaded, how it is licensed and how it can be built, 
-	configured and used.
+	During the course of this project four distinct software packages were 
+	developed, a CCS compiler, a CCS integration package for Visual Studio, a 
+	KLAIM compiler and the Process Viewer application. Here we look at the 
+	practical aspects of this software, where it can be downloaded, how it is 
+	licensed and how it can be built, configured and used.
 
 \section{Licensing and availability}
 
@@ -24,7 +24,7 @@
 
 \section{Source code}
 	
-	The source code is organized into two solutions and nine projects. They are 
+	The source code is organized into two solutions and ten projects. They are 
 	as follows:
 	
 	\begin{itemize}
@@ -38,6 +38,8 @@
 			\item \textbf{KLAIM} is the project for the KLAIM compiler.
 			\item \textbf{KLAIM.Runtime} is the project for the KLAIM runtime 
 			library.
+			\item \textbf{ProcessViewer} is the project for the Process Viewer
+			visualization tool.
 		\end{itemize}
 		\item \textbf{CCS.Integration} is the solution for Visual Studio 
 		Integration.
@@ -197,3 +199,45 @@ Available options:
 
 	\end{verbatim}
 	\end{footnotesize}
+
+
+\section{Process Viewer}
+
+	The Process Viewer is an executable named \texttt{ProcessViewer.exe}. It 
+	requires the PLR dll, \texttt{PLR.dll} as well as any assemblies that contain
+	parsers for the languages being used. The filenames of the parser assemblies
+	are specified in the configuration file, \texttt{ProcessViewer.exe.config}. 
+	An example is 
+	
+	\texttt{<add key="ParserAssemblies" value="CCS.exe;kc.exe"/>}
+	
+	Here there are two assemblies specified, their names seperated by a 
+	semicolon. 
+	
+	Figure~\ref{fig:process_viewer_tutorial} shows the main screen, with the 
+	main controls labelled with numbers. Below each number corresponding to a 
+	control is explained.
+
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=0.4]{process_viewer.png}
+		\caption{The Process Viewer application running}
+		\label{fig:process_viewer_tutorial}
+	\end{figure}
+	
+	\begin{enumerate}
+		\item The \textit{open} button. Press this to open a new process language 
+		executable file, and optionally its original source file.
+		\item Starts execution of the loaded process language application.
+		\item Starts execution of the loaded process language application in step 
+		mode. This means that the user will select each action that is executed.
+		\item Pauses execution. This will put a running application into step mode.
+		\item Stops execution of running application.
+		\item This is a list of all active processes at the current time.
+		\item The trace is the list of actions that have been executed.
+		\item This is a list of the actions that could potentially be executed 
+		next.
+		\item Pressing this button executes the currently selected action.
+		\item Pressing this button executes a random action.
+		\item Additional information about the selected action is displayed here.
+	\end{enumerate}

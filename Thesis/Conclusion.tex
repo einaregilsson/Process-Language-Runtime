@@ -29,7 +29,13 @@
 	runtime libraries. Both chapters finished with sizable example systems to 
 	give an idea of what a real application of these languages might be.
 	
-	The seventh chapter was about how the CCS language was integrated into a 
+	In chapter seven we looked at a graphical user interface tool that allows
+	the user to monitor and interact with running process language applications.
+	The challenges faced when integrating with the PLR were discussed as well as
+	how the program was kept general enough so that it could work with any 
+	process language.
+	
+	The eight chapter was about how the CCS language was integrated into a 
 	professional development environment, Visual Studio 2008. Some alternative 
 	development environments were presented and reasons given for why Visual 
 	Studio was chosen. A number of useful features were implemented in the 
@@ -346,14 +352,30 @@
 	and it is easy to make a process algebra call into any arbitrary .NET 
 	assembly. Another great benefit is being able to debug the compiled 
 	applications, and in general great tool support in programs like Visual 
-	Studio. 
+	Studio. The built in API to emit bytecode is well structured and easy to 
+	use, and the bytecode itself is well designed and surprisingly readable once 
+	you have gotten used to it. 
 	
 	The are downsides to .NET as well. The only real support for concurrency is 
 	by using threads. I had thought beforehand that there might be some low 
 	level support for that in the actual bytecode, but that was not the case. 
 	Threading can only be done through the standard class library, using the 
 	\code{Thread} class, which shows that the class library is at least as 
-	important as the virtual machine itself. 
+	important as the virtual machine itself. It is also my conclusion that while
+	.NET is a good platform for implementing process algebras, it is not 
+	\textit{specifically} good for process algebras, it is more that it is a 
+	good platform for implementing programming languages in general. 
+
+	The fact that there exist other implementations of the CLI (Common Language 
+	Infrastructure) specification is very useful. The PLR, CCS compiler and 
+	KLAIM compiler all work seamlessly on Mono, the CLI implementation that 
+	runs on the Linux and Unix family of operating systems. \TODO{Test 
+	processviewer}. No special consideration was needed, I simply wrote the 
+	whole thing using .NET on Windows and once it was ready I compiled and ran 
+	it with Mono on an Ubuntu Linux operating system and it worked flawlessly. 
+	This means that the PLR is truly cross-platform, which should make it 
+	accessible to more people, especially since many researchers in computer 
+	science do not use the Windows operating system at all.
 
 	Building re-usable components for process algebras went very well. The PLR 
 	takes care of a lot of the basic work that anyone implementing a process 
@@ -366,5 +388,7 @@
 	
 	Overall I consider the project a success, as it has resulted in two working 
 	process algebra implementations (one of which is fully integrated into 
-	Visual Studio), as well as a library/compiler that can be used by future 
-	implementors of other process algebras.
+	Visual Studio), a graphical tool for working with compiled process language 
+	applications, as well as the main software product, a library/compiler that 
+	can (and hopefully will) be used by future implementors of other process 
+	algebras.

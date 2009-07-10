@@ -9,16 +9,16 @@
 \section{Overview}
 
 	\textit{Process Viewer} (hereafter referred to simply as \textit{the viewer})
-	is an application to allow users to closely monitor
-	and affect how compiled process language applications are executed. It enables
-	the user to see what processes are currently active, what actions have been
-	executed and what actions are ready for execution. It can be run 
-	interactively, which allows the user to select the next action for execution.
-	If the source code for the application being run is available, then it is also
-	possible to see the state of the system in source code form at every stage 
-	(e.g. if the original system contained the process $a \ccsdot b \ccsdot P$ and
-	action $a$ has been executed then the system now contains the process 
-	$b \ccsdot P$). The user interface is simple and consists of only one window.
+	is an application to allow users to closely monitor and affect how compiled 
+	process language applications are executed. It enables the user to see what 
+	processes are currently active, what actions have been executed and what 
+	actions are ready for execution. It can be run interactively, which allows 
+	the user to select the next action for execution. If the source code for the 
+	application being run is available, then it is also possible to see the 
+	state of the system in source code form at every stage (e.g. if the original 
+	system contained the process $a \ccsdot b \ccsdot P$ and action $a$ has been 
+	executed then the system now contains the process $b \ccsdot P$). The user 
+	interface is simple and consists of only one window. 
 	Figure~\ref{fig:process_viewer} shows a screenshot of the program during 
 	execution of a process language application. The list of active processes is 
 	in the upper left of the screen, the trace is on the lower left. The current 
@@ -84,26 +84,27 @@
 	viewer can still be used, but the system state in source code form will not
 	be shown. The names of the active processes, the trace and the candidate 
 	actions all work with just the compiled executable though. The reason for 
-	this is that those things can all be shown in a reasonable way using the class 
-	names and \code{.ToString()} methods of the runtime classes whereas displaying 
-	the system in source code form  requires the abstract syntax tree, which is no 
-	longer available after the application has been compiled. 
+	this is that those things can all be shown in a reasonable way using the 
+	class names and \code{.ToString()} methods of the runtime classes whereas 
+	displaying the system in source code form  requires the abstract syntax 
+	tree, which is no longer available after the application has been compiled. 
 	
-	This is further complicated by the fact that the viewer is not specific to any
-	particular process language, it is meant to work with any language that uses
-	the PLR. The problem then becomes how can the viewer know which parser to use
-	to parse the abstract syntax tree from the provided source file. To solve this
-	the viewer has an associated configuration file which lists the filenames of
-	all assemblies that contain parsers. The parsers can then implement an 
-	\code{IParser} interface that is provided by the PLR. The interface has a
-	\code{Parse} method as well as properties for the language name and the file
-	extensions used by that language. The viewer inspects the assemblies listed
-	in the configuration file and loads all classes that implement \code{IParser}.
-	When a source file is selected the viewer can then lookup the correct parser
-	for it by filename extension and use that parser to parse the file, or throw
-	an error if no suitable parser is found. The \code{IParser} interface also 
-	contains a property that returns a \code{BaseFormatter} instance (previously 
-	discussed in Section~\ref{sec:visitor}) which can be used to get a source code 
+	This is further complicated by the fact that the viewer is not specific to 
+	and particular process language, it is meant to work with any language that 
+	uses the PLR. The problem then becomes how can the viewer know which parser 
+	to use to parse the abstract syntax tree from the provided source file. To 
+	solve this the viewer has an associated configuration file which lists the 
+	filenames of all assemblies that contain parsers. The parsers can then 
+	implement an \code{IParser} interface that is provided by the PLR. The 
+	interface has a \code{Parse} method as well as properties for the language 
+	name and the file extensions used by that language. The viewer inspects the 
+	assemblies listed in the configuration file and loads all classes that 
+	implement \code{IParser}. When a source file is selected the viewer can then 
+	lookup the correct parser for it by filename extension and use that parser 
+	to parse the file, or throw an error if no suitable parser is found. The 
+	\code{IParser} interface also contains a property that returns a 
+	\code{BaseFormatter} instance (previously discussed in 
+	Section~\ref{sec:visitor}) which can be used to get a source code
 	representation of the whole, or parts of, the abstract syntax tree.
 	
 	Once the abstract syntax tree and an appropriate formatter for it are loaded
@@ -117,11 +118,12 @@
 
 \section{Summary}
 
-	The Process Viewer application is a useful tool for monitoring and interacting
-	with compiled process language applications. Due to the interoperability of
-	.NET the application can directly interact with running process language 
-	applications and show processes, traces and candidate actions. It also
-	allows the user to select which actions are executed in the process language
-	application and shows the state of the processes as they change. When creating
-	and working with process language applications the Process Viewer really helps
-	the user to understand and follow what is happening during execution.
+	The Process Viewer application is a useful tool for monitoring and 
+	interacting with compiled process language applications. Due to the 
+	interoperability of .NET the application can directly interact with running 
+	process language applications and show processes, traces and candidate 
+	actions. It also allows the user to select which actions are executed in the 
+	process language application and shows the state of the processes as they 
+	change. When creating and working with process language applications the 
+	Process Viewer really helps the user to understand and follow what is 
+	happening during execution.
