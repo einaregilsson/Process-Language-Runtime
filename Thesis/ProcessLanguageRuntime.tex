@@ -7,7 +7,7 @@
 \section{Inspiration}
 
 	The inspiration for the Process Language Runtime comes from the Dynamic 
-	Language Runtime \TODO{NEED REF} (DLR), a framework from Microsoft for 	
+	Language Runtime \cite{dlr} (DLR), a framework from Microsoft for 	
 	developing dynamic languages on top of the Common Language Runtime. Since 
 	the .NET Common Intermediate Language is statically typed it is ill-suited
 	for dynamic languages such as Python, Ruby or JavaScript. To clarify, 
@@ -281,7 +281,8 @@ public override void Visit(ActionPrefix node) {
   benefits of the pattern here are obvious, it is easy to add new formats at a 
   later date without having to alter anything in the syntax tree itself, all 
   code for a particular format is kept in one place and formatter classes do 
-  not need to implement tree traversal algorithms themselves.
+  not need to implement tree traversal algorithms themselves. Another example
+  of how formatters can be useful is shown in Section~\ref{sec:process_visualization}.
 
 	Figure~\ref{fig:expression_folder} shows another example of how the 
 	visitor pattern can be useful. It is a class that takes binary 
