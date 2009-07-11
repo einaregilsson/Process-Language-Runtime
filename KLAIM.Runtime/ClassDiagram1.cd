@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="KLAIM.Runtime.KlaimException">
+    <Position X="2.25" Y="4.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>KlaimException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="KLAIM.Runtime.Locality">
+    <Position X="2.25" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>QAAAJAAgAAAAAAAEAAAAAAQgAAAAAAAAAQAAAAAEACA=</HashCode>
+      <FileName>Locality.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="KLAIM.Runtime.Net">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAADAAAAAAAQAAAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Net.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="KLAIM.Runtime.Tuple">
+    <Position X="0.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAEAACAAAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Tuple.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

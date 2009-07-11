@@ -1,0 +1,74 @@
+use PLR.Runtime.BuiltIns
+
+Example = John | ATM
+
+ATM = (UI | Bank | CashDispenser) \{checkpin, validpin, invalidpin,
+                                    accwithdraw, accwithdrawn, accnotenoughbalance,
+                                    checkavailablecash, enoughcash, notenoughcash,dispensecash} 
+
+John = Customer(1234, 3321, 20000)
+
+Bank = PinCheck | Accounts 
+
+UI = card(cardnr) . pin(pinnr) . _checkpin_(cardnr,pinnr) .
+     (
+        validpin . withdraw(amount) . _checkavailablecash_(amount) .
+        (
+           enoughcash . _accwithdraw_(cardnr,amount) .
+           (
+              accwithdrawn . _dispensecash_(amount) . _card_ . UI
+              + 
+              accnotenoughbalance . _notenoughmoney_ . 0
+           )
+           +
+           notenoughcash . _atmempty_ . _card_ . UI
+        )
+        +
+        invalidpin . _wrongpin_ . _card_ .  UI  
+     )
+
+
+Customer(cardnr, pinnr, amount) = 
+   _card_(cardnr) . _pin_(pinnr) .
+   (
+      _withdraw_(amount) . 
+      (
+         cash(received) . card . :Print("Successful withdrawal") .0 
+         +   
+         notenoughmoney . card . :Print("Not enough balance in account") . 0
+         +
+         atmempty . card . :Print("ATM is empty") . 0
+      )
+      +
+      wrongpin . card . :Print("Wrong pin number") . 0
+   )
+
+
+CashDispenser = Dispenser(100000)[cash/output,checkavailablecash/check, 
+                                 enoughcash/enough,notenoughcash/notenough,
+                                 dispensecash/dispense]
+
+Dispenser(available) = check(nr) 
+                     . if available < nr then 
+                          _notenough_ . Dispenser(available) 
+                       else 
+                          _enough_ . Dispenser(available)
+                     |
+                       dispense(nr) . _output_(nr) . Dispenser(available-nr)
+                         
+
+PinCheck = checkpin(cardnr, pin)  
+#         . if :ValidPin(cardnr, pin) then
+         . if true then
+              _validpin_ . PinCheck
+           else
+              _invalidpin_ . PinCheck
+              
+Accounts = accwithdraw(account, amount) 
+         #. if :WithDrawFromAccount(account, amount) then
+         . if true then
+              _accwithdrawn_ . Accounts
+           else
+              _accnotenoughbalance_ . Accounts
+              
+              

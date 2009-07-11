@@ -27,9 +27,6 @@ namespace PLR.AST.Formatters {
                 Return("");
                 return;
             }
-            if (node is BranchProcess) {
-                int x = 2;
-            }
             _childStrings.Push(new List<string>());
             foreach (Node child in node) {
                 VisitRecursive(child);

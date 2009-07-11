@@ -1,0 +1,5 @@
+use PLR.Runtime.BuiltIns
+
+System = A(1) | B(2)
+A(y) = out . 0
+B(x) = if x+2 > 5 then :Println(x) . B(2+1)  else :Println("SHIT") . 0

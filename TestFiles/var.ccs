@@ -1,0 +1,1 @@
+VAR = in(x) . in(y) .( _out_(x) . 0 |  _out_(y) . 0)

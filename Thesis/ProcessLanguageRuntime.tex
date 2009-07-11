@@ -538,15 +538,15 @@ class ExpressionFolder : AbstractVisitor{
 	
 \section{Runtime Library}
 
-	The PLR has a small runtime library consisting of nine classes. These classes
+	The PLR has a runtime library consisting of eleven classes. These classes
 	reside in the \code{PLR.Runtime} namespace. Applications compiled using 
 	the PLR must have access to this library at runtime in order to execute 
 	successfully. Figure~\ref{fig:runtime_library} shows a class diagram of the 
-	runtime library. Below is an overview of each of the nine classes.
+	runtime library. Below is an overview of each of the eleven classes.
 
 	\begin{figure}[ht!]
 		\centering
-		\includegraphics[scale=0.5]{RuntimeLibrary.png}
+		\includegraphics[scale=0.45]{RuntimeLibrary.png}
 		\caption{PLR runtime library classes}
 		\label{fig:runtime_library}
 	\end{figure}
@@ -576,6 +576,12 @@ class ExpressionFolder : AbstractVisitor{
 	called on those actions that have been chosen for execution and is used
 	for example to pass values from one process to another through channels.
 
+	\textbf{IParser} is an interface for parsers. It contains \code{Parse}
+	methods for streams and files, as well as properties that return the
+	name of the process language the parser is for, the file extensions it
+	uses for source files, and a formatter class that format a PLR abstract
+	syntax tree and print it out as source code in a particular process language.
+	
 	\textbf{ChannelSyncAction} is a class representing synchronization on a
 	channel. It contains the channel name, the id of the process performing
 	the action and information about whether the process is attempting to send
@@ -649,6 +655,11 @@ class ExpressionFolder : AbstractVisitor{
 	synchronization, and keeping track of the \textit{trace}, that is the list 
 	of actions executed during the duration of the program.
 	 
+	\textbf{CandidateAction} is a simple data class used by the scheduler when 
+	it is selecting an action to execute. It holds information about a 
+	particular action that is ready for execution as well as references to the 
+	processes that will perform the action.
+
 	\begin{figure}
 	\begin{codeblock}
 // active_procs contains all the running processes

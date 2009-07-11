@@ -367,15 +367,23 @@
 	good platform for implementing programming languages in general. 
 
 	The fact that there exist other implementations of the CLI (Common Language 
-	Infrastructure) specification is very useful. The PLR, CCS compiler and 
-	KLAIM compiler all work seamlessly on Mono, the CLI implementation that 
-	runs on the Linux and Unix family of operating systems. \TODO{Test 
-	processviewer}. No special consideration was needed, I simply wrote the 
-	whole thing using .NET on Windows and once it was ready I compiled and ran 
-	it with Mono on an Ubuntu Linux operating system and it worked flawlessly. 
-	This means that the PLR is truly cross-platform, which should make it 
-	accessible to more people, especially since many researchers in computer 
-	science do not use the Windows operating system at all.
+	Infrastructure) specification is very useful. The PLR library, CCS compiler 
+	and KLAIM compiler all work flawlessly on Mono, the CLI implementation that 
+	runs on the Linux and Unix family of operating systems. The compiled process 
+	applications also work on Mono without problems. I had expected that the 
+	compilers and the PLR would work, since they are command line tools/libraries
+	and do not depend on the underlying operating system much, except for reading
+	and writing files. What I did not expect was that the Process Viewer 
+	application would work, since it has a graphical user interface which uses
+	the underlying graphic system of the Windows operating system. To my surprise
+	the Process Viewer ran without any problems on Mono the first time I tried 
+	it. It is worth noting that no special consideration was needed to support 
+	Mono, I simply wrote the whole thing using .NET on Windows and once it was 
+	ready I compiled and ran it with Mono 2.4.2 on an Ubuntu Linux 8.10 
+	operating system and it worked flawlessly. This means that the PLR is truly 
+	cross-platform, which should make it accessible to more people, especially 
+	since many researchers in computer science do not use the Windows operating 
+	system at all. 
 
 	Building re-usable components for process algebras went very well. The PLR 
 	takes care of a lot of the basic work that anyone implementing a process 

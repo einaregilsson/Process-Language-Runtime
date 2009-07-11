@@ -1,0 +1,5 @@
+use External.CustomFunctions
+
+System = CS(2,3) | CM
+CS(x,n) = c . :WRITE("n er ", n) . ( a . :WRITE("n2 er ", n). 0 + b .:WRITE("n3 er ", n). 0)
+CM = _c_ . CM

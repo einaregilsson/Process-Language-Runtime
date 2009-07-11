@@ -1,4 +1,4 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -47,7 +47,7 @@
     </Compile>
     <Compile Include="Parsing\ParserService.cs" />
     <Compile Include="Parsing\Scanner.cs" />
-    <Compile Include="Parsing\Scanner.Generated.cs">
+    <Compile Include="Parsing\Scanner.generated.cs">
       <DependentUpon>Scanner.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
