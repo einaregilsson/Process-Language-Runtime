@@ -90,7 +90,7 @@
 	tree, which is no longer available after the application has been compiled. 
 	
 	This is further complicated by the fact that the viewer is not specific to 
-	and particular process language, it is meant to work with any language that 
+	a particular process language, it is meant to work with any language that 
 	uses the PLR. The problem then becomes how can the viewer know which parser 
 	to use to parse the abstract syntax tree from the provided source file. To 
 	solve this the viewer has an associated configuration file which lists the 
@@ -108,13 +108,50 @@
 	representation of the whole, or parts of, the abstract syntax tree.
 	
 	Once the abstract syntax tree and an appropriate formatter for it are loaded
-	then the \code{ProcessStateVisualization} class can create the text 
+	then the \code{ProcessStateVisualization} class can create a text 
 	representation of the system by starting with the initial processes and 
 	then keeping track of which actions are performed and removing the 
 	corresponding nodes from the syntax tree. The formatter is then used on those
 	parts of the syntax tree that are active at a given time and the source
 	code for those active processes is shown in the large textbox in the main 
 	Process Viewer window.
+	
+	The text representation of the system shown in the window is not exactly 
+	like the original source code. Below is an example of how a process is 
+	displayed:
+	
+	
+	\begin{verbatim}
+  # CoffeeMachine@15: 
+  # Parent chain: University+Parallel2@14:  \ {coin, coffee}
+  coin . _coffee_ . CoffeeMachine
+	\end{verbatim}
+	
+	The first line shows that this is a process named \code{CoffeeMachine} and it
+	has an id of 15. The id is the thread id of the thread that the process runs 
+	on. The next line shows the process's parent chain, that is which process 
+	spawned it. In this case we see that it was spawned by the second parallel 
+	branch of the \code{University} process, and that the restrictions that apply
+	are that \channel{coin} and \channel{coffee} are hidden. If the parent chain 
+	were longer then additional ancestors would be shown on the same line. 
+	Finally the third line shows the process as it looks now, $coin \ccsdot 
+	\overline{coffee} \ccsdot \mathrm{CoffeeMachine}$. Once the $coin$ action 
+	has been performed this will change to read just $\overline{coffee} \ccsdot 
+	\mathrm{CoffeeMachine}$. 
+	
+	There are a few limitations to this text representation. One is that 
+	it cannot show process systems that contain \texttt{if-then-else} 
+	constructs. This is because the program cannot figure out from the compiled 
+	executable which path has been taken in the conditional construct and it 
+	cannot evaluate the \texttt{if} condition itself. The text representation 
+	also does not show non-deterministic choice and parallel composition as they 
+	normally appear in source code form, instead it just shows each of the 
+	process branches separately under the class names that they are given in
+	the executable, e.g. \code{A+NonDeterministic1} and 
+	\code{A+NonDeterministic2} are two branches in the same choice, even though 
+	they are not shown together as one process.
+
+	
 
 \section{Summary}
 
@@ -124,6 +161,6 @@
 	process language applications and show processes, traces and candidate 
 	actions. It also allows the user to select which actions are executed in the 
 	process language application and shows the state of the processes as they 
-	change. When creating and working with process language applications the 
+	change.When creating and working with process language applications the 
 	Process Viewer really helps the user to understand and follow what is 
 	happening during execution.

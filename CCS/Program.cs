@@ -130,7 +130,7 @@ Available options:
                 CheckPrintout(options, system);
                 system.Compile(options);
             } catch (Exception ex) {
-                Console.WriteLine(ex.StackTrace);
+                //Console.WriteLine(ex.StackTrace);
                 DieIf(true, "ERROR: " + ex.Message);
             }
             return 0;
