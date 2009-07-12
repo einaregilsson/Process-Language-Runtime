@@ -58,7 +58,11 @@ namespace PLR.AST.Formatters {
         /// <returns></returns>
         protected string CheckProc(string proc, List<string> children) {
             if (children[0] != "" ||  children[1] != "") {
-                proc = "(" + proc + ")" + children[0] + children[1]; 
+                if (proc.StartsWith("(")) {
+                    proc = proc + children[0] + children[1];
+                } else {
+                    proc = "(" + proc + ")" + children[0] + children[1];
+                }
             }
             return proc;
         }
@@ -227,7 +231,7 @@ namespace PLR.AST.Formatters {
             List<string> children = PopChildren();
             List<string> procChildren = new List<string>(children);
             procChildren.RemoveRange(0,2);
-            Return(CheckProc(Join(" + ", procChildren), children));
+            Return(CheckProc("(" + Join(" + ", procChildren), children) + ")");
         }
 
         protected string Join(string sep, List<string> items) {
@@ -238,7 +242,7 @@ namespace PLR.AST.Formatters {
             List<string> children = PopChildren();
             List<string> procChildren = new List<string>(children);
             procChildren.RemoveRange(0, 2);
-            Return(CheckProc(Join(" | ", procChildren), children));
+            Return(CheckProc("(" + Join(" | ", procChildren), children)+")");
         }
 
         public override void Visit(ProcessConstant node) {

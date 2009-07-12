@@ -38,6 +38,8 @@ namespace ProcessViewer {
         ProcessSystem _loadedSystem;
         ProcessStateVisualization _visual;
         IParser _parser;
+        List<ProcessBase> _processes = new List<ProcessBase>();
+        bool _firstStep = true;
         #endregion
 
         #region Delegates
@@ -103,20 +105,34 @@ namespace ProcessViewer {
         }
 
         private CandidateAction ChooseActionInterActive(List<CandidateAction> candidates) {
-            _chosenAction = null;
-            lstCandidateActions.Invoke(new NewCandidateActionsDelegate(NewCandidateActions), candidates);
             var procs = new List<ProcessBase>();
             foreach (ProcessBase p in lstProcesses.Items) {
                 procs.Add(p);
             }
 
+            if (_visual != null && _chosenAction != null) {
+                _visual.NewState(procs, _chosenAction);
+                txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
+            }
+            
+            _chosenAction = null;
+
+            lstCandidateActions.Invoke(new NewCandidateActionsDelegate(NewCandidateActions), candidates);
+
+
+
             if (_status == RunStatus.Stepping) {
+                if (_firstStep) {
+                    if (_visual != null) {
+                        _visual.NewState(procs, null);
+                        _firstStep = false;
+                        txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
+                    }
+                }
+
                 while (_chosenAction == null) {
                     Thread.Sleep(500); //Wait until user has selected something...
                 }
-                _visual = new ProcessStateVisualization(_loadedSystem, _parser.Formatter);
-                _visual.NewState(procs, _chosenAction);
-                txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
                 return _chosenAction;
             } else {
                 return candidates[_rng.Next(candidates.Count)];
@@ -136,15 +152,21 @@ namespace ProcessViewer {
         }
 
         private void AddProcess(ProcessBase p) {
-            lstProcesses.Items.Add(p);
+            _processes.Add(p);
+            UpdateProcesses();
         }
 
         private void RemoveProcess(ProcessBase p) {
-            if (lstProcesses.Items.Contains(p)) {
-                lstProcesses.Items.Remove(p);
+            if (_processes.Contains(p)) {
+                _processes.Remove(p);
+                UpdateProcesses();
             }
         }
 
+        private void UpdateProcesses() {
+            lstProcesses.DataSource = null;
+            lstProcesses.DataSource = _processes;
+        }
 
         private void AddToTrace(string item) {
             lstTrace.Items.Add(item);
@@ -177,10 +199,25 @@ namespace ProcessViewer {
 
         private void TraceItemAdded(object sender, TraceEventArgs e) {
             lstTrace.Invoke(new TraceChanged(AddToTrace), e.ExecutedAction.ToString());
+            if (e.ExecutedAction.IsDeadlocked) {
+                if (_visual != null && _chosenAction != null) {
+                    var procs = new List<ProcessBase>();
+                    foreach (ProcessBase p in lstProcesses.Items) {
+                        procs.Add(p);
+                    }
+                    _visual.NewState(procs, _chosenAction);
+                    txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
+                }
+            }
+
         }
 
         private void StartExecution(object sender, EventArgs e) {
             if (_status == RunStatus.Stopped) {
+                _firstStep = true;
+                if (_loadedSystem != null) {
+                    _visual = new ProcessStateVisualization(_loadedSystem, _parser.Formatter);
+                }
                 _status = RunStatus.Running;
                 ClearAll();
                 processThreadWorker.RunWorkerAsync();
@@ -194,6 +231,12 @@ namespace ProcessViewer {
         }
 
         private void StartExecutionInStepMode(object sender, EventArgs e) {
+            if (_status == RunStatus.Stopped) {
+                _firstStep = true;
+                if (_loadedSystem != null) {
+                    _visual = new ProcessStateVisualization(_loadedSystem, _parser.Formatter);
+                }
+            }
             _status = RunStatus.Stepping;
             ClearAll();
             processThreadWorker.RunWorkerAsync();
@@ -211,7 +254,7 @@ namespace ProcessViewer {
         }
 
         private void ClearAll() {
-            lstProcesses.Items.Clear();
+            lstProcesses.DataSource = null;
             lstTrace.Items.Clear();
             lstCandidateActions.Items.Clear();
         }
@@ -240,6 +283,9 @@ namespace ProcessViewer {
                 this.Text = "Process Viewer - " + openProcessExeDialog.FileName;
                 ClearAll();
                 result = openProcessSourceDialog.ShowDialog();
+                _loadedSystem = null;
+                _visual = null;
+                txtProcessState.Text = "";
                 if (result == DialogResult.Cancel) {
                     MessageBox.Show("No source file selected. Visualization of the current state of the system will not be available during execution", "No source file chosen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 } else if (result == DialogResult.OK) {
@@ -252,12 +298,25 @@ namespace ProcessViewer {
                         _parser = _parsers[ext];
                         try {
                             _loadedSystem = _parser.Parse(_sourceFile);
+                            FindUnsupportedNodes f = new FindUnsupportedNodes();
+                            f.Start(_loadedSystem);
+                            if (f.typeName != "") {
+                                MessageBox.Show("Sorry, visualization are currently not supported for systems that use the class " + f.typeName + ", however, the application can be run without visualization!", "Cannot show visualization", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                _loadedSystem = null;
+                            }
                         } catch (ParseException pex) {
                             ErrorMsg("Failed to parse source file", "Failed to parse source file " + _sourceFile + ", error: \n" + pex.Message);
                         }
                     }
                 }
 
+            }
+        }
+
+        private class FindUnsupportedNodes : AbstractVisitor {
+            public string typeName = "";
+            public override void Visit(PLR.AST.Processes.BranchProcess node) {
+                typeName = "BranchProcess";
             }
         }
 
