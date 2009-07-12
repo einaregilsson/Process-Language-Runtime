@@ -127,16 +127,16 @@
   <data name="tlbMain.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         Qk2OAgAAAAAAADYAAAAoAAAABwAAABkAAAABABgAAAAAAAAAAADEDgAAxA4AAAAAAAAAAAAAoKCgoKCg
-        oKCgoKCgoKCgoKCgoKCgAACAzr61zr61zr61zr61zr61zr61zr61AACA28vE28vE28vE28vE28vE28vE
-        28vEAACA3s7H3s7H3s7H3s7H3s7H3s7H3s7HAACA4dHL4dHL4dHL4dHL4dHL4dHL4dHLAACA5NTO5NTO
-        5NTO5NTO5NTO5NTO5NTOAACA5tfR5tfR5tfR5tfR5tfR5tfR5tfRAACA6drV6drV6drV6drV6drV6drV
-        6drVAACA7N3Y7N3Y7N3Y7N3Y7N3Y7N3Y7N3YAACA7+Db7+Db7+Db7+Db7+Db7+Db7+DbAACA8ePf8ePf
-        8ePf8ePf8ePf8ePf8ePfAACA9Obi9Obi9Obi9Obi9Obi9Obi9ObiAACA9+nl9+nl9+nl9+nl9+nl9+nl
-        9+nlAACA+uzp+uzp+uzp+uzp+uzp+uzp+uzpAACA+uzp+uzp+uzp+uzp+uzp+uzp+uzpAACA+u3q+u3q
-        +u3q+u3q+u3q+u3q+u3qAACA+u7s+u7s+u7s+u7s+u7s+u7s+u7sAACA+/Dt+/Dt+/Dt+/Dt+/Dt+/Dt
-        +/DtAACA+/Hv+/Hv+/Hv+/Hv+/Hv+/Hv+/HvAACA+/Lw+/Lw+/Lw+/Lw+/Lw+/Lw+/LwAACA/PTy/PTy
-        /PTy/PTy/PTy/PTy/PTyAACA/PX0/PX0/PX0/PX0/PX0/PX0/PX0AACA/Pb1/Pb1/Pb1/Pb1/Pb1/Pb1
-        /Pb1AACA/fj3/fj3/fj3/fj3/fj3/fj3/fj3AACA/fn4/fn4/fn4/fn4/fn4/fn4/fn4AACA
+        oKCgoKCgoKCgoKCgoKCgBD0Azr61zr61zr61zr61zr61zr61zr61BD0A28vE28vE28vE28vE28vE28vE
+        28vEBD0A3s7H3s7H3s7H3s7H3s7H3s7H3s7HBD0A4dHL4dHL4dHL4dHL4dHL4dHL4dHLBD0A5NTO5NTO
+        5NTO5NTO5NTO5NTO5NTOBD0A5tfR5tfR5tfR5tfR5tfR5tfR5tfRBD0A6drV6drV6drV6drV6drV6drV
+        6drVBD0A7N3Y7N3Y7N3Y7N3Y7N3Y7N3Y7N3YBD0A7+Db7+Db7+Db7+Db7+Db7+Db7+DbBD0A8ePf8ePf
+        8ePf8ePf8ePf8ePf8ePfBD0A9Obi9Obi9Obi9Obi9Obi9Obi9ObiBD0A9+nl9+nl9+nl9+nl9+nl9+nl
+        9+nlBD0A+uzp+uzp+uzp+uzp+uzp+uzp+uzpBD0A+uzp+uzp+uzp+uzp+uzp+uzp+uzpBD0A+u3q+u3q
+        +u3q+u3q+u3q+u3q+u3qBD0A+u7s+u7s+u7s+u7s+u7s+u7s+u7sBD0A+/Dt+/Dt+/Dt+/Dt+/Dt+/Dt
+        +/DtBD0A+/Hv+/Hv+/Hv+/Hv+/Hv+/Hv+/HvBD0A+/Lw+/Lw+/Lw+/Lw+/Lw+/Lw+/LwBD0A/PTy/PTy
+        /PTy/PTy/PTy/PTy/PTyBD0A/PX0/PX0/PX0/PX0/PX0/PX0/PX0BD0A/Pb1/Pb1/Pb1/Pb1/Pb1/Pb1
+        /Pb1BD0A/fj3/fj3/fj3/fj3/fj3/fj3/fj3BD0A/fn4/fn4/fn4/fn4/fn4/fn4/fn4BD0A
 </value>
   </data>
   <data name="btnOpen.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

@@ -123,7 +123,9 @@ namespace PLR.Runtime {
                 if (allWaiting && _stop) {
                     _stop = false;
                     SuspendOrAbortProcesses();
-                    GlobalScope.Actions.Clear();
+                    lock (GlobalScope.Actions) {
+                        GlobalScope.Actions.Clear();
+                    }
                     return;
                 } else if (allWaiting) {
                     bool stillActive = SelectAndExecuteAction();
@@ -132,7 +134,7 @@ namespace PLR.Runtime {
                         return;
                     }
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(50);
             }
         }
 
@@ -171,7 +173,8 @@ namespace PLR.Runtime {
                     return p;
                 }
             }
-            return null;
+            throw new Exception("Found no process with id " + id);
+            //return null;
         }
 
         private List<CandidateAction> FindCandidateActions(List<IAction> actions, ProcessBase scope) {
@@ -231,7 +234,10 @@ namespace PLR.Runtime {
 
             List<ProcessBase> wakeUp = new List<ProcessBase>();
             List<Guid> wakeUpGuids = new List<Guid>();
-            
+
+            //if (chosen.Process1 == null) {
+            //    throw new Exception("IS NULL");
+            //}
             chosen.Process1.ChosenAction = chosen.Action1;
             wakeUpGuids.Add(chosen.Process1.SetID);
             wakeUp.Add(chosen.Process1);

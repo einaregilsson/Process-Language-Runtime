@@ -104,32 +104,28 @@ namespace ProcessViewer {
             }
         }
 
-        private CandidateAction ChooseActionInterActive(List<CandidateAction> candidates) {
+        private void UpdateState() {
             var procs = new List<ProcessBase>();
             foreach (ProcessBase p in lstProcesses.Items) {
                 procs.Add(p);
             }
-
-            if (_visual != null && _chosenAction != null) {
+            if (_visual != null) {
                 _visual.NewState(procs, _chosenAction);
                 txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
+                _firstStep = false;
+            }
+        
+        }
+
+        private CandidateAction ChooseActionInterActive(List<CandidateAction> candidates) {
+            if (_status == RunStatus.Stepping) {
+                UpdateState();
             }
             
             _chosenAction = null;
-
             lstCandidateActions.Invoke(new NewCandidateActionsDelegate(NewCandidateActions), candidates);
 
-
-
             if (_status == RunStatus.Stepping) {
-                if (_firstStep) {
-                    if (_visual != null) {
-                        _visual.NewState(procs, null);
-                        _firstStep = false;
-                        txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
-                    }
-                }
-
                 while (_chosenAction == null) {
                     Thread.Sleep(500); //Wait until user has selected something...
                 }
@@ -201,13 +197,10 @@ namespace ProcessViewer {
             lstTrace.Invoke(new TraceChanged(AddToTrace), e.ExecutedAction.ToString());
             if (e.ExecutedAction.IsDeadlocked) {
                 if (_visual != null && _chosenAction != null) {
-                    var procs = new List<ProcessBase>();
-                    foreach (ProcessBase p in lstProcesses.Items) {
-                        procs.Add(p);
-                    }
-                    _visual.NewState(procs, _chosenAction);
-                    txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
+                    UpdateState();
                 }
+                lstCandidateActions.Invoke(new MethodInvoker(lstCandidateActions.Items.Clear));
+                txtCandidateDescription.Invoke(new MethodInvoker(delegate() { txtCandidateDescription.Text = ""; }));
             }
 
         }
@@ -360,6 +353,12 @@ namespace ProcessViewer {
             }
         }
 
+        private void ProcessViewer_FormClosed(object sender, FormClosedEventArgs e) {
+            //A lot of threading stuff may still be going on, make sure that we exit completely
+            System.Environment.Exit(0);
+        }
+
         #endregion
+
     }
 }

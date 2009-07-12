@@ -112,17 +112,18 @@ namespace PLR.Runtime {
 
         protected void SyncAction(IAction action) {
             //Relabellings etc...
-            if (this.PreProcess == null) {
-                Console.WriteLine("WAHT IS HAPPENS?");
-            }
             action = PreProcess(action);
 
             //If restricted then we store it as a local action
             if (Restrict(action)) {
-                _localActions.Add(action);
+                lock (_localActions) {
+                    _localActions.Add(action);
+                }
             } else if (Parent == null) { //Top level process, add to global scope
                 Debug("Adding action from process " + action.ProcessID + " to global scope");
-                GlobalScope.Actions.Add(action);
+                lock (GlobalScope.Actions) {
+                    GlobalScope.Actions.Add(action);
+                }
             } else {
                 Parent.SyncAction(action);
             }

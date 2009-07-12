@@ -65,5 +65,9 @@ namespace PLR.AST.Actions
             context.MarkSequencePoint(this.LexicalInfo);
 
         }
+
+        public override string ToString() {
+            return "_" + _name + "_";
+        }
     }
 }

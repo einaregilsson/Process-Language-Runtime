@@ -304,6 +304,7 @@
             this.MinimumSize = new System.Drawing.Size(850, 629);
             this.Name = "ProcessViewer";
             this.Text = "Process Viewer";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ProcessViewer_FormClosed);
             this.tlbMain.ResumeLayout(false);
             this.tlbMain.PerformLayout();
             this.splitContainer.Panel1.ResumeLayout(false);

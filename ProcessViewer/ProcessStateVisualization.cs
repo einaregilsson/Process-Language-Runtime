@@ -17,7 +17,6 @@ namespace ProcessViewer {
     public class ProcessStateVisualization {
 
         ProcessSystem _ast;
-        List<Node> _activeProcesses = new List<Node>();
         Dictionary<string, Process> _procConstants = new Dictionary<string, Process>();
         Dictionary<string, int> _performedActionsCount = new Dictionary<string, int>();
         string _string;
@@ -35,74 +34,105 @@ namespace ProcessViewer {
             return _string;
         }
 
+        private void UpdateProcessActions(ProcessBase p) {
+            string name = p.ToString();
+            if (!_performedActionsCount.ContainsKey(name)) {
+                _performedActionsCount.Add(name, 1);
+            } else {
+                Node proc = GetProcess(name);
+                int count = 0;
+                while (proc is ActionPrefix) {
+                    proc = ((ActionPrefix)proc).Process;
+                    count++;
+                }
+                int countPerformed = _performedActionsCount[name];
+                //System.Windows.Forms.MessageBox.Show("Count: " + count + ", countperformed: " + countPerformed);
+                if (countPerformed == count-1) {
+                    _performedActionsCount[name] = 0;
+                } else {
+                    _performedActionsCount[name]++;
+                }
+            }
+        }
+
         public void NewState(List<ProcessBase> activeProcs, CandidateAction chosenAction) {
             StringBuilder builder = new StringBuilder();
 
             if (chosenAction != null) {
-                string p1 = chosenAction.Process1.ToString();
-                if (!_performedActionsCount.ContainsKey(p1)) {
-                    _performedActionsCount.Add(p1, 1);
-                } else {
-                    _performedActionsCount[p1]++;
-                }
-
+                UpdateProcessActions(chosenAction.Process1);
                 if (chosenAction.Process2 != null) {
-                    string p2 = chosenAction.Process2.ToString();
-                    if (!_performedActionsCount.ContainsKey(p2)) {
-                        _performedActionsCount.Add(p2, 1);
-                    } else {
-                        _performedActionsCount[p2]++;
-                    }
+                  UpdateProcessActions(chosenAction.Process2);
                 }
             }
             foreach (ProcessBase pb in activeProcs) {
-                string[] nameparts = pb.ToString().Split('@');
-                string name = nameparts[0];
-                string id = nameparts[1];
+                string name = pb.ToString();
+                Node proc = GetProcess(name);
+                RemovePerformedActions(name, ref proc);
+                builder.Append("\n\n# " + name + ": \n");
+                if (pb.Parent != null) {
+                    builder.Append("# Parent chain: ");
+                    ProcessBase parent = pb.Parent;
 
-                Node newProc = null;
-                if (!name.Contains("+")) {
-                    newProc = _procConstants[name];
-                    newProc.Tag = id;
-                    RemovePerformedActions(pb.ToString(), ref newProc);
-                    _formatter.Start(newProc);
-                    builder.Append("\n\n# " + pb.ToString() + ": \n" + FormatProc(_formatter.GetFormatted()));
-                } else {
-                    nameparts = name.Split('+');
-                    newProc = _procConstants[nameparts[0]];
-                    for (int i = 1; i < nameparts.Length; i++) {
-                        string nextpart = nameparts[i];
-                        if (nextpart.StartsWith("NonDeterministic")) {
-                            while (!(newProc is NonDeterministicChoice)) {
-                                if (newProc is ActionPrefix) {
-                                    newProc = ((ActionPrefix)newProc).Process;
-                                }
-                            }
-                            int index = int.Parse(nextpart.Substring("NonDeterministic".Length));
-                            newProc = ((NonDeterministicChoice)newProc).Processes[index - 1];
+                    List<string> parts = new List<string>();
+                    while (parent != null) {
+                        Node parentProc = GetProcess(parent.ToString());
+                        string oneParent = parent + ": ";
+                        if (parentProc.ChildNodes[0] != null) {
+                            _formatter.Start(parentProc.ChildNodes[0]);
+                            oneParent += (_formatter.GetFormatted());
                         }
-                        else if (nextpart.StartsWith("Parallel")) {
-                            while (!(newProc is ParallelComposition)) {
-                                if (newProc is ActionPrefix) {
-                                    newProc = ((ActionPrefix)newProc).Process;
-                                }
-                            }
-                            int index = int.Parse(nextpart.Substring("Parallel".Length));
-                            newProc = ((ParallelComposition)newProc).Processes[index - 1];
-                        } else if (nextpart.StartsWith("Inner")) {
-                            while (newProc.ChildNodes[0] == null && newProc.ChildNodes[1] == null) {
-                                newProc = ((ActionPrefix)newProc).Process;
-                            }
+                        if (parentProc.ChildNodes[1] != null) {
+                            _formatter.Start(parentProc.ChildNodes[1]);
+                            oneParent += _formatter.GetFormatted();
                         }
-
+                        parts.Add(oneParent);
+                        parent = parent.Parent;
                     }
-                    RemovePerformedActions(pb.ToString(), ref newProc);
-                    _formatter.Start(newProc);
-                    builder.Append("\n\n# " + pb.ToString() + ": \n" + FormatProc(_formatter.GetFormatted()));
-
+                    parts.Reverse();
+                    builder.Append(string.Join("; ", parts.ToArray()));
+                    builder.Append("\n");
                 }
+                _formatter.Start(proc);
+                builder.Append(FormatProc(_formatter.GetFormatted()));
             }
             _string = builder.ToString();
+        }
+
+        private Node GetProcess(string procName) {
+            string name = procName.Substring(0, procName.IndexOf('@'));
+            string id = procName.Substring(procName.IndexOf('@') + 1);
+
+            if (!name.Contains("+")) {
+                return _procConstants[name];
+            }
+
+            Node proc;
+
+            string[] nameparts = name.Split('+');
+            proc = _procConstants[nameparts[0]];
+
+            for (int i = 1; i < nameparts.Length; i++) {
+                string nextpart = nameparts[i];
+                if (nextpart.StartsWith("NonDeterministic")) {
+                    while (!(proc is NonDeterministicChoice)) {
+                        proc = ((ActionPrefix)proc).Process;
+                    }
+                    int index = int.Parse(nextpart.Substring("NonDeterministic".Length));
+                    proc = ((NonDeterministicChoice)proc).Processes[index - 1];
+                } else if (nextpart.StartsWith("Parallel")) {
+                    while (!(proc is ParallelComposition)) {
+                        proc = ((ActionPrefix)proc).Process;
+                    }
+                    int index = int.Parse(nextpart.Substring("Parallel".Length));
+                    proc = ((ParallelComposition)proc).Processes[index - 1];
+                } else if (nextpart.StartsWith("Inner")) {
+                    while (proc.ChildNodes[0] == null && proc.ChildNodes[1] == null) {
+                        proc = ((ActionPrefix)proc).Process;
+                    }
+                    proc = (Process)proc;
+                }
+            }
+            return (Process)proc;
         }
 
         private void RemovePerformedActions(string procName, ref Node proc) {

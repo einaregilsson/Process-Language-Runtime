@@ -78,5 +78,9 @@ namespace PLR.AST.Actions {
                 return list;
             }
         }
+
+        public override string ToString() {
+            return _name;
+        }
     }
 }
