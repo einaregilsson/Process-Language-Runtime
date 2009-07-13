@@ -39,7 +39,6 @@ namespace ProcessViewer {
         ProcessStateVisualization _visual;
         IParser _parser;
         List<ProcessBase> _processes = new List<ProcessBase>();
-        bool _firstStep = true;
         #endregion
 
         #region Delegates
@@ -112,7 +111,6 @@ namespace ProcessViewer {
             if (_visual != null) {
                 _visual.NewState(procs, _chosenAction);
                 txtProcessState.Invoke(new SetProcessStateDelegate(SetProcessState), _visual.ToString());
-                _firstStep = false;
             }
         
         }
@@ -207,7 +205,6 @@ namespace ProcessViewer {
 
         private void StartExecution(object sender, EventArgs e) {
             if (_status == RunStatus.Stopped) {
-                _firstStep = true;
                 if (_loadedSystem != null) {
                     _visual = new ProcessStateVisualization(_loadedSystem, _parser.Formatter);
                 }
@@ -225,7 +222,6 @@ namespace ProcessViewer {
 
         private void StartExecutionInStepMode(object sender, EventArgs e) {
             if (_status == RunStatus.Stopped) {
-                _firstStep = true;
                 if (_loadedSystem != null) {
                     _visual = new ProcessStateVisualization(_loadedSystem, _parser.Formatter);
                 }
