@@ -36,9 +36,9 @@ namespace CCS.BuildTasks {
             if (Debug) {
                 args += " /debug ";
             }
-            args += " /out:" + OutputFile + " ";
+            args += " /out:\"" + OutputFile + "\" ";
             if (!String.IsNullOrEmpty(References)) {
-                args += " /reference:" + References.Replace(";",",") + " ";
+                args += " /reference:\"" + References.Replace(";",",") + "\" ";
             }
             args += InputFile;
             return args;        

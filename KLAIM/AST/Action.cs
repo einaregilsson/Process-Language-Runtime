@@ -35,7 +35,7 @@ namespace KLAIM.AST {
 
         public override System.Collections.Generic.List<Variable> ReadVariables {
             get {
-                return FindReadVariables(this).FindAll(delegate(Variable v) { return !(v is VariableBinding);});
+                return FindReadVariables(this).FindAll(delegate(Variable v) { return !(v is VariableBinding) && !(v.Name == "self");});
             }
         }
 
