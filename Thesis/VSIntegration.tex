@@ -24,15 +24,15 @@
 	
 	\subsection{Microsoft Visual Studio 2008}
 	Microsoft's Visual Studio is the most popular environment for .NET 
-	development. Visual Studio versions are released alongside new version of 
+	development. Visual Studio versions are released alongside new versions of 
 	the .NET framework itself and each new version takes full advantage of and 
-	supports all the new features in the .NET framework. The latest version as +
+	supports all the new features in the .NET framework. The latest version as 
 	of this writing is Visual Studio 2008 which supports the .NET framework 3.5. 
 	Visual Studio has an extensive extensibility API based on COM technology, an 
 	older technology for interaction between programs written in different 
 	programming languages. Languages are integrated by creating \textit{language 
 	services}, the Visual Studio program itself is simply a host for these 
-	services. The languages that come with Visual Studio, C\# and Visual 
+	services. The languages that come with the .NET Framework, C\# and Visual 
 	Basic.NET have their own language services that do not have any special 
 	access to Visual Studio, this implies that a language service for a new 
 	language can be made to offer all the same features as those supported by 
@@ -52,7 +52,7 @@
 	source software, so it is easy to get a clearer picture of its architecture, 
 	and view the source for other language services, even the built in ones for 
 	C\# and Visual Basic.NET. The architecture of SharpDevelop itself has even 
-	been the subject of a book, \cite{sharpdevelop}. The drawbacksare that its 
+	been the subject of a book, \cite{sharpdevelop}. The drawbacks are that its 
 	debugger is inferior to Visual Studio's, the application itself is slower, 
 	and it is not as well known as Visual Studio. It also does not offer all the 
 	same features as Visual Studio, a notable feature that is missing is the 
@@ -95,7 +95,7 @@
 		\item \textbf{Match braces}. When working with large expressions it 
 		can be hard to see which braces (parentheses, curly braces, angle 
 		brackets) match, and missing parentheses are a common syntax error. Visual 
-		Studio can highlight the matching braces automatically, if the language +
+		Studio can highlight the matching braces automatically, if the language
 		service provides it with the necessary information about which braces 
 		match each other.
 		
@@ -113,12 +113,12 @@
 		
 	\end{enumerate}
 	
-	Visual Studio offers the front end for all these features, that is the 
+	Visual Studio offers the front-end for all these features, that is the 
 	graphical user interface to display them and the infrastructure that calls 
 	into the language service's code to get the data necessary for the features 
 	to work. However, Visual Studio of course has no knowledge of specific 
 	languages and so it is the responsibility of each language service to 
-	provide the back end, the code that understands the language, its tokens, 
+	provide the back-end, the code that understands the language, its tokens, 
 	its syntax, which items to display in IntelliSense and so on. The 
 	implementation of these features is described in the following sections.
 	
@@ -139,8 +139,8 @@
 	borrowed. 
 
 	\subsection{CCS Projects}
-	To allow the user to create new project of type CCS project four main things 
-	needed to be implemented.
+	To allow the user to create a new project of type CCS project four main 
+	things needed to be implemented.
 	
 	\begin{enumerate}
 		\item A class named \textsf{CCSProjectPackage}, this class inherits from 
@@ -168,7 +168,7 @@
 		
 		\item Templates for the project needed to be created. The main template is 
 		for the project file. The project file defines which items are included 
-		and which MSBuild targets (See Section~\ref{msbuild}) should be used to
+		and which MSBuild targets (see Section~\ref{msbuild}) should be used to
 		build the project. Another template is for a default CCS source file that 
 		is included in every project, and contains some simple sample code to get 
 		people started. Finally there is a file named \textit{CCS 
@@ -224,7 +224,7 @@
 		\item Output actions on channels	- Dark gray
 		\item Method calls - Magenta
 		\item Comments - Dark green
-		\item Strings - Maroon
+		\item Strings and class names - Maroon
 		\item Keywords - Blue
 		\item Numbers - Red
 		\item All other tokens - Black
@@ -244,7 +244,7 @@
 	
 	\begin{figure}[h!]
 		\centering
-		\includegraphics[scale=0.7]{syntaxcheck.jpg}
+		\includegraphics[scale=0.6]{syntaxcheck.jpg}
 		\caption{Syntax checking for CCS in Visual Studio}
 		\label{fig:syntaxcheck}
 	\end{figure}
@@ -275,12 +275,12 @@
 	method. Inside this method the parser and lexer are instantiated and parse 
 	the source code which is a part of the \textsf{ParseRequest} instance passed 
 	to the method. The parser then logs every error it encounters, with file 
-	name and line numbers, and Visual Studio is responible for displaying these 
+	name and line numbers, and Visual Studio is responsible for displaying these 
 	errors to the user.
 
 	As we saw in Chapter~\ref{ch:ccs_implementation} the parser used by the CCS 
 	compiler itself was written using the Coco/R parser generator. It would have 
-	been preferable to re-use that parser directly, instead of defining a new 
+	been preferable to re-use that parser directly instead of defining a new 
 	parser for the same input language. While it would have been possible, the 
 	fact is that MPLex.exe and MPPG.exe are optimized for generating parsers 
 	that work well with the Managed Babel System, and the Managed Babel 
@@ -316,13 +316,13 @@
 	icons. 
 	
 	To create the list of items the resolver uses the generated scanner class we 
-	learned about previously and scans all tokens in the source file to find 
+	discussed previously and scans all tokens in the source file to find 
 	process and channel names. For every channel name it adds an item for the 
 	output action and input action on that channel, e.g. both \texttt{coffee} 
 	and \texttt{\_coffee\_}. The resolver also adds all the language keywords 
 	(if,then,use etc.) to the list so they can be completed automatically, and 
 	to provide a reference for the user about what is possible to do. Finally 
-	the resolver tries to find all methods that the applications could call, and 
+	the resolver tries to find all methods that the application could call, and 
 	add them along with descriptions that include parameter names and types. To 
 	do this the resolver tries to look up all classes that are imported in the 
 	source code using the \texttt{use} keyword, as well as look for methods in 
@@ -388,7 +388,7 @@ UnaryMinusTerm
 	\subsection{Build support}\label{msbuild}
 	
 	Visual Studio has menu items and keyboard shortcuts for a \textit{Build} 
-	command. This command is used to build (or compile) the source files of the 
+	command. This command is used to build (compile) the source files of the 
 	current project into an executable file. The underlying system that does the 
 	actual building is named MSBuild, and it is a command line build tool, 
 	similar to \textit{make} which is commonly used on Unix and Linux platforms, 
@@ -412,22 +412,23 @@ UnaryMinusTerm
 	
 	\textit{Properties} are essentially variables to use in the build process, 
 	and are often passed as parameters to the tasks. A property might for 
-	instance be named \textit{Debug} and have either the values \texttt{true} or 
+	instance be named \textit{Debug} and have either the value \texttt{true} or 
 	\texttt{false}. It could then be passed to a task as a parameter.
 	
 	Each language in Visual Studio has its own \textit{.targets} files which 
 	defines all the targets and tasks specific to that language. Additionally 
 	there is a common targets file, \textit{Microsoft.Common.targets} which all 
-	languages use. These \textit{.target} files are then referenced in the 
+	languages use. These \textit{.targets} files are then referenced in the 
 	project files for the languages. To get CCS working with the build system it 
 	was necessary to create one custom task, to call the compiler. The task is 
 	defined in a class named \textsf{CompileTask} which inherits from MSBuild's 
-	\textsf{ToolTask} class. It has an \textsf{Execute} which calls the CCS 
-	compiler and logs all errors that the compiler emits, and four properties 
-	that can be set, \textsf{Debug}, \textsf{InputFile}, \textsf{OutputFile} and 
-	\textsf{References}. To make that task available in Visual Studio the 
-	template CCS project file references a file called \textsf{CCS.targets}. 
-	That file in its entirety is shown in Figure~\ref{fig:ccstargets}.
+	\textsf{ToolTask} class. It has an \textsf{Execute} method which calls the 
+	CCS compiler and logs all errors that the compiler emits, and four 
+	properties that can be set, \textsf{Debug}, \textsf{InputFile}, 
+	\textsf{OutputFile} and \textsf{References}. To make that task available in 
+	Visual Studio the template CCS project file references a file called 
+	\textsf{CCS.targets}. That file in its entirety is shown in 
+	Figure~\ref{fig:ccstargets}.
 	
 	\begin{figure}
 	\begin{xml}
@@ -458,7 +459,7 @@ UnaryMinusTerm
 	compile task that was created for the CCS compiler. Empty implementations of 
 	the targets \textit{CreateManifestResourceNames}, \textit{Build} and 
 	\textit{Compile} are also provided, since otherwise these targets try to 
-	perform actions that aren't necessary for building CCS applications. The 
+	perform actions that are not necessary for building CCS applications. The 
 	\textit{Debug} parameter can be set within Visual Studio and the names of 
 	the input and output files are determined by the name given to the project 
 	when it is created. References to other .NET assemblies can be added in 
