@@ -3,20 +3,21 @@
 	In the last decade or so, programming languages have increasingly started to 
 	target virtual machines instead of specific physical machine architectures. 
 	This approach has a number of benefits. Many virtual machines have 
-	implementations on different machine architectures, which enables an 
-	application developer to write applications in a language that targets the 
-	virtual machine and getting the benefit of his application running on 
-	multiple machine architectures for free. Another benefit of the virtual 
-	machines is that code written in different languages can inter operate, 
-	allowing developers to write each part of their application in a language 
-	that suits it best. The two most prominent virtual machines used today are 
-	the Java Virtual Machine (JVM) and the Common Language Runtime (CLR). The 
-	JVM was originally created by Sun Microtechnologies but several 
-	implementations are now available by many vendors. The CLR was created by 
-	Microsoft for the Windows platform, but an open source version, Mono, which 
-	works on Unix and Linux platforms is also available. Both the JVM and CLR 
-	have a number of different languages that target them, and can therefore be 
-	used to build \textit{cross-platform} applications. 
+	implementations on different machine architectures and operating systems, 
+	which enables an application developer to write applications in a language 
+	that targets the virtual machine and getting the benefit of his application 
+	running on multiple architectures and operating systems for free. Another 
+	benefit of virtual machines is that code written in different languages can 
+	interoperate, allowing developers to write each part of their application in 
+	the language best suited for the job. The two most prominent virtual 
+	machines used today are the Java Virtual Machine (JVM) and the Common 
+	Language Runtime (CLR). The JVM was originally created by Sun 
+	Microtechnologies but several implementations are now available by many 
+	vendors. The CLR was created by Microsoft for the Windows operating system, 
+	but an open source version, Mono, which works on Unix and Linux operating 
+	systems is also available. Both the JVM and CLR have a number of different 
+	languages that target them, and can therefore be used to build 
+	\textit{cross-platform} applications. 
 
 	Process languages are a class of languages that are made up of distinct 
 	processes communicating with each other. Some examples of process languages 
@@ -25,11 +26,11 @@
 	Language for Agents Interaction and Mobility} (KLAIM). The process languages 
 	mentioned here have a number of traits in common, including action 
 	prefixing, non-deterministic choice and parallel composition. This leads to 
-	the assumption that maybe some of these common traits can be abstracted away 
-	into a common framework, so that each implementation of a process language 
-	does not have to implement them separately.
+	the assumption that maybe some of these traits can be abstracted away into a 
+	common framework, so that each implementation of a process language does not 
+	have to implement them separately.
 
-	Implementing a process language, and making it target a popular virtual 
+	Implementing a process language, and having it target a popular virtual 
 	machine such as the CLR is an interesting proposition. A number of issues 
 	can be explored. How well does the instruction set of the virtual machine 
 	fit the execution model of the process language? Is there benefit in having 
@@ -51,17 +52,19 @@
 	Integration with the .NET platform is also explored, e.g. how to allow 
 	process language applications to call code developed in other .NET languages 
 	and whether it is possible to use existing .NET development tools to aid in 
-	writing process language applications. A tool to interact with running 
-	process applications is developed, this tool has a graphical user interface
-	and is meant to give more insight into what is happening when a process language
-	application is running and allow users to select which paths are taken during
-	execution.
+	writing process language applications. 
+	
+	A tool to interact with running process applications is also developed, this 
+	tool has a graphical user interface and is meant to give more insight into 
+	what is happening when a process language application is running and allow 
+	users to select which paths are taken during execution.
 
 	Finally the thesis presents two case studies of process language 
-	implementations that were done using the PLR. The languages implemented were 
+	implementations that were made using the PLR. The languages implemented were 
 	CCS (Calculus of Communicating Systems) and a subset of KLAIM (Kernel 
 	Language for Agents Interaction and Mobility).
 
+	\newpage
 	The work carried out consists of the following parts:
 
 	\begin{itemize}
@@ -70,7 +73,8 @@
   	\item Design and implementation of the runtime library.
   	\item Implementation of the process language CCS.
   	\item Implementation of the process language KLAIM.
-  	\item Design and implementation of a tool to interact with running process language applications.
+  	\item Design and implementation of a tool to interact with running process 
+  	language applications.
   	\item Integration of the CCS language into Visual Studio, a 
   				state-of-the-art integrated development environment for .NET 
   				development.
@@ -90,21 +94,22 @@
 	runtime library and shows how they are designed and implemented. \\
 	Chapter 4 describes the static analysis and optimizations that are performed
 	before compilation.\\
-	Chapter 5 is a case study of the implementation of the CCS process 
+	Chapter 5 is a case study of an implementation of the CCS process 
 	language.\\
-	Chapter 6 is another case study, this time of the implementation of the 
-	KLAIM language.\\
+	Chapter 6 is another case study, this time of an implementation of the 
+	KLAIM process language.\\
 	Chapter 7 is about the graphical tool Process Viewer and how it can be used
-	with process language applications.\\
+	to interact with process language applications.\\
 	Chapter 8 gives an overview of how the CCS language was integrated into 
 	Visual Studio 2008. \\
 	Finally, Chapter 9 contains concluding remarks and an exploration of related 
-	work. Ideas for further development of the PLR are discussed, including how 
-	some other common process languages could be implemented using the PLR.\\
+	work. Ideas for further development of the PLR are also discussed, including 
+	how some other common process languages could potentially be implemented 
+	using the PLR.\\
  
 	In addition, there are two appendices:
 	
 	Appendix A is about the practical aspects of the software developed during 
-	the project, where it can be downloaded, licensing and how to run and 
-	configure it.\\
+	the course of the project, where it can be downloaded, hot it is licensed 
+	and how it can be configured and run.\\
 	Appendix B shows a small CCS system and all the generated bytecode for it.

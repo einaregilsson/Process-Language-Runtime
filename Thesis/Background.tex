@@ -1,7 +1,7 @@
 \chapter{Background}
 
 	To fully understand the issues involved in creating the Process Language 
-	Runtime, a little background knowledge is required. First, Process 
+	Runtime a little background knowledge is required. First, process 
 	languages are explained, their history, common properties and practical 
 	applications. Secondly, the .NET framework is presented and its technology
 	explained.
@@ -10,7 +10,7 @@
 
 \subsection{Overview and history}
 
-	Process Languages, also known as Process Algebras or Process Calculi, are a
+	Process languages, also known as process algebras or process calculi, are a
 	family of languages to formally model concurrent systems. These languages 
 	describe the systems at a high level of abstraction, as interactions, 
 	communications, and synchronizations between a collection of independent
@@ -18,9 +18,10 @@
 	of which are shared between different process languages, albeit 
 	with different concrete syntax. These common constructs are explained 
 	further in Section~\ref{sec:common_constructs}. Some of the more prominent 
-	process languages today include Calculus of Communicating Systems (CCS), 
-	Communicating Sequential Processes (CSP), $\pi$-calculus and Kernel Language 
-	for Agents Interaction and Mobility (KLAIM).
+	process languages today include \textit{Calculus of Communicating Systems} 
+	(CCS), \textit{Communicating Sequential Processes} (CSP), 
+	$\pi$-\textit{calculus} and \textit{Kernel Language for Agents Interaction 
+	and Mobility} (KLAIM).
 	
 	Algebraic laws have been defined for these languages that allow process 
 	descriptions or equations to be analyzed and manipulated, and permit formal 
@@ -52,8 +53,8 @@
 	language. It was developed by the Ericsson telecommunications company and 
 	its main strength is concurrency. It has the notion of processes that 
 	communicate through message passing, and the core language has been modelled 
-	in $\pi$-calculus \cite{erlang}. Another example is the occam programming 
-	language, which builds on CSP and occam-pi \cite{occampi} which incorporates 
+	in $\pi$-calculus \cite{erlang}. Other examples are the occam programming 
+	language which builds on CSP, and occam-pi \cite{occampi} which incorporates 
 	ideas from both CSP and $\pi$-calculus.
 		
 	
@@ -77,7 +78,7 @@
 	\textbf{STOP}. The purpose of the null process is to be an anchor upon which 
 	more interesting processes can be generated. An usual pattern is for a 
 	process is to first perform one or more actions and then turn into the null 
-	process, which signifies that it has run its course.
+	process, which signifies that the process has run its course.
 	
 	\textbf{Message passing through channels} is the way processes interact with 
 	each other. One process sends an outbound message on a particular named 
@@ -98,8 +99,8 @@
 	between one sender and one receiver, if two processes had been ready to 
 	receive on the \channel{coffee} channel at the same time then one of them 
 	would be chosen and the other would remain blocked. Channels are often given 
-	descriptive names to indicate their purpose, in the example above we read it 
-	as \proc{P} receives coffee from \proc{Q}. However, values can also be 
+	descriptive names to indicate their purpose, we read the example above 
+	as \textit{P receives coffee from Q}. However, values can also be 
 	passed along channels, and can then be bound to variables in the receiving 
 	process. An example of this is shown in Example~\ref{ex:value_passing} below.
 	
@@ -123,8 +124,8 @@
 	and then the process continues as \proc{P}. \proc{P} itself could also be an
 	action prefixed process, it is straightforward to see how this can be
 	expanded into a series of actions, e.g. 
-	$\channel{a} \ccsdot \channel{b} \ccsdot \out{c} \ccsdot \proc{P}$. The 
-	final process \proc{P} could either be the \textit{nil process} or a
+	$a \ccsdot b \ccsdot \out{c} \ccsdot \mathrm{P}$. The 
+	final process \proc{P} could either be the \textit{null process} or a
 	\textit{process constant}, which is further explained below.
 
 	\textbf{Process constants} are labels given to particular processes to 
@@ -137,7 +138,7 @@
 	This can be expanded into an endless series of 
 	$coin \ccsdot \out{coffee} \ccsdot coin \ccsdot \out{coffee} \ccsdot coin \ccsdot \out{coffee}$ 
 	etc. Recursive process definitions like these are used instead of looping 
-	constructs which process languages generally do not have.  Of course, the 
+	constructs which process languages generally do not have.  Of course the 
 	\proc{CoffeeMachine} process could just as well have turned into any other 
 	process at the end, it does not have to only turn into itself.
 	
@@ -157,8 +158,9 @@
 	between choices is fair, a recursive process might choose \channel{a} every
 	time, or might make each choice exactly 33\% of the time. An important thing 
 	to notice is that different paths in a process language are never joined 
-	again. That is to say that the control flow graph for process languages is 
-	always a tree.
+	again. This, coupled with the fact that process languages generally do not 
+	have loop structures, means that the control flow graph for process 
+	languages is always a tree.
 		
 	\begin{Exa}\label{ex:non_determinism}
 	\begin{align*}
@@ -218,8 +220,8 @@
 	\end{align*}	
 	\end{Exa}
 	
-	These were the main process language constructs, there are others that are 
-	not as common which will not be explained here. Some of them are however 
+	These were the main process language constructs, other less common 
+	constructs will not be explained here. Some other constructs are however 
 	considered in Section~\ref{sec:further} about further work.
 	
 \section{The .NET Framework}
@@ -243,7 +245,7 @@
 	1.0, 1.1 and 2.0 all contained new versions of the virtual machine, new 
 	versions of the compiler for the standard languages and additional 
 	libraries. However, version 3.0 of the framework contained only new 
-	libraries but no new compilers or new version of the virtual machine. 
+	libraries but no new compilers and no new version of the virtual machine. 
 	Version 3.5 then included new versions of C\# and Visual Basic.NET and some 
 	additional libraries, but again no change to the virtual machine. As a 
 	result, the version numbers of the different components of the framework 
@@ -256,10 +258,10 @@
 	The Common Language Infrastructure (CLI) is an open specification developed 
 	by Microsoft that describes an executable code and runtime environment. This 
 	is Microsoft's specification of the .NET framework, but it has been 
-	published under ECMA-335 and ISO/IEC 23271 and so anyone is free to write 
-	their own version that follows this specification. Two main alternate 
-	versions exist, Mono and DotGNU. Both of these are released under open 
-	source licenses and work on multiple operating systems, as opposed to 
+	published under the ECMA-335 and ISO/IEC 23271 standars and so anyone is 
+	free to write their own version that follows this specification. Two main 
+	alternate versions exist, Mono and DotGNU. Both of these are released under 
+	open source licenses and work on multiple operating systems, as opposed to 
 	Microsoft's .NET which only runs on the Windows family of operating systems. 
 	Microsoft has also released a shared source reference implementation of the 
 	CLI specification. None of these other implementations fully implement all 
@@ -279,7 +281,7 @@
 	
 		\item \textbf{Common Language Specification (CLS):} A set of base rules to 
 		which any language targeting the CLI should conform in order 
-		tointeroperate with other CLS-compliant languages. The CLS rules define a 
+		to interoperate with other CLS-compliant languages. The CLS rules define a 
 		subset of the Common Type System.
 	
 		\item \textbf{Virtual Execution System (VES):} The VES is the component 
@@ -330,13 +332,16 @@
 	memory management, which frees the programmer from allocating and 
 	de-allocating memory at runtime. Some of the most common programming errors 
 	in languages without memory management, such as C++, have to do with failing 
-	to de-allocate memory, causing memory leaks, or accessing memory incorrectly 
-	which in turn causes segmentation faults. Programs written for .NET eschew 
-	this class of errors completely.
+	to de-allocate memory and thereby causing memory leaks, or accessing memory 
+	incorrectly which in turn causes segmentation faults. Programs written for 
+	.NET eschew this class of errors completely\footnote{Although .NET programs 
+	do not cause memory leaks themselves, they may cause them if they interact 
+	directly with other unmanaged code, such as making calls to the operating 
+	system functions directly via P/Invoke}.
 	
 	The CLR executes programs that have been compiled to the Common Intermediate 
-	Language (CIL) format. It is a stack based virtual machine, which means it 
-	has an evaluation stack where the CIL bytecodes are evaluated. An 
+	Language (CIL). The CLR is a stack based virtual machine, which means that 
+	it has an evaluation stack where the CIL bytecodes are evaluated. An 
 	illustrative snippet of C\# code and its corresponding CIL is shown in 
 	Figures~\ref{fig:csharp_hello_world} and \ref{fig:helloworld_il}. The CIL 
 	bytecodes generally fall into four categories:
@@ -356,10 +361,10 @@
 		to the function to call, and then call it with the parameters that are 
 		currently on the evaluation stack.
 			
-		\item \textbf{Operate on stack items}. These bytecodes usually do nottake 
+		\item \textbf{Operate on stack items}. These bytecodes usually do not take 
 		any arguments, they simply use values on the stack and push results back 
 		onto the stack. Examples of these are bytecodes that add, multiply or 
-		divide the top two values on the stack, and then push the result back onto 
+		divide the top two values on the stack and then push the result back onto 
 		the stack.
 		
 	\end{enumerate}
@@ -415,5 +420,5 @@ namespace CodeGenDemo {
 	The chapter also gave an overview of the underlying technology of the .NET 
 	framework, the virtual machine, bytecode format and its associated standards 
 	and specifications. In the following chapter we will see how the process 
-	algebra constructs explained here are implemented in the .NET virtual 
+	algebra constructs explained here are implemented for the .NET virtual 
 	machine.
