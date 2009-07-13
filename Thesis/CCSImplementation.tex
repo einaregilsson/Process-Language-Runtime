@@ -2,12 +2,12 @@
 
 	In this chapter we look at the Calculus of Communicating System process 
 	language, its history, formal syntax and semantics, and its implementation 
-	with the PLR as the back end compiler. 
+	with the PLR as the back-end compiler. 
 	
 \section{Overview}
 
 	CCS was created by Robin Milner in the 1970's where it was the subject of a 
-	number of papers such as \cite{milner1,milner2,milner3} and finally a book 
+	number of papers \cite{milner1,milner2,milner3} and finally a book 
 	of the same name \cite{Milner80} published in 1980. It is, along with CSP, 
 	one of the oldest process algebras, but is still widely taught in university 
 	courses about concurrent systems and is the language of choice in textbooks 
@@ -17,8 +17,8 @@
 	than some of the other process algebras which came after it. This makes it 
 	an ideal candidate to use as the blueprint for the PLR. The PLR and the CCS 
 	compiler were developed in parallel and the PLR provides all the constructs 
-	that CCS needs. Because of that the actual CCS compiler itself is fairly 
-	small and mostly has to do with the front end, that is the lexer and parser. 
+	that CCS needs. Because of that the CCS compiler itself is fairly 
+	small and mostly has to do with the front-end, that is the lexer and parser. 
 	A description of another language implementation, one that extends the PLR 
 	further, is the subject of Chapter~\ref{ch:klaim}.
 	
@@ -87,10 +87,10 @@
 		
 	\begin{center}$((a.0) \mid (b.(P\ \backslash\ L))) + (c.0)$\end{center}
 		
-	For an informal description of each of the constructs(action-prefixing, 
+	For an informal description of each of the constructs (action-prefixing, 
 	parallel composition, non-deterministic choice, restriction and relabelling) 
 	we refer to Section~\ref{sec:common_constructs} where such a description was 
-	already given. For a formal description, Figure~\ref{fig:ccs_sos} shows the 
+	given. For a formal description, Figure~\ref{fig:ccs_sos} shows the 
 	structural operational semantics of CCS.
 
 
@@ -237,6 +237,11 @@
   interspersed with C\# source code and from that it generates the 
   \code{Scanner} and \code{Parser} classes. 
 	
+	\item \code{ParserService} is a simple class that implements the PLR's 
+	\code{IParser} interface to make the parser discoverable from outside the 
+	assembly. It implements the interface's methods and delegates the actual
+	parsing to the \code{Parser} class.
+	
 	\item \code{ParserTest} contains unit tests for the parser and scanner, to 
 	be run with the NUnit unit testing framework.
 	
@@ -350,7 +355,7 @@ UnaryMinusTerm =
 		statements, which consist of the token \texttt{use} followed by the fully 
 		qualified name of a .NET class. E.g.
 		
-		\begin{center}\texttt{use System.Console\ \ \ \ \ \ \ \ \ \ \ \ \\\texttt{use MyCustomNamespace.MyClass}}\end{center}
+		\begin{center}\texttt{use System.Console}\end{center}
 		
 		These referenced classes can be in the .NET core library, 
 		\texttt{mscorlib}, or in any arbitrary .NET assembly. During compilation 
@@ -363,7 +368,7 @@ UnaryMinusTerm =
 		followed by the method name and parantheses around expressions passed as 
 		parameters to the method, e.g. 
 		
-		\begin{center}\texttt{P = :Print(``Hello world'') . 0}\end{center}
+		\begin{center}\texttt{P = :Print("Hello world") . 0}\end{center}
 		
 		At compile time the PLR resolves which class the method belongs to by 
 		looking at the classes imported with \texttt{use} statements and 
@@ -374,8 +379,8 @@ UnaryMinusTerm =
 		the instance method.
 		
 		\item Relabelling functions can be specified as .NET methods in addition 
-		to be constant replacements. To use a .NET method for relabelling, the 
-		methods name name prefixed with a colon is put inside the square brackets 
+		to being constant replacements. To use a .NET method for relabelling, the 
+		methods name prefixed with a colon is put inside the square brackets 
 		that usually define relabelling functions in CCS, e.g.
 		\texttt{[:MyRelabelMethod]}. The method is resolved to an imported class 
 		at compile time and is required to be a method that takes a single 
@@ -384,8 +389,8 @@ UnaryMinusTerm =
 		
 		\item Restrictions functions can be specified as .NET methods in much the 
 		same way as relabelling functions and must resolve to a method that takes 
-		a \textsf{IAction} instance as a parameter. An example of a process which 
-		uses a .NET method for restriction could be \texttt{(a . 0) \ :MyRestrict}.
+		an \textsf{IAction} instance as a parameter. An example of a process which 
+		uses a .NET method for restriction could be \texttt{(a . 0) $\backslash$ :MyRestrict}.
 
 	\end{itemize}
 
@@ -504,7 +509,7 @@ Accounts = accwithdraw(account, amount)
   
  		\item \textsf{Example} is the root process. The first process in a CCS 
  		file is always considered the root process and the only one that is 
- 		instantiated at the begining of a  program. It is its responsibility to 
+ 		instantiated at the beginning of a  program. Its responsibility is to 
  		start up other processes in the system, and it does that by becoming a 
  		parallel composition of \textsf{John} which is a customer and \textsf{ATM} 
  		which represents the ATM machine.
@@ -549,7 +554,7 @@ Accounts = accwithdraw(account, amount)
 		allowing the customer to directly get a $invalidpin$ event, it 
 		synchronizes with that event itself and offers the customer a $wrongpin$ 
 		event instead. This implies that the mechanism that the UI interacts with 
-		could be changed but the UI could still offer the same interface to 
+		could be changed but the UI could still offer the same interface to the
 		outside.
 		
 		\item The \textsf{Dispenser} process is a generic dispenser, it takes a 
@@ -575,7 +580,7 @@ Accounts = accwithdraw(account, amount)
 		together, it then offers the $validpin$ event to notify the \textsf{UI} of 
 		this. \textsf{Accounts} attempts to directly call a 
 		\texttt{:WithDrawFromAccount} method to withdraw the requested amount, the 
-		method call returns \texttt{true} if the withdrawal was sucessfull, 
+		method call returns \texttt{true} if the withdrawal was sucessful, 
 		otherwise \texttt{false}. It then signals this back to \textsf{UI} with 
 		events. These processes show how .NET integration can be used, the methods 
 		they call are defined in the class \texttt{Bank.Functions} which was 

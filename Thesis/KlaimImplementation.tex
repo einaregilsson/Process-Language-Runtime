@@ -12,22 +12,22 @@
 	to model mobile agents in a distributed environment. It derives many of its 
 	constructs from process algebra, but it is also heavily influenced by 
 	Linda \cite{linda1, linda2}, a distributed computing solution from which it 
-	borrows the concept of \textit{tuple spaces}. A tuple space is a collection 
-	of tuples of data, these tuples can be read and removed from the tuple space 
+	borrows the concept of \textit{tuplespaces}. A tuplespace is a collection 
+	of tuples of data, these tuples can be read and removed from the tuplespace 
 	or new tuples can be added to it. Selecting tuples to read is done by means 
 	of pattern matching. In KLAIM, processes run in different 
 	\textit{localities}, each of which contains zero or more processes 
-	and its own tuple space. The actions performed by the processes input, 
-	output and read tuples of data from these tuple spaces. Unlike CCS, where 
+	and its own tuplespace. The actions performed by the processes input, 
+	output and read tuples of data from these tuplespaces. Unlike CCS, where 
 	processes synchronized with each other through channels, in KLAIM the way 
 	processes communicate is strictly by adding and retrieving data from tuple 
 	spaces of different localities. 
 	
-	The concept of data stores (or tuple spaces) and actions which operate on 
+	The concept of data stores (or tuplespaces) and actions which operate on 
 	them is something that is not built into the PLR. KLAIM does however contain 
 	many constructs which are a part of the PLR, namely parallel composition, 
-	non-deterministic choice and action prefixing (albeit with different type of 
-	actions than those built into the PLR). It also contains a fairly common 
+	non-deterministic choice and action prefixing (albeit with different types 
+	of actions than those built into the PLR). It also contains a fairly common 
 	process algebra construct which is not part of the PLR, 
 	\textit{replication}. These additional features make KLAIM an ideal 
 	candidate to use as a test of how easily the PLR can be extended to 
@@ -50,7 +50,7 @@
 	KLAIMS stated purpose is to be a programming language for programming mobile 
 	agents in a distributed environment. However in this implementation all 
 	processes in the system are running on the same computer, and in the same 
-	(operating system) process. The distributed part of it is purely conceptual. 
+	operating system process. The distributed part of it is purely conceptual. 
 	As such, this implementation can be seen more as a simulation of how KLAIM 
 	works rather than an implementation ready to be used for actual 
 	applications. Examples of other implementations of KLAIM are given in the 
@@ -79,8 +79,8 @@
 	locality constant or a variable. $t$ represents a tuple of 
 	elements, which can be constants, variables and variable bindings. 
 	Located tuples are written as $l::\langle t\rangle$ and 
-	located processes as $l::P$. Parallel composition and non-determenistic 
-	choice is represented the same way as in CCS, with $+$ and $\mid$ 
+	located processes as $l::P$. Parallel composition and non-deterministic 
+	choice is represented the same way as in CCS, with $\mid$ and $+$  
 	respectively. The replication construct is represented by an asterisk, $*$, 
 	immediately preceding a process. Action prefixing is written as $a . P$, and 
 	the nil process as \textbf{\textsf{nil}}. Papers on KLAIM traditionally 
@@ -215,20 +215,20 @@ N'''}{ N \rightarrow N'''}
 \subsection{Pattern matching against tuples}\label{klaim_pattern_matching}
 	Figure~\ref{fig:klaim_matching} shows the \textit{match} function used by 
 	both the \textbf{in} and \textbf{read} operations. Essentially it works by 
-	selecting a tuple from the tuple space that fulfills these conditions:
+	selecting a tuple from the tuplespace that fulfills these conditions:
 	
 	\begin{enumerate}
-		\item The operation tuple $t$ contains the same number of elements as the 
-		candidate tuple $t'$ from the tuple space.
+		\item The template tuple $t$ contains the same number of elements as the 
+		candidate tuple $t'$ from the tuplespace.
 		
 		\item In every index position $i$ in $t$ which is not a variable binding, 
-		the element at $t_i$ is equal to the element at that position in $t$. To 
+		the element at $t_i$ is equal to the element at that position in $t'$. To 
 		put it more succinctly, $t_i$ = $t'_i$ for all $i$ where $t_i$ is not a 
 		variable binding.
 	\end{enumerate}
 	
 	If a tuple does not fulfill these conditions it is not selected. If no tuple 
-	in the tuple space fulfills the conditions then the process is blocked until 
+	in the tuplespace fulfills the conditions then the process is blocked until 
 	the tuplespace acquires such a tuple. The result of the \textit{match} 
 	function is a binding of variable names to values according to the variables
 	position in the tuple. To give an example of this, suppose we have the 
@@ -280,7 +280,7 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	expressions) could also be re-used so right away the implementation had a 
 	number of building blocks ready for use. The main focus was then on the 
 	things that differentiate KLAIM from other process languages: its syntax, 
-	replication and tuple spaces with their associated \textbf{in}, \textbf{out} 
+	replication and tuplespaces with their associated \textbf{in}, \textbf{out} 
 	and \textbf{read} actions. Each of these is described in the following 
 	sections.
 	
@@ -349,10 +349,10 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 		spawned as the first instance unblocked then that would give the same 
 		result as having infinite instances blocked. 
 	
-		\item Since \textbf{read} actions do not change the state of tuple spaces
+		\item Since \textbf{read} actions do not change the state of tuplespaces
 		in any way, it can be assumed that having one instance of $P$ perform a
 		\textbf {read} action or having infinite instances of $P$ perform the 
-		action would have the same effect on the state of the tuple spaces, that 
+		action would have the same effect on the state of the tuplespaces, that 
 		is, not affect them at all. 
 		
 		\item Mimicking the \textbf{out} operation is a little more tricky than 
@@ -501,9 +501,9 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	replicated process to continue in its infinite loop). $P$ then continues as 
 	normal and is not required to do anything else related to the replication.
 	
-\subsection{Tuple spaces}
+\subsection{Tuplespaces}
 
-	The tuple spaces of KLAIM are implemented in the KLAIM runtime library. The 
+	The tuplespaces of KLAIM are implemented in the KLAIM runtime library. The 
 	library consists of just four classes, \code{Net}, \code{Locality}, 
 	\code{Tuple} and \code{KLAIMException}. Figure~\ref{fig:klaim_runtime} 
 	shows a class diagram of the runtime library.
@@ -522,12 +522,12 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	\textsf{Locality} instances as well as methods to add and delete them. 
 	
 	\item The \code{Locality} class has a name and a collection of tuples, 
-	which represents its tuple space. The \textbf{in}, \textbf{out} and 
+	which represents its tuplespace. The \textbf{in}, \textbf{out} and 
 	\textbf{read} actions are implemented as member methods of this class, this 
 	seemed a natural fit since this class holds the tuples. It also contains 
 	some convenience methods not available to KLAIM itself, such as methods to 
 	check in a non-blocking way if a tuple exists and retrieve a random tuple 
-	from the tuple space.
+	from the tuplespace.
 
 	\item The \code{Tuple} class represents a tuple. As such it holds an 
 	ordered collection of items (integers or strings). It also contains the 
@@ -540,12 +540,12 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	
 	\end{itemize}
 	
-	As seen in these class descriptions, the implementation of tuple spaces is 
+	As seen in these class descriptions, the implementation of tuplespaces is 
 	handled by these four classes, \code{Net} holds \code{Locality} 
 	instances, they hold collections of \code{Tuple} instances and the methods 
-	to access them, and the \code{Tuple}'s implement the pattern matching.
+	to access them, and the \code{Tuple} class implements the pattern matching.
 	
-	The tuples initially contained in each locality's tuple space need to 
+	The tuples initially contained in each locality's tuplespace need to 
 	somehow be put in their place before execution of the net starts. This is an 
 	activity that does not really fit into the abstract syntax tree in any 
 	particular place. To accomplish this the KLAIM compiler subscribes to the 
@@ -554,7 +554,7 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	itself and is starting to compile the entry method of the program, it raises 
 	this event and passes as an event argument the \code{CompileContext} 
 	class. It contains an initialized \code{ILGenerator} for the main method, 
-	so the KLAIM compiler can then inject its tuple space initialization code 
+	so the KLAIM compiler can then inject its tuplespace initialization code 
 	directly into the start of the main method, before any processes are 
 	activated.
 	
@@ -571,7 +571,7 @@ t_2,\cdots,t_k\rangle;\langle t'_2,\cdots,t'_k\rangle)
 	themselves into bytecode that gets the correct locality from the net, and 
 	then calls the correct method on that locality. These new action have 
 	\code{Expression} nodes as children which represent the items in the 
-	tuple, one new expression node was added, \code{VariableBinding}, other 
+	tuple. One new expression node was added, \code{VariableBinding}, other 
 	nodes needed were already a part of the PLR.
 	
 	There is one special case for the \textbf{out} action. That is if the 
@@ -763,7 +763,7 @@ UnaryMinusTerm =
 		removes invoices from the \textsf{Inbox} and then sends them on to the 
 		person who ordered the item in question, with a status tag of 
 		\textsf{Received}. Note here that the process is replicated and starts 
-		with an \textbf{in} action, whenever a invoice (tuple) is available at 
+		with an \textbf{in} action, whenever an invoice (tuple) is available at 
 		\textsf{Inbox} whose first element is the constant \textsf{Incoming} a new 
 		instance of the \textsf{Secretary} process will be spawned. Also note how 
 		the \textbf{in} action binds the variable $person$ and then uses that as 
@@ -775,7 +775,7 @@ UnaryMinusTerm =
 		\item The localities \textsf{John} and \textsf{Alice} are both employees 
 		of the company and have the same process for receiving invoices. They are 
 		replicated like the \textsf{Secretary} process so they start whenever a 
-		matching tuple lands in their tuple space. They read in the invoice and 
+		matching tuple lands in their tuplespace. They read in the invoice and 
 		then have a choice where they can either send it back to the secretary 
 		with the status \textsf{Denied} or send it on to the finance department 
 		with the status \textsf{Confirmed}.
@@ -802,7 +802,7 @@ UnaryMinusTerm =
 	\textsf{Budget}, as actors, such as \textsf{Secretary}, or as both. This is 
 	for example the case with \textsf{John} and \textsf{Alice}, they have 
 	processes that they follow, and those processes operate on data in the 
-	\textsf{self} tuple space which implies that they own the data. 
+	\textsf{self} tuplespace which implies that they own the data. 
 	At runtime \textsf{self} simply resolves to the name of the locality where 
 	the process is running.
 

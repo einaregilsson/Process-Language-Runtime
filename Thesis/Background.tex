@@ -72,12 +72,12 @@
 	two parallel processes, $P$ and $Q$, we write $P\ |\ Q$ to indicate that 
 	they run in parallel.
 
-	\textbf{A null process} is a process that does nothing and cannot interact 
+	\textbf{A nil process} is a process that does nothing and cannot interact 
 	with any other processes. It has different representations in different 
 	algebras, common symbols for it include \textbf{nil}, \textbf{0} and 
-	\textbf{STOP}. The purpose of the null process is to be an anchor upon which 
+	\textbf{STOP}. The purpose of the nil process is to be an anchor upon which 
 	more interesting processes can be generated. An usual pattern is for a 
-	process is to first perform one or more actions and then turn into the null 
+	process is to first perform one or more actions and then turn into the nil 
 	process, which signifies that the process has run its course.
 	
 	\textbf{Message passing through channels} is the way processes interact with 
@@ -125,7 +125,7 @@
 	action prefixed process, it is straightforward to see how this can be
 	expanded into a series of actions, e.g. 
 	$a \ccsdot b \ccsdot \out{c} \ccsdot \mathrm{P}$. The 
-	final process \proc{P} could either be the \textit{null process} or a
+	final process \proc{P} could either be the \textit{nil process} or a
 	\textit{process constant}, which is further explained below.
 
 	\textbf{Process constants} are labels given to particular processes to 

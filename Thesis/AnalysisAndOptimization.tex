@@ -1,9 +1,9 @@
 \chapter{Analysis and Optimization}\label{ch:analysis_and_optimization}
 
-	In this chapter we look at the static analyses performed on the PLR syntax 
-	tree before compilation, these include some classical dataflow analyses 
-	as well as some analyses that are more specific to the process algebra 
-	domain. The results of these analyses can be used to optimize the 
+	In this chapter we look at the static analyses performed on the PLR abstract 
+	syntax tree before compilation, these include some classical dataflow 
+	analyses as well as some analyses that are more specific to the process 
+	algebra domain. The results of these analyses can be used to optimize the 
 	compilation process, the optimizations are presented and explained, and 
 	their implications for debugging support are discussed.
 	
@@ -33,7 +33,7 @@
 	In this example the program points are labelled from 1-5. Program points are 
 	those points in the program where something happens, expression are 
 	evaluated, variables are assigned, etc. The control flow for this example 
-	would be (1,2), (2,3), (3,4), (3,5), (4,3) and (4,5). The analysis is then 
+	would be (1,2), (2,3), (3,4), (3,5) and (4,3). The analysis is then 
 	typically performed by having each program point have an input set and an 
 	output set, the input set represents the state of the program as the point 
 	is reached and is based on the state of its predecessors, the output set 
@@ -43,9 +43,9 @@
 	
 	To give a concrete example suppose we have an analysis which is determining 
 	for the code snippet in Example~\ref{ex:control_flow} which variables have 
-	been assigned at each point in the program. For the program point labeled 1 
+	been assigned at each point in the program. For the program point labeled 2 
 	(x := 1), its input set would be $\{y\}$ as $y$ is the only variable that 
-	has been assigned at that point. Since program point 1 assigns to the 
+	has been assigned at that point. Since program point 2 assigns to the 
 	variable $x$ then its output set would be the union of its input set and 
 	$\{x\}$, or $\{x,y\}$. The functions used to modify the input set to create 
 	the output set are commonly called \textit{Kill} and \textit{Gen}, the 
@@ -63,7 +63,7 @@
 	\textit{may} happen on the path to the program point) or an 
 	under approximation (something \textit{must} have happened on the path to 
 	the program point).  To calculate the input and output sets of each program 
-	points an iterative worklist algorithm is used. There are many variations of 
+	point an iterative worklist algorithm is used. There are many variations of 
 	these algorithms, they keep track of which program points change and which 
 	other program points must then be re-calculated. There is a lot more to data 
 	flow analysis than explained here, for instance whether output sets of 
@@ -77,7 +77,7 @@
 	\subsection{Data flow analysis in process algebra}
 	
 	Two properties of process algebra make it different from imperative 	
-	languages when it comes to data flow analysis.
+	languages when it comes to data flow analysis:
 	
 	\begin{enumerate}
 		\item There are no looping constructs. The reason that data flow analysis 
@@ -409,7 +409,8 @@
 	
 	The analysis also checks for process definitions that are defined as nothing 
 	more than the nil process (e.g. $P \defeq 0$) and issues a warning that 
-	states that any process invocation of $P$ can be replaced with a nil process.
+	states that any process invocation of $P$ can be replaced with a nil 
+	process.
 
 \subsection{Unmatched Channels}
 
@@ -472,12 +473,13 @@
 	
 \section{Summary}
 
-	The Process Language Runtime contains a number of analyzes and optimizations 
+	The Process Language Runtime contains a number of analyses and optimizations 
 	that are performed before and during compilation. These analyses are 
 	somewhat different from analyses of imperative programming languages since 
 	process algebra has a simpler control flow graph which is always a tree. The 
-	analyses find assignments to variables that are never used, constant 
-	expressions, nil processes that have no effect, synchronizations that can 
-	never happen and processes that are never used. The optimizations that can 
-	be performed as a result of these analyses are mainly focused on removing 
-	code that either has no effect or can never be executed. 
+	analyses find assignments to variables that are never used, variables that 
+	are read before being assigned to, constant expressions, nil processes that 
+	have no effect, synchronizations that can never happen and processes that 
+	are never used. The optimizations that can be performed as a result of these 
+	analyses are mainly focused on removing code that either has no effect or 
+	can never be executed. 

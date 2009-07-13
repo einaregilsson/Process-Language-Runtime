@@ -20,7 +20,7 @@
 	abstract syntax tree is mainly concerned with traditional constructs for 
 	imperative programming languages and constructs to support dynamic typing, 
 	while the purpose of this project is to provide constructs common to process 
-	languages, and dynamic typing is not an issue we are concerned with.
+	languages, and dynamic typing is not a concern.
 
 \section{Overview}
 
@@ -41,14 +41,14 @@
 	PLR have been engineered to make them easy to subclass and implement.
 	
 	As the PLR contains classes needed at runtime it must be distributed with 
-	any compiled process language application. However, an option is present in 
+	any compiled process language application. However, an option is present at 
 	the compilation stage that allows the PLR assembly to be embedded in the 
 	final compiled executable program, and can optionally embed any additional 
 	runtime libraries that specific languages require. This allows a process 
 	language program to be distributed as a single file without any external 
 	dependencies other than the .NET framework itself.
 
-	The PLR itself is written in the C\# programming language using Visual 
+	The PLR is written in the C\# programming language using Visual 
 	Studio 2008 as the development environment. It has a dependency on the NUnit 
 	unit test framework, however this dependency is only needed when running 
 	internal unit tests and so does not need to be distributed with the PLR 
@@ -72,15 +72,15 @@
 	compiler. Every node in the syntax tree inherits from an abstract 
 	\code{Node} base class which has an abstract \code{Compile} 
 	method. Concrete node classes override the \code{Compile} method and in it 
-	emit the appropriate byte codes for the language construct that the node 
-	represents. 
+	they emit the appropriate byte codes for the language construct that the 
+	node represents. 
 	
 	The compilation itself is recursive, calling the \code{Compile} method 
 	on the root node of the tree will cause it to call the \code{Compile} 
 	method of its child nodes, who in turn call \code{Compile} on their child 
 	nodes and thus the compilation propagates throughout the entire tree. The 
 	reason for choosing this architecture was to make the syntax tree easily 
-	extendable by language implementors, who can add new nodes to represent new 
+	extendable by language implementers, who can add new nodes to represent new 
 	constructs. 
 	
 	Concrete nodes typically do not inherit directly from the \code{Node} base 
@@ -132,7 +132,7 @@
  	calls a .NET method at runtime for every action and returns \texttt{true} it 
  	it should be restricted. The method can be written in any language available 
  	for the .NET framework, the only requirements are that it takes an 
- 	\code{Action} object from the PLR runtime library as a parameter and 
+ 	\code{IAction} object from the PLR runtime library as a parameter and 
  	returns a boolean value.
 	 
  	\textbf{PreProcessActions} represents a function that is called for every 
@@ -141,12 +141,12 @@
  	described in Section~\ref{sec:common_constructs}. Simple re-labelling of 
  	channels with names known at compile time is done with a 
  	\code{RelabelActions} class. It has the names to re-label as child nodes 
- 	and compiles down to a method that takes in an \code{Action} runtime class 
+ 	and compiles down to a method that takes in an \code{IAction} runtime class 
  	and performs simple string substitution on its name. More complicated 
  	pre-processing of actions can be achieved with another descendant class, 
  	\code{CustomPreprocess}. That class compiles down to a method call to a 
- 	.NET method that takes an \code{Action} as a parameter and returns an 
- 	\code{Action} as well. This method can be written in any language 
+ 	.NET method that takes an \code{IAction} as a parameter and returns an 
+ 	\code{IAction} as well. This method can be written in any language 
  	available for .NET.
  	
  	Besides all the descendant classes of those five main classes, there are a 
@@ -339,22 +339,21 @@ class ExpressionFolder : AbstractVisitor{
 \subsection{Extensibility}
 	
 	As stated before, one of the goals of the PLR is extensibility, allowing
-	for language implementors to add features and constructs not included in
+	for language implementers to add features and constructs not included in
 	the PLR itself. There are three main methods of extending the PLR. Firstly,
-	language implementors can add new nodes to the abstract syntax tree. These
+	language implementers can add new nodes to the abstract syntax tree. These
 	nodes just have to implement the \code{Compile} method and then they can
-	be seamlessly integrated with the built in PLR nodes. Of course it is also
-	possible to inherit from one of the existing nodes and thereby re-using some
-	of the compilation work they do, and simply adding extra code before or after
-	the base classes compilation step. 
+	be seamlessly integrated with the built-in PLR nodes. Of course it is also
+	possible to inherit from one of the existing nodes and re-use some
+	of the compilation work they do, and simply add extra code before or after
+	the base class's compilation step. 
 	
 	Secondly, the root node of the abstract	syntax tree, \code{ProcessSystem} 
 	exposes the following four events. 
 	
 	\begin{enumerate}
 		\item \code{BeforeCompile} occurs before the PLR has performed any 
-		compilation. At this point only the \code{AssemblyBuilder} and 
-		\code{ModuleBuilder} have been defined, no types or methods exist yet.
+		compilation. At this point no types or methods exist yet.
 		
 		\item \code{AfterCompile} occurs after the PLR has finished all its
 		compilation but before it creates the executable file. At this point
@@ -373,9 +372,9 @@ class ExpressionFolder : AbstractVisitor{
 	
 	All these events have the same signature, they require a 
 	\code{CompileEventHandler} delegate, which takes a \code{CompileContext} 
-	as a parameter. The event subscribers then use the compile context to create 
-	types, methods and emit bytecodes at different points in the compilation 
-	process.
+	object as a parameter. The event subscribers then use the compile context to 
+	create types, methods and emit bytecodes at different points in the 
+	compilation process.
 	
 	Finally, the third way to extend the PLR is to write supporting code in
 	another .NET language, writing a seperate runtime library. The KLAIM 
@@ -383,7 +382,7 @@ class ExpressionFolder : AbstractVisitor{
 	a language implementation requires large amounts of supporting code it is 
 	inconvenient and error prone to generate all that code by emitting CIL 
 	bytecode at compilation time. By creating a runtime library instead, 
-	language implementors can get the benefit of programming languages and tools 
+	language implementers can get the benefit of programming languages and tools 
 	such as C\# and Visual Studio when writing the common, re-usable parts of 
 	their languages. Then, at compilation time, they can simply emit bytecodes 
 	to call code in the runtime library. This is also the approach taken by the 
@@ -393,15 +392,16 @@ class ExpressionFolder : AbstractVisitor{
 \subsection{Code generation}
 	
 	To generate a valid .NET assembly the PLR uses a set of classes that are a 
-	part of the .NET framework Base Class Library. These classes are located in 
-	the \code{System.Reflection.Emit} namespace. Before explaining more about 
-	these classes it is worth going over how a .NET assembly is structured. A 
-	.NET \textit{assembly} is an executable file (.exe) or a dynamic link 
-	library (.dll). The assembly contains one more \textit{modules}, typically 
-	just one. Each module contains one or more \textit{types} (or classes). 
-	Types have \textit{fields}, \textit{constructors} and \textit{methods}. At 
-	the lowest level, constructors and methods contain CIL bytecodes. 
-	Figure~\ref{fig:assembly} shows the structure.
+	part of the .NET framework Base Class Library (BCL). These classes are 
+	located in the \code{System.Reflection.Emit} namespace. Before explaining 
+	more about these classes it is worth going over how a .NET assembly is 
+	structured. A .NET \textit{assembly} is an executable file (.exe) or a 
+	dynamic link library (.dll). The assembly contains one more 
+	\textit{modules}, typically just one. Each module contains one or more 
+	\textit{types} (or classes). Types have \textit{fields}, 
+	\textit{constructors} and \textit{methods}. At the lowest level, 
+	constructors and methods contain CIL bytecodes. Figure~\ref{fig:assembly} 
+	shows the structure.
 
 	\begin{figure}[h!]
 		\centering
@@ -440,11 +440,12 @@ class ExpressionFolder : AbstractVisitor{
 \subsection{Debugging support}\label{debug_support}
 	
 	One of the benefits of targeting a common virtual machine such as the CLR is
-	is that both a free command line and graphical debugger exist that can be 
-	used for any programming language that compiles down to the Common 
-	Intermediate Language format. The \code{System.Reflection.Emit} API offers 
-	functionality to emit the necessary debugging symbols to be able to use 
-	these debuggers. Emitting debug symbols consists of the following five steps:
+	is that both a free command line debugger and a free graphical debugger 
+	exist that can be used for any programming language that compiles down to 
+	the Common Intermediate Language format. The \code{System.Reflection.Emit} 
+	API offers functionality to emit the necessary debugging symbols to be able 
+	to use these debuggers. Emitting debug symbols consists of the following 
+	five steps:
  	
  	\begin{enumerate}
  		\item When the \code{ModuleBuilder} objects is defined with a call to 
@@ -465,7 +466,7 @@ class ExpressionFolder : AbstractVisitor{
 		object. In a non debug build these locals are not stored by name in the 
 		compiled file, but simply given a number and referred to by that number.
 		To be able to map variables in the compiled file to variable names in the
-		source file a method, \code{SetLocalSymInfo} is called on the 
+		source file a method, \code{SetLocalSymInfo}, is called on the 
 		\code{LocalBuilder} object. The method takes the name of the variable as
 		a parameter and stores that information for later use by the debugger.
 		
@@ -563,7 +564,7 @@ class ExpressionFolder : AbstractVisitor{
 	instances restriction clause.
 	
 	\textbf{BuiltIns} is a small static class that contains utility methods
-	that can be called by processes, such as to print to the console.
+	that can be called by processes, such as a method to print to the console.
 	
 	\textbf{IAction} is an interface that all runtime actions must implement.
 	It contains four methods. \code{ProcessID} returns the id of the
@@ -579,7 +580,7 @@ class ExpressionFolder : AbstractVisitor{
 	\textbf{IParser} is an interface for parsers. It contains \code{Parse}
 	methods for streams and files, as well as properties that return the
 	name of the process language the parser is for, the file extensions it
-	uses for source files, and a formatter class that format a PLR abstract
+	uses for source files, and a formatter class that can format a PLR abstract
 	syntax tree and print it out as source code in a particular process language.
 	
 	\textbf{ChannelSyncAction} is a class representing synchronization on a
@@ -587,19 +588,21 @@ class ExpressionFolder : AbstractVisitor{
 	the action and information about whether the process is attempting to send
 	or receive on the channel. In the case of a send operation it can optionally
 	contain a list of values that are being sent, and in the case of a receive
-	operation it can contain a list of variables that should be bound to the 
-	values being sent from the other side. The \code{ChannelSyncAction}
-	implements the \code{IAction} interface as all runtime actions must, it is
-	a synchronous action and its \code{CanSyncWith} method will only return 
-	true for other \code{ChannelSyncAction} instance that have the same
-	channel name, are performing the opposing operation and have the same
-	number of values being passed through the channel. When two actions are
-	synchronized, the \code{Sync(IAction other)} method on both the actions
-	are called with the other actions as a parameter. In the case of channel 
-	synchronizations the action instance which represents the receiving end
-	of the operation will bind its variables to the values passed through
-	the channel in its \code{Sync} method, the sending action will do nothing
-	in its own \code{Sync} method.
+	operation it can contain an empty list which values can be copied to during 
+	synchronization. Variables are then bound to these values. The 
+	\code{ChannelSyncAction} implements the \code{IAction} interface as all 
+	runtime actions must, it is a synchronous action and its \code{CanSyncWith} 
+	method will only return true for other \code{ChannelSyncAction} instance 
+	that have the same channel name, are performing the opposing operation and 
+	have the same number of values being passed through the channel. When two 
+	actions are synchronized, the \code{Sync(IAction other)} method on both the 
+	actions are called with the other actions as a parameter. In the case of 
+	channel synchronizations the action instance which represents the receiving 
+	end of the operation will copy the values from the sending action instance 
+	to itself. These values are then available to the receiving process which 
+	can bind them to its variables. The sending action will do nothing
+	in its own \code{Sync} method, as it knows that the receiving action will
+	copy the values over.
 	
 	\textbf{MethodCallAction} is a runtime action which can be used to call
 	an arbitrary .NET method, either a built-in method from the .NET base
@@ -630,7 +633,7 @@ class ExpressionFolder : AbstractVisitor{
 	are killed. As an example, when a process is a candidate in non deterministic
 	choice and is not chosen then it must be killed. To bypass all the subsequent
 	actions of the process, a \code{ProcessKilledException} is thrown and then
-	caught at the end of the processes code. There the process will unregister
+	caught at the end of the process's code. There the process will unregister
 	itself from the \code{Scheduler}, print a message to the console and then
 	terminate.
 	
@@ -758,18 +761,20 @@ do forever:
 	\begin{verbatim}
 			                      A = a . b . B
 			                      B = (b . c . C) \{b,c}
-			                      C = c . d . A
+			                      C = c . d . D
 			                      D = 0
 	\end{verbatim}
 	
-	In the system above the initial process is $A$. It performs two actions and 
-	then turns into $B$. A is not restricted in any way so there is no reason 
-	for it to set itself as $B$'s parent. A then checks if itself has a parent, 
-	it does not and so it sets $B$'s parent to \code{null} before starting it.
-	$B$ on the other hand is restricted, so after it has performed its actions 
-	it starts $C$ and sets itself as $C$'s parent. When $C$ performs its $c$ 
-	action it is passed up to its parent and is restricted in the $B$ process. 
-	When $C$ eventually turns into $D$ it needs to decide what $D$'s parent will 
+	In the system above the initial process is $A$. It performs two actions 
+	(another process that synchronizes on these channels is omitted for 
+	clarity), and then turns into $B$. A is not restricted in any way so there 
+	is no reason for it to set itself as $B$'s parent. A then checks if itself 
+	has a parent, it does not and so it sets $B$'s parent to \code{null} before 
+	starting it. $B$ on the other hand is restricted, so after it has performed 
+	its actions it starts $C$ and sets itself as $C$'s parent. When $C$ performs 
+	its $c$ action it is passed up to its parent and is restricted in the $B$ 
+	process. When $C$ eventually turns into $D$ it needs to decide what $D$'s 
+	parent will 
 	be. $C$ itself has no restrictions and so does not need to live on, so it 
 	sets $D$'s parent as its own parent, which was $B$. $C$ can now die and be 
 	removed from memory, $D$ has $B$ as its parent so the restrictions of $B$ 
@@ -900,7 +905,7 @@ do forever:
 	\ccsdot 0)\backslash\{out\}$ is actually two classes and the $in$ and $out$ 
 	actions are performed in different methods. The variable $x$ still needs to 
 	be passed on so that the inner process has access to the value that was 
-	bound in the outer process. An additional complication is that the processes 
+	bound in the outer process. An additional complication is that the process's 
 	main logic has to be defined in an overridden method, \code{RunProcess}, so 
 	changing the parameters of that method is not an option. And finally, a 
 	variable may be bound and the process may then become two or more parallel 

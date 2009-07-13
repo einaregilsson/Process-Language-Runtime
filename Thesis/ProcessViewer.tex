@@ -1,10 +1,10 @@
 \chapter{Interactive Process Viewer}\label{ch:process_viewer}
 
-	In this chapter we look briefly at \textit{Process Viewer}, a tool to interact
-	with process language applications during execution. Its architecture is 
-	explained, as well as how it interacts with the compiled process language 
-	executables. The challenges in making it general enough for any process
-	language are also discussed.
+	In this chapter we look briefly at \textit{Process Viewer}, a tool to 
+	interact with process language applications during execution. Its 
+	architecture is explained, as well as how it interacts with compiled process 
+	language executables. The challenges in making it general enough for any 
+	process language are also discussed.
 
 \section{Overview}
 
@@ -45,8 +45,8 @@
   controls in the window it was not deemed necessary to modularize the code
   further. The only real algorithm in the program is how the process state is
   extracted from the running process language application, that code was 
-  clearly not directly tied to the graphical user interface and therefore it
-  was put in its own class, the \code{ProcessStateVisualization} class.
+  clearly not tied to the graphical user interface and therefore it was put 
+  in its own class, the \code{ProcessStateVisualization} class.
   
   \subsection{Interaction with the PLR}
   
@@ -55,21 +55,21 @@
   loading the process language application assembly and simply calling its 
   \code{Main} method on a seperate thread. Doing it this way allows the 
   viewer to interact directly with the process language application and its 
-  classes. The interaction with happens mainly through the PLR's 
-  \code{Scheduler} class. The scheduler has three useful events that the 
-  process viewer subscribes to, these are: \code{ProcessRegistered}, 
-  \code{ProcessKilled} and \code{TraceItemAdded}. These notify subscribers 
-  when new processes are added to the system, when processes are removed from 
-  the systems, and when new items are added to the trace, that is when actions 
-  have been executed. The process viewer uses these events to update the 
-  controls that show active processes and the trace. 
+  classes. The interaction happens mainly through the PLR's \code{Scheduler} 
+  class. The scheduler has three useful events that the process viewer 
+  subscribes to, \code{ProcessRegistered}, \code{ProcessKilled} and 
+  \code{TraceItemAdded}. These events notify subscribers when new processes 
+  are added to the system, when processes are removed from the system, and 
+  when new items are added to the trace, that is when actions have been 
+  executed. The process viewer uses these events to update the controls that 
+  show active processes and the trace. 
   
   To allow the user to select which action to execute the viewer makes use of
   a simple abstraction that the \code{Scheduler} class provides. The scheduler
   does not have a special method to select an action from all the candidate 
   actions, instead it has a delegate (function pointer) to a method that takes
-  in a list of \code{CandidateAction} classes and return the one that should be
-  executed. This function pointer by default points to a simple method that 
+  in a list of \code{CandidateAction} classes and returns the one that should 
+  be executed. This function pointer by default points to a simple method that 
   randomly chooses an action to execute, but it can be set to any other method
   that has the correct method signature. The viewer sets this function pointer
   to its own method, that method shows each candidate action in the window and
@@ -85,7 +85,7 @@
 	be shown. The names of the active processes, the trace and the candidate 
 	actions all work with just the compiled executable though. The reason for 
 	this is that those things can all be shown in a reasonable way using the 
-	class names and \code{.ToString()} methods of the runtime classes whereas 
+	class names and \texttt{.ToString()} methods of the runtime classes whereas 
 	displaying the system in source code form  requires the abstract syntax 
 	tree, which is no longer available after the application has been compiled. 
 	
@@ -161,6 +161,6 @@
 	process language applications and show processes, traces and candidate 
 	actions. It also allows the user to select which actions are executed in the 
 	process language application and shows the state of the processes as they 
-	change.When creating and working with process language applications the 
+	change. When creating and working with process language applications the 
 	Process Viewer really helps the user to understand and follow what is 
 	happening during execution.
