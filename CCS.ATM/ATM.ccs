@@ -7,6 +7,7 @@ ATM = (UI | Bank | CashDispenser) \{checkpin, validpin, invalidpin,
                                     accwithdraw, accwithdrawn, accnotenoughbalance,
                                     checkavailablecash, enoughcash, notenoughcash,dispensecash} 
 
+#Specific instance of a customer
 John = Customer(1234, 3321, 20000)
 
 Bank = PinCheck | Accounts 

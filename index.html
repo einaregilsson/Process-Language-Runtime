@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>A Process Language Runtime for the .NET Platform</title>
+		<style type="text/css">
+			body { background-color:#aaa; font-family:Verdana, Arial, sans-serif;}
+			#page { background-color:white; border:solid black; border-width: 1px 3px 3px 1px; margin:30px auto; width:800px; padding-bottom:30px;}
+			h1 { text-align: center; font-size:18pt;margin:55px 10px;}
+			#links { text-align:center; font-weight:bold; margin-bottom:30px;}
+			h3 { text-align: center; font-size:16pt;}
+			
+			a {  text-decoration:none;}
+			a:hover {  text-decoration:underline;}
+			p { width: 550px; margin:15px auto; text-align:left; font-size:11pt;}
+		</style>
+	</head>
+	<body>
+		
+		<div id="page">
+			<h1>A Process Language Runtime for the .NET Platform</h1>
+			
+			<div id="links">
+				<a href="plr-src.zip">Download the source code</a> || <a href="plr-bin.zip">Download the binaries</a>
+			</div>
+				
+			<p>
+			The Process Language Runtime (or PLR for short) is my M.Sc. project in Computer Science
+			at the Technical University of Denmark. On this page you can download the source code and/or
+			compiled binaries for the project. A link will be given to the thesis itself once it has
+			been published. The source code is licensed under the 
+			<a href="http://www.gnu.org/licenses/gpl-3.0.html">General Public License (GPL) v3.0</a>. For
+			the abstract of the thesis, see below.
+			</p>
+			<p style="text-align:right;">Einar Egilsson<br/><br />14.07.2009</p>
+			
+			<h3>Abstract:</h3>
+			<p>
+			Process languages, also known as process algebras or process calculi, are languages
+			that are built up of distinct processes communicating with each other.
+			Different process languages have dierent constructs, but most of the prominent
+			ones have a common subset of constructs. That subset includes action prefixing,
+			parallel composition of subprocesses and non-deterministic choice between
+			paths.
+			</p>
+			<p>
+			The .NET platform is a popular development platform. One of its strengths is
+			that it supports multiple languages running on the same underlying virtual machine.
+			The languages compile down to a common bytecode format which means
+			that the languages can interoperate and different parts of the same application
+			can be built in different languages.
+			</p>
+			<p>
+			This thesis explores how well process languages can be integrated into the .NET
+			environment and how they can interoperate with code written in other languages.
+			The design and implementation of an extensible compiler back-end and
+			a runtime library for process languages are presented, as well as two case studies
+			of languages implemented using the common compiler and runtime, and a
+			graphical tool to interact with running process language applications. Finally,
+			a quick overview is given of how to integrate a process language into a state-ofthe-art 
+			integrated development environment.			
+			</p>
+		</div>
+	
+	</body>
+</html>
