@@ -10,7 +10,7 @@ ATM = (UI | Bank | CashDispenser) \{checkpin, validpin, invalidpin,
 #Specific instance of a customer
 John = Customer(1234, 3321, 20000)
 
-Bank = PinCheck | Accounts 
+Bank = PinCheck  | Accounts 
 
 UI = card(cardnr) . pin(pinnr) . _checkpin_(cardnr,pinnr) .
      (
