@@ -50,7 +50,7 @@ CashDispenser = Dispenser(100000)[cash/output,checkavailablecash/check,
                                   enoughcash/enough,notenoughcash/notenough,
                                   dispensecash/dispense]
 
-Dispenser(available) = check(nr) 
+Dispenser(available) = check(nr)  
                      . if available < nr then 
                           _notenough_ . Dispenser(available) 
                        else 
@@ -59,7 +59,7 @@ Dispenser(available) = check(nr)
                        dispense(nr) . _output_(nr) . Dispenser(available-nr)
                          
 
-PinCheck = checkpin(cardnr, pin)  
+PinCheck = checkpin(cardnr, pin)
          . if :ValidPin(cardnr, pin) then
               _validpin_ . PinCheck
            else

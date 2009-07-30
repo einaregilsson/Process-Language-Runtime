@@ -83,7 +83,6 @@ namespace PLR.AST.Expressions {
                     context.Type.Locals.Add(Name, local);
                 }
                 context.ILGenerator.Emit(OpCodes.Ldloc, local);
-
             }
         }
         #endregion

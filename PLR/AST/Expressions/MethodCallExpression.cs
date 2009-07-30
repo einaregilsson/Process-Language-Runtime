@@ -91,6 +91,9 @@ namespace PLR.AST.Expressions {
                     && actualParams[i].ParameterType.Equals(typeof(object))) {
                     context.ILGenerator.Emit(OpCodes.Box, typeof(int));
                 }
+                if (exp is Variable) {
+                    context.ILGenerator.Emit(OpCodes.Unbox_Any, typeof(int));
+                }
             }
 
             if (_method.IsVirtual) {
